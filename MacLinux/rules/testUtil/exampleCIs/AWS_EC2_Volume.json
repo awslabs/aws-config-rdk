@@ -1,0 +1,46 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-10-28T00:41:34.826Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1477615294826",
+    "configurationItemMD5Hash": "3688d18cf3af179aac4d5060aa5e49f0",
+    "arn": "arn:aws:ec2:us-east-1:264683526309:volume/vol-a416b170",
+    "resourceType": "AWS::EC2::Volume",
+    "resourceId": "vol-a416b170",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "us-east-1c",
+    "resourceCreationTime": "2016-10-28T00:33:43.651Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::Instance",
+        "resourceId": "i-29e75b19",
+        "relationshipName": "Is attached to Instance"
+      }
+    ],
+    "configuration": {
+      "volumeId": "vol-a416b170",
+      "size": 8,
+      "snapshotId": "snap-2a2a8752",
+      "availabilityZone": "us-east-1c",
+      "state": "in-use",
+      "createTime": "2016-10-28T00:33:43.651Z",
+      "attachments": [
+        {
+          "volumeId": "vol-a416b170",
+          "instanceId": "i-29e75b19",
+          "device": "/dev/xvda",
+          "state": "attached",
+          "attachTime": "2016-10-28T00:33:43.000Z",
+          "deleteOnTermination": true
+        }
+      ],
+      "tags": [],
+      "volumeType": "gp2",
+      "iops": 100,
+      "encrypted": false
+    },
+    "supplementaryConfiguration": {}
+  }

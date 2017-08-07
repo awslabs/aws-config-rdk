@@ -1,0 +1,87 @@
+[
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-09-24T17:47:04.330Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "102",
+    "configurationItemMD5Hash": "3d84055ae93d4891a3bc97a0837c9d43",
+    "arn": "arn:aws:ec2:us-east-1:264683526309:network-interface/eni-2a768b39",
+    "resourceType": "AWS::EC2::NetworkInterface",
+    "resourceId": "eni-2a768b39",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "us-east-1c",
+    "tags": {},
+    "relatedEvents": [
+      "7656056e-4df8-4db6-a2fc-cf83e5461f7f"
+    ],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::Instance",
+        "resourceId": "i-d46cc9e5",
+        "relationshipName": "Is attached to Instance"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-e627199e",
+        "relationshipName": "Is associated with SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-e868d092",
+        "relationshipName": "Is associated with SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-38c20312",
+        "relationshipName": "Is contained in Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-0990dc6d",
+        "relationshipName": "Is contained in Vpc"
+      }
+    ],
+    "configuration": {
+      "networkInterfaceId": "eni-2a768b39",
+      "subnetId": "subnet-38c20312",
+      "vpcId": "vpc-0990dc6d",
+      "availabilityZone": "us-east-1c",
+      "description": "",
+      "ownerId": "264683526309",
+      "requesterManaged": false,
+      "status": "in-use",
+      "macAddress": "12:32:f4:14:77:95",
+      "privateIpAddress": "172.31.59.126",
+      "privateDnsName": "ip-172-31-59-126.ec2.internal",
+      "sourceDestCheck": true,
+      "groups": [
+        {
+          "groupName": "MyTestGroup",
+          "groupId": "sg-e627199e"
+        },
+        {
+          "groupName": "launch-wizard-9",
+          "groupId": "sg-e868d092"
+        }
+      ],
+      "attachment": {
+        "attachmentId": "eni-attach-75a835dd",
+        "instanceId": "i-d46cc9e5",
+        "instanceOwnerId": "264683526309",
+        "deviceIndex": 0,
+        "status": "attached",
+        "attachTime": "2016-08-30T17:21:01.000Z",
+        "deleteOnTermination": true
+      },
+      "tagSet": [],
+      "privateIpAddresses": [
+        {
+          "privateIpAddress": "172.31.59.126",
+          "privateDnsName": "ip-172-31-59-126.ec2.internal",
+          "primary": true
+        }
+      ]
+    },
+    "supplementaryConfiguration": {}
+  }

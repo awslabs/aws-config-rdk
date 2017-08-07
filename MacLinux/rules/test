@@ -1,0 +1,46 @@
+#!/bin/bash
+if [ $# -ne 2 ]
+    then
+        printf $"Usage: ./test PROFILE RULE_NAME\n"
+        exit 1
+fi
+PROFILE=$1
+RULE_NAME=$2
+EVENT=$(<"testUtil/testEvent.json")
+PARAMETERS=$(<"ruleCode/ruleParameters.txt")
+PARAMETERS=${PARAMETERS//\"/\\\"}
+EVENT=${EVENT//<PARAMETERS>/$PARAMETERS}
+for ci in testUtil/noncompliantCIs/*
+do
+    ncci=$(<$ci)
+    ncci=${ncci// /}
+    ncci=${ncci//$'\n'/}
+    ncci=${ncci//\"/\\\"}
+    event=${EVENT/<CI>/"$ncci"}
+    > testUtil/output.txt
+    aws --profile $PROFILE lambda invoke --function-name $RULE_NAME --payload "$event" testUtil/output.txt > /dev/null
+    actual_compliance=$(<"testUtil/output.txt")
+    if [ "\"NON_COMPLIANT\"" == $actual_compliance ]
+        then
+            printf "PASSED: Expected \"NON_COMPLIANT\". Actual $actual_compliance. CI from file $ci\n"
+        else 
+            printf "FAILED: Expected \"NON_COMPLIANT\". Actual $actual_compliance. CI from file $ci\n"
+    fi
+done
+for ci in testUtil/compliantCIs/*
+do
+    cci=$(<$ci)
+    cci=${cci// /}
+    cci=${cci//$'\n'/}
+    cci=${cci//\"/\\\"}
+    event=${EVENT/<CI>/"$cci"}
+    > testUtil/output.txt
+    aws --profile $PROFILE lambda invoke --function-name $RULE_NAME --payload "$event" testUtil/output.txt > /dev/null
+    actual_compliance=$(<"testUtil/output.txt")
+    if [ "\"COMPLIANT\"" == $actual_compliance ]
+        then
+            printf "PASSED: Expected \"COMPLIANT\". Actual $actual_compliance. CI from file $ci\n"
+        else 
+            printf "FAILED: Expected \"COMPLIANT\". Actual $actual_compliance. CI from file $ci\n"
+    fi
+done

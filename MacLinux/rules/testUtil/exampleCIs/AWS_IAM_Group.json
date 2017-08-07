@@ -1,0 +1,54 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-11-06T17:46:39.415Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1478454399415",
+    "configurationItemMD5Hash": "ebed5291340f4f5149a34e23e049d4bd",
+    "arn": "arn:aws:iam::264683526309:group/MyTestGroup",
+    "resourceType": "AWS::IAM::Group",
+    "resourceId": "AGPAJNIBGFRSRIKL7VAD6",
+    "resourceName": "MyTestGroup",
+    "awsRegion": "global",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2016-11-06T17:42:15.000Z",
+    "tags": {},
+    "relatedEvents": [
+      "147a470a-dd7a-468d-85ce-53c95769005b"
+    ],
+    "relationships": [
+      {
+        "resourceType": "AWS::IAM::User",
+        "resourceId": "AIDAIJBD5UKDCJ3FVAIMU",
+        "resourceName": "aaronkhoo",
+        "relationshipName": "Contains User"
+      },
+      {
+        "resourceType": "AWS::IAM::User",
+        "resourceId": "AIDAIK37QSK4WVPTLQJVE",
+        "resourceName": "FalconConsoleUser",
+        "relationshipName": "Contains User"
+      },
+      {
+        "resourceType": "AWS::IAM::User",
+        "resourceId": "AIDAILEDWOGIPJFAKOJKW",
+        "resourceName": "aaronfre",
+        "relationshipName": "Contains User"
+      }
+    ],
+    "configuration": {
+      "path": "/",
+      "groupName": "MyTestGroup",
+      "groupId": "AGPAJNIBGFRSRIKL7VAD6",
+      "arn": "arn:aws:iam::264683526309:group/MyTestGroup",
+      "createDate": "2016-11-06T17:42:15.000Z",
+      "groupPolicyList": [],
+      "attachedManagedPolicies": [
+        {
+          "policyName": "AdministratorAccess",
+          "policyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+        }
+      ]
+    },
+    "supplementaryConfiguration": {}
+  }

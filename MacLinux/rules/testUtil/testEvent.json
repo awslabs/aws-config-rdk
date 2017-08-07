@@ -1,0 +1,6 @@
+{ 
+    "invokingEvent": "{\"configurationItem\":<CI>,\"messageType\":\"ConfigurationItemChangeNotification\"}",
+    "ruleParameters": "{<PARAMETERS>}",
+    "resultToken": "TESTMODE",
+    "eventLeftScope": false
+}

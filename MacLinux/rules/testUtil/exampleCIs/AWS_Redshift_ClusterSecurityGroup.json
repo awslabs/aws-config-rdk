@@ -1,0 +1,52 @@
+{
+    "version": "1.2",
+    "accountId": "786334434281",
+    "configurationItemCaptureTime": "2016-10-14T17:53:17.275Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1476467597275",
+    "configurationItemMD5Hash": "52761ea7b6dab5a0e22d079a3e85ad92",
+    "arn": "arn:aws:redshift:us-west-2:786334434281:securitygroup:default",
+    "resourceType": "AWS::Redshift::ClusterSecurityGroup",
+    "resourceId": "default",
+    "resourceName": "default",
+    "awsRegion": "us-west-2",
+    "availabilityZone": "Not Applicable",
+    "tags": {
+      "Tag1": "Value1",
+      "Tag2": "Value2"
+    },
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "clusterSecurityGroupName": "default",
+      "description": "default",
+      "eC2SecurityGroups": [
+        {
+          "status": "authorized",
+          "eC2SecurityGroupName": "default",
+          "eC2SecurityGroupOwnerId": "786334434281",
+          "tags": []
+        }
+      ],
+      "iPRanges": [
+        {
+          "status": "authorized",
+          "cIDRIP": "205.251.233.51/32",
+          "tags": []
+        }
+      ],
+      "tags": [
+        {
+          "key": "Tag1",
+          "value": "Value1"
+        },
+        {
+          "key": "Tag2",
+          "value": "Value2"
+        }
+      ]
+    },
+    "supplementaryConfiguration": {}
+  }
+
+

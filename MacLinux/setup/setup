@@ -1,0 +1,35 @@
+#!/bin/bash
+if [ $# -ne 1 ]
+    then
+        printf $'Usage: ./setup PROFILE\n'
+        exit 1
+fi
+PROFILE=$1
+
+ACCOUNT_ID=$(aws --profile $PROFILE sts get-caller-identity --output text --query 'Account')
+BUCKET_NAME="config-bucket-$ACCOUNT_ID"
+if aws --profile $PROFILE s3api get-bucket-location --bucket $BUCKET_NAME 2>&1 | grep -q 'not exist'
+    then
+        printf "Creating bucket $BUCKET_NAME\n"
+        aws s3 mb "s3://$BUCKET_NAME" > /dev/null
+fi
+
+if aws --profile $PROFILE iam get-role --role-name config-role 2>&1 | grep -q 'Role not found'
+    then
+        printf "Creating IAM role config-role\n"
+        aws --profile $PROFILE iam create-role --role-name config-role --assume-role-policy-document file://configRoleAssumeRolePolicyDoc.json > /dev/null
+fi
+aws --profile $PROFILE iam attach-role-policy --role-name config-role --policy-arn "arn:aws:iam::aws:policy/service-role/AWSConfigRole"
+DELIVERY_PERMISSIONS_POLICY=$(<"deliveryPermissionsPolicy.json")
+DELIVERY_PERMISSIONS_POLICY=${DELIVERY_PERMISSIONS_POLICY//ACCOUNTID/$ACCOUNT_ID}
+aws --profile $PROFILE iam put-role-policy --role-name config-role --policy-name ConfigDeliveryPermissions --policy-document "$DELIVERY_PERMISSIONS_POLICY"
+SLEEP_CYCLES=0
+while [ $SLEEP_CYCLES -ne 5 ]
+do 
+    printf "Waiting for IAM role to propagate\n"
+    sleep 8
+    SLEEP_CYCLES=$((SLEEP_CYCLES + 1))
+done
+aws --profile $PROFILE configservice put-configuration-recorder --configuration-recorder name=default,roleARN="arn:aws:iam::$ACCOUNT_ID:role/config-role" --recording-group '{"allSupported":true,"includeGlobalResourceTypes":true}'
+aws --profile $PROFILE configservice put-delivery-channel --delivery-channel '{"name": "default","s3BucketName": "'"$BUCKET_NAME"'","configSnapshotDeliveryProperties":{"deliveryFrequency": "Six_Hours"}}'
+printf "\nConfig setup complete\n"

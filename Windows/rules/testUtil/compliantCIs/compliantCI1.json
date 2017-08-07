@@ -1,0 +1,146 @@
+{
+    "version": "1.2",
+    "accountId": "681361479661",
+    "configurationItemCaptureTime": "2017-04-05T22:23:11.677Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1491430991677",
+    "configurationItemMD5Hash": "7d83283adb8b966945d43cee39c7419c",
+    "arn": "arn:aws:ec2:us-east-1:681361479661:instance/i-03402838daac1d611",
+    "resourceType": "AWS::EC2::Instance",
+    "resourceId": "i-03402838daac1d611",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "us-east-1b",
+    "resourceCreationTime": "2017-04-05T22:15:53.000Z",
+    "tags": {},
+    "relatedEvents": [
+      "d3d87c29-bde3-4380-a7de-810f379246cc"
+    ],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::NetworkInterface",
+        "resourceId": "eni-d055cfc4",
+        "relationshipName": "Contains NetworkInterface"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-fd215482",
+        "relationshipName": "Is associated with SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-1aaccc7f",
+        "relationshipName": "Is contained in Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Volume",
+        "resourceId": "vol-0c24aa343c564eda8",
+        "relationshipName": "Is attached to Volume"
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-79b3ea1e",
+        "relationshipName": "Is contained in Vpc"
+      }
+    ],
+    "configuration": {
+      "instanceId": "i-03402838daac1d611",
+      "imageId": "ami-22ce4934",
+      "state": {
+        "code": 16,
+        "name": "running"
+      },
+      "privateDnsName": "ip-172-31-74-239.ec2.internal",
+      "publicDnsName": "ec2-34-205-29-138.compute-1.amazonaws.com",
+      "stateTransitionReason": "",
+      "keyName": "ssm-key",
+      "amiLaunchIndex": 0,
+      "productCodes": [],
+      "instanceType": "t2.micro",
+      "launchTime": "2017-04-05T22:15:53.000Z",
+      "placement": {
+        "availabilityZone": "us-east-1b",
+        "groupName": "",
+        "tenancy": "default"
+      },
+      "monitoring": {
+        "state": "disabled"
+      },
+      "subnetId": "subnet-1aaccc7f",
+      "vpcId": "vpc-79b3ea1e",
+      "privateIpAddress": "172.31.74.239",
+      "publicIpAddress": "34.205.29.138",
+      "architecture": "x86_64",
+      "rootDeviceType": "ebs",
+      "rootDeviceName": "/dev/xvda",
+      "blockDeviceMappings": [
+        {
+          "deviceName": "/dev/xvda",
+          "ebs": {
+            "volumeId": "vol-0c24aa343c564eda8",
+            "status": "attached",
+            "attachTime": "2017-04-05T22:15:54.000Z",
+            "deleteOnTermination": true
+          }
+        }
+      ],
+      "virtualizationType": "hvm",
+      "clientToken": "UuPNx1491430552432",
+      "tags": [],
+      "securityGroups": [
+        {
+          "groupName": "launch-wizard-2",
+          "groupId": "sg-fd215482"
+        }
+      ],
+      "sourceDestCheck": true,
+      "hypervisor": "xen",
+      "networkInterfaces": [
+        {
+          "networkInterfaceId": "eni-d055cfc4",
+          "subnetId": "subnet-1aaccc7f",
+          "vpcId": "vpc-79b3ea1e",
+          "description": "",
+          "ownerId": "681361479661",
+          "status": "in-use",
+          "macAddress": "02:3e:c3:cb:e9:da",
+          "privateIpAddress": "172.31.74.239",
+          "privateDnsName": "ip-172-31-74-239.ec2.internal",
+          "sourceDestCheck": true,
+          "groups": [
+            {
+              "groupName": "launch-wizard-2",
+              "groupId": "sg-fd215482"
+            }
+          ],
+          "attachment": {
+            "attachmentId": "eni-attach-e8d5c971",
+            "deviceIndex": 0,
+            "status": "attached",
+            "attachTime": "2017-04-05T22:15:53.000Z",
+            "deleteOnTermination": true
+          },
+          "association": {
+            "publicIp": "34.205.29.138",
+            "publicDnsName": "ec2-34-205-29-138.compute-1.amazonaws.com",
+            "ipOwnerId": "amazon"
+          },
+          "privateIpAddresses": [
+            {
+              "privateIpAddress": "172.31.74.239",
+              "privateDnsName": "ip-172-31-74-239.ec2.internal",
+              "primary": true,
+              "association": {
+                "publicIp": "34.205.29.138",
+                "publicDnsName": "ec2-34-205-29-138.compute-1.amazonaws.com",
+                "ipOwnerId": "amazon"
+              }
+            }
+          ],
+          "ipv6Addresses": []
+        }
+      ],
+      "ebsOptimized": true,
+      "enaSupport": true
+    },
+    "supplementaryConfiguration": {}
+  }

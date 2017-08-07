@@ -1,0 +1,7 @@
+{ 
+    "invokingEvent": "{\"configurationItem\":CI_PLACEHOLDER,\"messageType\":\"ConfigurationItemChangeNotification\"}",
+    "ruleParameters": "{RULE_PARAMETERS}",
+    "resultToken": "TESTMODE",
+    "eventLeftScope": false
+}
+

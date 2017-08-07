@@ -1,0 +1,19 @@
+{
+	"ConfigRuleName": <RULE_NAME>,
+	"Description": "custom rule",
+	"Scope": {
+		"ComplianceResourceTypes": <RESOURCE_TYPES>
+	},
+	"Source": {
+		"Owner": "CUSTOM_LAMBDA",
+		"SourceIdentifier": <LAMBDA_ARN>,
+		"SourceDetails": [{
+			"EventSource": "aws.config",
+			"MessageType": "ConfigurationItemChangeNotification"
+		}, {
+			"EventSource": "aws.config",
+			"MessageType": "OversizedConfigurationItemChangeNotification"
+		}]
+	},
+	"InputParameters": "{<PARAMETERS>}"
+}

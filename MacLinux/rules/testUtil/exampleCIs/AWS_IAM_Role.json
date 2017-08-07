@@ -1,0 +1,68 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-11-06T03:41:52.719Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1478403712719",
+    "configurationItemMD5Hash": "91a47a3c0184f9b29cfb3e354ff887dd",
+    "arn": "arn:aws:iam::264683526309:role/service-role/config-role-ezcrc2",
+    "resourceType": "AWS::IAM::Role",
+    "resourceId": "AROAIY7FPU7KRV7IZBNPC",
+    "resourceName": "config-role-ezcrc2",
+    "awsRegion": "global",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2016-03-10T23:52:10.000Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::IAM::Policy",
+        "resourceId": "ANPAIJWML3NX3NT6UAGO4",
+        "resourceName": "ELB-policy",
+        "relationshipName": "Is attached to CustomerManagedPolicy"
+      },
+      {
+        "resourceType": "AWS::IAM::Policy",
+        "resourceId": "ANPAILY3GNWH4C77WJ6QM",
+        "resourceName": "config-role-ezcrc2-AWSConfigDeliveryPermissions-us-west-2",
+        "relationshipName": "Is attached to CustomerManagedPolicy"
+      }
+    ],
+    "configuration": {
+      "path": "/service-role/",
+      "roleName": "config-role-ezcrc2",
+      "roleId": "AROAIY7FPU7KRV7IZBNPC",
+      "arn": "arn:aws:iam::264683526309:role/service-role/config-role-ezcrc2",
+      "createDate": "2016-03-10T23:52:10.000Z",
+      "assumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+              "Service": "config.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "instanceProfileList": [],
+      "rolePolicyList": [],
+      "attachedManagedPolicies": [
+        {
+          "policyName": "ELB-policy",
+          "policyArn": "arn:aws:iam::264683526309:policy/ELB-policy"
+        },
+        {
+          "policyName": "config-role-ezcrc2-AWSConfigDeliveryPermissions-us-west-2",
+          "policyArn": "arn:aws:iam::264683526309:policy/service-role/config-role-ezcrc2-AWSConfigDeliveryPermissions-us-west-2"
+        },
+        {
+          "policyName": "AWSConfigRole",
+          "policyArn": "arn:aws:iam::aws:policy/service-role/AWSConfigRole"
+        }
+      ]
+    },
+    "supplementaryConfiguration": {}
+  }
