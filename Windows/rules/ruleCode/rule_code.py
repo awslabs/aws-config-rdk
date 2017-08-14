@@ -1,23 +1,27 @@
 #
 # This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
 #
+# RULE DESCRIPTION
 # This example rule checks that EC2 instances are EBS optimized (optionally checks that ebsOptimized field is
 # equal to value passed in parameter)
 #
-# Trigger Type: Change Triggered
-# Scope of Changes: AWS::EC2::Instance
+# RULE DETAILS
+# Trigger Type (Change Triggered or Periodic: Change Triggered
+# If Changed Triggered, add Scope of Changes e.g. ["AWS::EC2::Instance"] or ["AWS::EC2::Instance","AWS::EC2::InternetGateway"]
+# If Periodic, add Scope of Changes e.g. ["AWS::::Account"] 
+APPLICABLE_RESOURCES = ["AWS::EC2::Instance"]
+
 # Required Parameters: None
 # Optional Parameter: Parameter1 
 # Optional Parameter value example : True
 
 import json
 import boto3
+
+# This rule needs to be uploaded with rule_util.py. It is automatically done when using the RDK.
 from rule_util import *
 
 aws_config = boto3.client('config')
-
-# CHANGES NEEDED: Replace with applicable resources for your rule
-APPLICABLE_RESOURCES = ["AWS::EC2::Instance"]
 
 # CHANGED NEEDED
 # Modify, add or remove rule parameters in rdk/rules/ruleCode/ruleParameters.txt

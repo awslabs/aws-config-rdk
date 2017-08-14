@@ -2,6 +2,7 @@
 if [ $# -ne 1 ]
     then
         printf $'Usage: ./setup PROFILE\n'
+		printf $'Use "default" for PROFILE if you want to use the default profile'
         exit 1
 fi
 PROFILE=$1
@@ -24,7 +25,7 @@ DELIVERY_PERMISSIONS_POLICY=$(<"deliveryPermissionsPolicy.json")
 DELIVERY_PERMISSIONS_POLICY=${DELIVERY_PERMISSIONS_POLICY//ACCOUNTID/$ACCOUNT_ID}
 aws --profile $PROFILE iam put-role-policy --role-name config-role --policy-name ConfigDeliveryPermissions --policy-document "$DELIVERY_PERMISSIONS_POLICY"
 SLEEP_CYCLES=0
-while [ $SLEEP_CYCLES -ne 5 ]
+while [ $SLEEP_CYCLES -ne 2 ]
 do 
     printf "Waiting for IAM role to propagate\n"
     sleep 8
@@ -33,3 +34,6 @@ done
 aws --profile $PROFILE configservice put-configuration-recorder --configuration-recorder name=default,roleARN="arn:aws:iam::$ACCOUNT_ID:role/config-role" --recording-group '{"allSupported":true,"includeGlobalResourceTypes":true}'
 aws --profile $PROFILE configservice put-delivery-channel --delivery-channel '{"name": "default","s3BucketName": "'"$BUCKET_NAME"'","configSnapshotDeliveryProperties":{"deliveryFrequency": "Six_Hours"}}'
 printf "\nConfig setup complete\n"
+aws --profile $PROFILE configservice start-configuration-recorder --configuration-recorder-name default
+printf "Config Service is ON\n"
+
