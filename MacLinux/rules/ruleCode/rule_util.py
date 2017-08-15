@@ -37,6 +37,7 @@ def convert_api_configuration(configurationItem):
 def get_configuration_item(invokingEvent):
     check_defined(invokingEvent, 'invokingEvent')
     if is_oversized_changed_notification(invokingEvent['messageType']):
+        print("Debug: the configuration item is oversized, you may need to change CodeUtil.py")
         configurationItemSummary = check_defined(invokingEvent['configurationItemSummary'], 'configurationItemSummary')
         return get_configuration(configurationItemSummary['resourceType'], configurationItemSummary['resourceId'], configurationItemSummary['configurationItemCaptureTime'])
     else:
@@ -49,4 +50,5 @@ def is_applicable(configurationItem, event):
     status = configurationItem['configurationItemStatus']
     eventLeftScope = event['eventLeftScope']
     return (status == 'OK' or status == 'ResourceDiscovered') and eventLeftScope == False
+
 

@@ -11,7 +11,8 @@ or 'test' directory. If you already have Config set up (recording resources),
 skip setup and go to rules to author rule. 
 
 Setup
- - Usage: setup.cmd
+ - Usage: setup.cmd PROFILE
+ - Where PROFILE is your CLI profile, e.g. default or other custom profile of yours 
  - Sets up config by creating Config resources necessary to create Config
    rules. Needs to be run for each region that rules are created for.
  - Config resources:
@@ -22,10 +23,9 @@ Setup
 
 
 Rules
- - Usage: createRule.cmd RULE_NAME APPLICABLE_RESOURCE_TYPES
- - Example Usage: createRule.cmd someEc2Rule "AWS::EC2::Instance,AWS::EC2::Subnet,AWS::EC2::VPC"
-     Quotes are necessary because of commas. Quotes not necessary if only one
-     applicable resource type
+ - Usage: createRule.cmd PROFILE RULE_NAME APPLICABLE_RESOURCE_TYPES
+ - Example Usage: createRule.cmd myCLIprofile someEc2Rule "AWS::EC2::Instance,AWS::EC2::Subnet,AWS::EC2::VPC"
+     Quotes are necessary because of commas. Quotes not necessary if only one applicable resource type
  - Creates Lambda function with custom rule code, Config Rule resource, IAM
    role for Config to invoke Lambda function, and adds permissions on Lambda
    function for Config to invoke. Script is idempotent so can be reused to
@@ -43,7 +43,7 @@ Rules
      Config Rule     - RULE_NAME
      IAM Role        - config_lambda_basic_execution
 
-Test
+Test // DO NOT USE, STILL BETA
  - Usage: test.cmd RULE_NAME
  - Tests created lambda function by invoking it with Configuration Items from
    rules/testUtil/compliantCIs and rules/testUtil/noncompliantCIs directories. Expects lambda

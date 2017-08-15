@@ -2,7 +2,9 @@
 # ZipFile name = $RULE_NAME.zip
 if [ $# -ne 3 ]
     then
-        printf $'Usage: ./createRule PROFILE RULE_NAME APPLICABLE_RESOURCE_TYPES(eg. AWS::EC2::Instance,AWS::EC2::VPC)\n'
+        printf $'Usage: ./createRule PROFILE RULE_NAME APPLICABLE_RESOURCE_TYPES\n'
+		printf $'Example: ./createRule myCLIprofile requiredTagsRule "AWS::EC2::Instance,AWS::EC2::VPC"\n'
+		printf $'Use "default" for PROFILE if you want to use the default profile\n'
         exit 1
 fi
 PROFILE=$1

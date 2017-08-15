@@ -11,7 +11,8 @@ or 'test' directory. If you already have Config set up (recording resources),
 skip setup and go to rules to author rule. 
 
 Setup
- - Usage: ./setup
+ - Usage: ./setup PROFILE
+ - Where PROFILE is your CLI profile, e.g. default or other custom profile of yours 
  - Sets up config by creating Config resources necessary to create Config
    rules. Needs to be run for each region that rules are created for.
  - Config resources:
@@ -45,7 +46,7 @@ Rules
 - Tha lambda function $RULE_NAME.zip needs to be in the same directory as the createRule script
 - Create $RULE_NAME.zip from files in $RULE_NAME directory
 
-Test
+Test // DO NOT USE, STILL BETA
  - Usage: ./test PROFILE RULE_NAME
  - Tests created lambda function by invoking it with Configuration Items from
    rules/testUtil/compliantCIs and rules/testUtil/noncompliantCIs directories. Expects lambda
