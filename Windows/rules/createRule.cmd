@@ -17,7 +17,7 @@ SET RESOURCE_TYPES=%3
 SET RESOURCE_TYPES=%RESOURCE_TYPES:"=%
 SET RESOURCE_TYPES=%RESOURCE_TYPES:,=","%
 SET RESOURCE_TYPES=["!RESOURCE_TYPES!"]
-CScript  ruleUtil\executeZip.vbs  "%CD%\ruleCode"  "%CD%\lambda.zip" > NUL
+CScript  ruleUtil\executeZip.vbs  "%CD%\ruleCode"  "%CD%\%RULE_NAME%.zip" > NUL
 aws --profile %PROFILE% iam get-role --role-name config_lambda_basic_execution > NUL 2>&1
 if errorlevel 1 (
    ECHO Creating/Updating IAM role config_lambda_basic_execution
