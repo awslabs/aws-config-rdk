@@ -12,7 +12,7 @@ BUCKET_NAME="config-bucket-$ACCOUNT_ID"
 if aws --profile $PROFILE s3api get-bucket-location --bucket $BUCKET_NAME 2>&1 | grep -q 'not exist'
     then
         printf "Creating bucket $BUCKET_NAME\n"
-        aws s3 mb "s3://$BUCKET_NAME" > /dev/null
+        aws --profile $PROFILE s3 mb "s3://$BUCKET_NAME" > /dev/null
 fi
 
 if aws --profile $PROFILE iam get-role --role-name config-role 2>&1 | grep -q 'Role not found'
