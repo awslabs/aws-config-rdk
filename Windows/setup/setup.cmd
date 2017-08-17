@@ -17,7 +17,7 @@ SET BUCKET_NAME=config-bucket-!ACCOUNT_ID!
 aws --profile %PROFILE% s3api get-bucket-location --bucket !BUCKET_NAME! > NUL 2>&1
 if errorlevel 1 (
    ECHO Creating bucket !BUCKET_NAME!
-   aws s3 mb "s3://!BUCKET_NAME!" > NUL 
+   aws --profile %PROFILE% s3 mb "s3://!BUCKET_NAME!" > NUL 
 )
 ECHO Creating/Updating IAM role config-role
 aws  --profile %PROFILE% iam get-role --role-name config-role > NUL 2>&1
