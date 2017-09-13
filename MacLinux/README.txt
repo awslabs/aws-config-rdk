@@ -46,7 +46,7 @@ Rules
 - Tha lambda function $RULE_NAME.zip needs to be in the same directory as the createRule script
 - Create $RULE_NAME.zip from files in $RULE_NAME directory
 
-Test // DO NOT USE, STILL BETA
+Test 
  - Usage: ./test PROFILE RULE_NAME
  - Tests created lambda function by invoking it with Configuration Items from
    rules/testUtil/compliantCIs and rules/testUtil/noncompliantCIs directories. Expects lambda

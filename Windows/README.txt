@@ -43,7 +43,7 @@ Rules
      Config Rule     - RULE_NAME
      IAM Role        - config_lambda_basic_execution
 
-Test // DO NOT USE, STILL BETA
+Test 
  - Usage: test.cmd RULE_NAME
  - Tests created lambda function by invoking it with Configuration Items from
    rules/testUtil/compliantCIs and rules/testUtil/noncompliantCIs directories. Expects lambda
