@@ -23,18 +23,18 @@ Setup
 
 
 Rules
- - Usage: ./createRule PROFILE RULE_NAME APPLICABLE_RESOURCE_TYPES
- - Example Usage: ./createRule someEc2Rule "AWS::EC2::Instance,AWS::EC2::Subnet,AWS::EC2::VPC"
+ - Usage: ./createRule PROFILE RUNTIME RULE_NAME APPLICABLE_RESOURCE_TYPES
+ - Example Usage: ./createRule myCLIProfile nodejs someEc2Rule "AWS::EC2::Instance,AWS::EC2::Subnet,AWS::EC2::VPC"
      Quotes are necessary because of commas. Quotes not necessary if only one
      applicable resource type
  - Creates Lambda function with custom rule code, Config Rule resource, IAM
    role for Config to invoke Lambda function, and adds permissions on Lambda
    function for Config to invoke. Script is idempotent so can be reused to
-   update rule code. Author rule in rules/ruleCode/rule_code.py. Currently,
-   there is an example "EC2_Instance_EBS_Optimized" rule in
-   rule_code.py. Replace with your own rule code. Make sure resource types are 
-   consistent between rule_code.py and createRule.cmd script parameters.
-   Otherwise, your rule will return NOT_APPLICABLE. rules/ruleCode/rule_util.py 
+   update rule code. Author rule in rules/ruleCode/<RUNTIME>/rule_code.(py|js). Currently,
+   there is an example “DesiredInstanceType” rule in
+   rule_code.(py|js). Replace with your own rule code. Make sure resource types are 
+   consistent between rule_code.(py|js) and createRule.cmd script parameters.
+   Otherwise, your rule will return NOT_APPLICABLE. rules/ruleCode/<RUNTIME>/rule_util.(py|js) 
    handles the boring parts of a rule; it should not need to be modified. 
    If your rule uses parameters, see below 'Adding Rule Parameters' section. 
    Script may output some "already exists" messages if script is run multiple times, 
@@ -51,7 +51,7 @@ Test
  - Tests created lambda function by invoking it with Configuration Items from
    rules/testUtil/compliantCIs and rules/testUtil/noncompliantCIs directories. Expects lambda
    function to return corresponding compliance. Currently has EC2 instance CIs
-   to test for the existing "EC2_Instance_EBS_Optimized" rule. Look in rules/testUtil/exampleCIs
+   to test for the existing “DesiredInstanceType” rule. Look in rules/testUtil/exampleCIs
    to find Configuration Items for the resource that you are authoring a rule for, 
    modify the CI to represent a compliant or noncompliant resource, and copy it into 
    the compliantCIs or noncompliantCIs directory. Another option is to actually
@@ -62,5 +62,5 @@ Test
 Adding Rule Parameters
  - If your custom rule has parameters, add them in rules/ruleCode/ruleParameters.txt
    Format rule parameters like "parameter1Key":"parameter1Value","parameter2Key":"parameter2Value"
-   and keep them on a single line in the file. Access them in rules/ruleCode/rule_code.py
+   and keep them on a single line in the file. Access them in rules/ruleCode/<RUNTIME>/rule_code.(py|js)
    with rule_parameters['parameter1Key']
