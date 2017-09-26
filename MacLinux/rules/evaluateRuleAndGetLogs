@@ -1,0 +1,23 @@
+#!/bin/bash
+if [ $# -ne 2 ]
+    then
+        printf $"Usage: ./evaluateRuleAndGetLogs PROFILE RULE_NAME\n"
+        printf $'Example: ./evaluateRuleAndGetLogs myCLIprofile desiredInstanceTypeRule'
+        printf $'Use "default" for PROFILE if you want to use the default profile'
+        exit 1
+fi
+PROFILE=$1
+RULE_NAME=$2
+ECHO Evaluating rule $RULE_NAME
+aws --profile $PROFILE configservice start-config-rules-evaluation --config-rule-name $RULE_NAME
+SLEEP_CYCLES=0
+while [ $SLEEP_CYCLES -ne 4 ]
+do 
+    printf "Waiting for rule to be evaluated\n"
+    sleep 3
+    SLEEP_CYCLES=$((SLEEP_CYCLES + 1))
+done
+LOG_STREAM_NAME_OUTPUT=$(aws --profile $PROFILE logs describe-log-streams --log-group-name /aws/lambda/$RULE_NAME --order-by LastEventTime --descending --max-items 1 --query 'logStreams[*].[logStreamName]' --output text)
+LOG_STREAM_NAME=(${LOG_STREAM_NAME_OUTPUT/// })
+ECHO $LOG_STREAM_NAME
+aws --profile $PROFILE logs get-log-events --log-group-name /aws/lambda/$RULE_NAME --log-stream-name $LOG_STREAM_NAME

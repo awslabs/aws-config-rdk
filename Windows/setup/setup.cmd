@@ -6,7 +6,7 @@ if "%~3"=="" goto args_count_wrong
 
 :args_count_wrong
 ECHO Usage: setup.cmd PROFILE
-ECHO example: setup.cmd requiredTagsRule "AWS::EC2::Instance,AWS::EC2::VPC"
+ECHO example: setup.cmd PROFILE
 ECHO Use "default" for PROFILE if you want to use the default profile
 Exit /B 1
 

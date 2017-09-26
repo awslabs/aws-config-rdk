@@ -6,7 +6,7 @@ if "%~6"=="" goto args_count_wrong
 
 :args_count_wrong
 ECHO Usage: createRule.cmd PROFILE RUNTIME RULE_NAME APPLICABLE_RESOURCE_TYPES 
-ECHO example: createRule.cmd myCLIprofile nodejs requiredTagsRule "AWS::EC2::Instance,AWS::EC2::VPC"
+ECHO example: createRule.cmd myCLIprofile nodejs desiredInstanceTypeRule "AWS::EC2::Instance,AWS::EC2::VPC"
 ECHO Use "default" for PROFILE if you want to use the default profile
 Exit /B 1
 

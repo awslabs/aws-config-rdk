@@ -15,7 +15,7 @@ Setup
  - Where PROFILE is your CLI profile, e.g. default or other custom profile of yours 
  - Sets up config by creating Config resources necessary to create Config
    rules. Needs to be run for each region that rules are created for.
- - Config resources:
+ - Config resources created by script:
      S3 bucket name                - config-bucket-<ACCOUNT_ID>
      IAM Role                      - config-role
      Config Configuration Recorder - default
@@ -25,42 +25,45 @@ Setup
 Rules
  - Usage: ./createRule PROFILE RUNTIME RULE_NAME APPLICABLE_RESOURCE_TYPES
  - Example Usage: ./createRule myCLIProfile nodejs someEc2Rule "AWS::EC2::Instance,AWS::EC2::Subnet,AWS::EC2::VPC"
-     Quotes are necessary because of commas. Quotes not necessary if only one
-     applicable resource type
- - Creates Lambda function with custom rule code, Config Rule resource, IAM
-   role for Config to invoke Lambda function, and adds permissions on Lambda
-   function for Config to invoke. Script is idempotent so can be reused to
-   update rule code. Author rule in rules/ruleCode/<RUNTIME>/rule_code.(py|js). Currently,
-   there is an example “DesiredInstanceType” rule in
-   rule_code.(py|js). Replace with your own rule code. Make sure resource types are 
-   consistent between rule_code.(py|js) and createRule.cmd script parameters.
-   Otherwise, your rule will return NOT_APPLICABLE. rules/ruleCode/<RUNTIME>/rule_util.(py|js) 
-   handles the boring parts of a rule; it should not need to be modified. 
-   If your rule uses parameters, see below 'Adding Rule Parameters' section. 
-   Script may output some "already exists" messages if script is run multiple times, 
-   but should not be a real problem as script is idempotent.
- - Rule resources:
+ - Creates Config Rule and Lambda function. 
+   Author rule in rules/ruleCode/{nodejs|python}/rule_code.{js|py}.
+   You can ignore rule_util.{js|py} It is just boilerplate/library code for the rule.
+   There is an example “DesiredInstanceType” rule already written.
+   Add rule parameters in rules/ruleCode/ruleParameters.txt
+ - Rule resources created by script:
      Lambda function - RULE_NAME
      Config Rule     - RULE_NAME
      IAM Role        - config_lambda_basic_execution
-- Tha lambda function $RULE_NAME.zip needs to be in the same directory as the createRule script
-- Create $RULE_NAME.zip from files in $RULE_NAME directory
+- The lambda function $RULE_NAME.zip needs to be in the same directory as the createRule script
+
+At this point, you have written and created a rule that maybe works, which you need to test. 
+Remember that rules evaluate against certain resources, so you need to create those
+resources in your account. For example, if you are writing an EC2 rule, create an ec2
+instance either through the CLI or in the AWS console. Make sure it is created in the 
+same region as your rule. Now, evaluate the rule and check the logs to make sure it is behaving 
+correctly
+
+EvaluateRulesAndGetLogs
+ - Usage: ./evaluateRuleAndGetLogs PROFILE RULE_NAME
+ - Example Usage: ./evaluateRuleAndGetLogs myCLIProfile someEc2Rule
+ - This script will call StartConfigRulesEvaluation and retrieve the CloudWatch 
+   logs from your created Lambda function. Alternatively, you could do this through the console.
+   This will not work if you have not created a resource that is in scope of your rule.
 
 Test 
  - Usage: ./test PROFILE RULE_NAME
- - Tests created lambda function by invoking it with Configuration Items from
-   rules/testUtil/compliantCIs and rules/testUtil/noncompliantCIs directories. Expects lambda
-   function to return corresponding compliance. Currently has EC2 instance CIs
-   to test for the existing “DesiredInstanceType” rule. Look in rules/testUtil/exampleCIs
-   to find Configuration Items for the resource that you are authoring a rule for, 
-   modify the CI to represent a compliant or noncompliant resource, and copy it into 
-   the compliantCIs or noncompliantCIs directory. Another option is to actually
-   create the AWS resource, wait for a real Configuration Item, and copy it from
-   the Config console or from your S3 bucket. If rule contains parameters, see 
-   below 'Adding Rule Parameters' section. 
+ - Example Usage: ./test myCLIProfile someEc2Rule
+ - This step is completely optional, for if you want to test your rule 
+   against multiple compliant/noncompliant test cases. 
+   Create test cases by placing Configuration Items of “compliant” resources 
+   in the test/testUtil/compliantCIs directory and “noncompliant” resources in
+   test/testUtil/noncompliantCIs. The script will invoke the Lambda function 
+   for these resources and report back whether the rule evaluated the expected 
+   compliance for these resources.
+   Create the test case CIs by modifying the example CIs in test/testUtil/exampleCIs
+   or get them from the Config console.
 
-Adding Rule Parameters
+Rule Parameter guidelines
  - If your custom rule has parameters, add them in rules/ruleCode/ruleParameters.txt
    Format rule parameters like "parameter1Key":"parameter1Value","parameter2Key":"parameter2Value"
-   and keep them on a single line in the file. Access them in rules/ruleCode/<RUNTIME>/rule_code.(py|js)
-   with rule_parameters['parameter1Key']
+   and keep them on a single line in the file. 

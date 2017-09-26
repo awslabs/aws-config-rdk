@@ -55,7 +55,7 @@
       "keyName": "ssm-key",
       "amiLaunchIndex": 0,
       "productCodes": [],
-      "instanceType": "t2.micro",
+      "instanceType": "t4.micro",
       "launchTime": "2017-04-05T22:15:53.000Z",
       "placement": {
         "availabilityZone": "us-east-1b",

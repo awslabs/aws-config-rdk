@@ -2,6 +2,8 @@
 if [ $# -ne 2 ]
     then
         printf $"Usage: ./test PROFILE RULE_NAME\n"
+        printf $'Example: ./test myCLIprofile desiredInstanceTypeRule'
+        printf $'Use "default" for PROFILE if you want to use the default profile'
         exit 1
 fi
 PROFILE=$1

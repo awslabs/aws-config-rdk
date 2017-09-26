@@ -4,7 +4,9 @@ if "%~1"=="" goto args_count_wrong
 if "%~2"=="" goto args_count_correct
 
 :args_count_wrong
-ECHO Usage: test.cmd RULE_NAME
+ECHO Usage: test.cmd PROFILE RULE_NAME
+ECHO example: test.cmd myCLIprofile desiredInstanceTypeRule "AWS::EC2::Instance,AWS::EC2::VPC"
+ECHO Use "default" for PROFILE if you want to use the default profile
 Exit /B 1
 
 :args_count_correct
@@ -41,7 +43,7 @@ GOTO:EOF
       SET "EVENT=!EVENT:\=\\!"
       SET "EVENT=!EVENT:CI_PLACEHOLDER=%%~s!"
       break>testUtil/output.txt
-      aws lambda invoke --function-name !RULE_NAME! --payload "!EVENT!" testUtil/output.txt > NUL
+      aws --profile %PROFILE% lambda invoke --function-name !RULE_NAME! --payload "!EVENT!" testUtil/output.txt > NUL
       SET /p ACTUAL_COMPLIANCE=<testUtil/output.txt
       if !ACTUAL_COMPLIANCE!==!EXPECTED_COMPLIANCE! (
          ECHO PASSED: Expected !EXPECTED_COMPLIANCE!. Actual !ACTUAL_COMPLIANCE!. CI from file !FILE!
