@@ -14,7 +14,7 @@ def parameters_exist(parameters):
 def check_defined(reference, referenceName):
     if not reference:
         raise Exception('Error: ', referenceName, 'is not defined')
-    return reference    
+    return reference
 
 # Check whether the message is OversizedConfigurationItemChangeNotification or not
 def is_oversized_changed_notification(messageType):
@@ -43,7 +43,7 @@ def convert_api_configuration(configurationItem):
     configurationItem['configuration'] = json.loads(configurationItem['configuration'])
     if 'relationships' in configurationItem:
         for i in range(len(configurationItem['relationships'])):
-            configurationItem['relationships'][i]['name'] = configurationItem['relationships'][i]['relationshipName']      
+            configurationItem['relationships'][i]['name'] = configurationItem['relationships'][i]['relationshipName']
     return configurationItem
 
 # Based on the type of message get the configuration item either from configurationItem in the invoking event or using the getResourceConfigHistiry API in getConfiguration function.
@@ -53,7 +53,7 @@ def get_configuration_item(invokingEvent):
         configurationItemSummary = check_defined(invokingEvent['configurationItemSummary'], 'configurationItemSummary')
         return get_configuration(configurationItemSummary['resourceType'], configurationItemSummary['resourceId'], configurationItemSummary['configurationItemCaptureTime'])
     else:
-        return check_defined(invokingEvent['configurationItem'], 'configurationItem')    
+        return check_defined(invokingEvent['configurationItem'], 'configurationItem')
 
 # Check whether the resource has been deleted. If it has, then the evaluation is unnecessary.
 def is_applicable(configurationItem, event):
@@ -68,7 +68,9 @@ def rule_handler(lambda_handler):
     def handler_wrapper(event, context):
         check_defined(event, 'event')
         invokingEvent = json.loads(event['invokingEvent'])
-        ruleParameters = json.loads(event['ruleParameters'])
+        rule_parameters = {}
+        if 'ruleParameters' in event:
+            rule_parameters = json.loads(event['ruleParameters'])
         configurationItem = get_configuration_item(invokingEvent)
         invokingEvent['configurationItem'] = configurationItem
         event['invokingEvent'] = json.dumps(invokingEvent)
@@ -88,10 +90,8 @@ def rule_handler(lambda_handler):
         if resultToken == 'TESTMODE':
             # Used solely for RDK test to skip actual put_evaluation API call
             testMode = True
-        # Invoke the Config API to report the result of the evaluation    
+        # Invoke the Config API to report the result of the evaluation
         aws_config.put_evaluations(Evaluations=evaluations, ResultToken=resultToken, TestMode=testMode)
         # Used solely for RDK test to be able to test Lambda function
         return compliance
     return handler_wrapper
-
-
