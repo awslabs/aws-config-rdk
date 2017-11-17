@@ -9,7 +9,7 @@ fi
 PROFILE=$1
 RULE_NAME=$2
 EVENT=$(<"testUtil/testEvent.json")
-PARAMETERS=$(<"ruleCode/ruleParameters.txt")
+PARAMETERS=$(<"../rules/ruleCode/ruleParameters.txt")
 PARAMETERS=${PARAMETERS//\"/\\\"}
 EVENT=${EVENT//<PARAMETERS>/$PARAMETERS}
 for ci in testUtil/noncompliantCIs/*
