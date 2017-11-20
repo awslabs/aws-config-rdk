@@ -32,7 +32,7 @@ fi
 RESOURCE_TYPES=${RESOURCE_TYPES//\"/}
 RESOURCE_TYPES=${RESOURCE_TYPES//,/\",\"}
 RESOURCE_TYPES="[\"$RESOURCE_TYPES\"]"
-zip -j $RULE_NAME.zip $CODE_FILE > /dev/null
+zip -j $RULE_NAME.zip $CODE_FILE ruleCode/python/rule_util.py > /dev/null
 if aws --profile $PROFILE iam get-role --role-name config_lambda_basic_execution 2>&1 | grep -q 'Role not found'
     then
         printf "Creating IAM role config_lambda_basic_execution\n"
