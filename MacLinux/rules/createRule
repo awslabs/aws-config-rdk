@@ -1,16 +1,24 @@
 #!/bin/bash 
 # ZipFile name = $RULE_NAME.zip
-if [ $# -ne 4 ]
+if [ $# -ne 5 ]
     then
-        printf $'Usage: ./createRule PROFILE RUNTIME RULE_NAME APPLICABLE_RESOURCE_TYPES\n'
-		printf $'Example: ./createRule myCLIprofile nodejs desiredInstanceTypeRule "AWS::EC2::Instance,AWS::EC2::VPC"\n'
+        printf $'Usage: ./createRule PROFILE RUNTIME RULE_NAME CODE_FILE APPLICABLE_RESOURCE_TYPES\n'
+		printf $'Example: ./createRule myCLIprofile nodejs desiredInstanceTypeRule codefile "AWS::EC2::Instance,AWS::EC2::VPC"\n'
         printf $'Use "default" for PROFILE if you want to use the default profile'
+        echo
         exit 1
 fi
 PROFILE=$1
 RUNTIME=$2
 RULE_NAME=$3
-RESOURCE_TYPES=$4
+CODE_FILE=$4
+echo "CODEFILE" $CODE_FILE
+
+MODULE_NAME=$(basename "$CODE_FILE")
+MODULE_NAME="${MODULE_NAME%.*}"
+echo "MODULE is " $MODULE_NAME
+
+RESOURCE_TYPES=$5
 if [ "$RUNTIME" = 'nodejs' ]
     then
         LAMBDA_RUNTIME='nodejs6.10'
@@ -24,7 +32,7 @@ fi
 RESOURCE_TYPES=${RESOURCE_TYPES//\"/}
 RESOURCE_TYPES=${RESOURCE_TYPES//,/\",\"}
 RESOURCE_TYPES="[\"$RESOURCE_TYPES\"]"
-zip -j $RULE_NAME.zip ruleCode/$RUNTIME/* > /dev/null
+zip -j $RULE_NAME.zip $CODE_FILE > /dev/null
 if aws --profile $PROFILE iam get-role --role-name config_lambda_basic_execution 2>&1 | grep -q 'Role not found'
     then
         printf "Creating IAM role config_lambda_basic_execution\n"
@@ -41,7 +49,7 @@ if aws --profile $PROFILE iam get-role --role-name config_lambda_basic_execution
 fi
 LAMBDA_ROLE_ARN=$(aws --profile $PROFILE iam get-role --role-name config_lambda_basic_execution --query Role.Arn --output text)
 printf "Creating/Updating Lambda function $RULE_NAME\n"
-aws --profile $PROFILE lambda create-function --function-name $RULE_NAME --zip-file fileb://$RULE_NAME.zip --runtime $LAMBDA_RUNTIME --role $LAMBDA_ROLE_ARN --handler rule_code.lambda_handler > /dev/null
+aws --profile $PROFILE lambda create-function --function-name $RULE_NAME --zip-file fileb://$RULE_NAME.zip --runtime $LAMBDA_RUNTIME --role $LAMBDA_ROLE_ARN --handler $MODULE_NAME.lambda_handler > /dev/null
 aws --profile $PROFILE lambda update-function-code --function-name $RULE_NAME --zip-file fileb://$RULE_NAME.zip > /dev/null
 aws --profile $PROFILE lambda add-permission --function-name $RULE_NAME --statement-id 1 --principal config.amazonaws.com --action lambda:InvokeFunction > /dev/null 2>&1
 LAMBDA_ARN=$(aws --profile $PROFILE lambda get-function --function-name $RULE_NAME --query Configuration.FunctionArn --output text)

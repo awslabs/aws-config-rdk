@@ -36,6 +36,11 @@ Rules
      IAM Role        - config_lambda_basic_execution
 - The lambda function $RULE_NAME.zip needs to be in the same directory as the createRule script
 
+
+Example:
+./createRule default python s3_ver ./pythonlambdas/S3-VersioningEnabled.py "AWS::S3::Bucket"
+
+
 At this point, you have written and created a rule that maybe works, which you need to test. 
 Remember that rules evaluate against certain resources, so you need to create those
 resources in your account. For example, if you are writing an EC2 rule, create an ec2
