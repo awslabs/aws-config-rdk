@@ -1,0 +1,62 @@
+{
+    "version": "1.2",
+    "accountId": "382822795712",
+    "configurationItemCaptureTime": "2016-10-13T22:35:45.739Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1476398145739",
+    "configurationItemMD5Hash": "a89662e7677d910dd125273799641741",
+    "arn": "arn:aws:redshift:us-west-2:382822795712:snapshot:cluster-with-kms/cluster-with-kms-snapshot",
+    "resourceType": "AWS::Redshift::ClusterSnapshot",
+    "resourceId": "cluster-with-kms-snapshot",
+    "resourceName": "cluster-with-kms-snapshot",
+    "awsRegion": "us-west-2",
+    "availabilityZone": "us-west-2c",
+    "resourceCreationTime": "2016-10-13T22:33:28.161Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::Redshift::Cluster",
+        "resourceId": "cluster-with-kms",
+        "resourceName": "cluster-with-kms",
+        "relationshipName": "Is associated with Cluster"
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-af541fca",
+        "relationshipName": "Is associated with Vpc"
+      }
+    ],
+    "configuration": {
+      "snapshotIdentifier": "cluster-with-kms-snapshot",
+      "clusterIdentifier": "cluster-with-kms",
+      "snapshotCreateTime": "2016-10-13T22:33:28.161Z",
+      "status": "available",
+      "port": 5439,
+      "availabilityZone": "us-west-2c",
+      "clusterCreateTime": "2016-10-13T22:26:39.723Z",
+      "masterUsername": "asdf",
+      "clusterVersion": "1.0",
+      "snapshotType": "manual",
+      "nodeType": "dc1.large",
+      "numberOfNodes": 1,
+      "dBName": "asdfffffdb",
+      "vpcId": "vpc-af541fca",
+      "encrypted": true,
+      "kmsKeyId": "arn:aws:kms:us-west-2:382822795712:key/1734c784-c7d1-443c-8629-aef34db98b30",
+      "encryptedWithHSM": false,
+      "accountsWithRestoreAccess": [],
+      "ownerAccount": "382822795712",
+      "totalBackupSizeInMegaBytes": 12,
+      "actualIncrementalBackupSizeInMegaBytes": 5,
+      "backupProgressInMegaBytes": 5,
+      "currentBackupRateInMegaBytesPerSecond": 3.5361,
+      "estimatedSecondsToCompletion": 0,
+      "elapsedTimeInSeconds": 1,
+      "tags": [],
+      "restorableNodeTypes": [
+        "dc1.large"
+      ]
+    },
+    "supplementaryConfiguration": {}
+  }

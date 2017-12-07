@@ -1,0 +1,53 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-06-09T08:59:59.139Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "58",
+    "configurationItemMD5Hash": "d5256a780a70ecb28fbd02b10c2a1662",
+    "arn": "arn:aws:ec2:us-east-1:264683526309:security-group/sg-1d56fc66",
+    "resourceType": "AWS::EC2::SecurityGroup",
+    "resourceId": "sg-1d56fc66",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-0990dc6d",
+        "relationshipName": "Is contained in Vpc"
+      }
+    ],
+    "configuration": {
+      "ownerId": "264683526309",
+      "groupName": "launch-wizard-7",
+      "groupId": "sg-1d56fc66",
+      "description": "launch-wizard-7 created 2016-05-26T14:26:12.992-07:00",
+      "ipPermissions": [
+        {
+          "ipProtocol": "tcp",
+          "fromPort": 22,
+          "toPort": 22,
+          "userIdGroupPairs": [],
+          "ipRanges": [
+            "0.0.0.0/0"
+          ],
+          "prefixListIds": []
+        }
+      ],
+      "ipPermissionsEgress": [
+        {
+          "ipProtocol": "-1",
+          "userIdGroupPairs": [],
+          "ipRanges": [
+            "0.0.0.0/0"
+          ],
+          "prefixListIds": []
+        }
+      ],
+      "vpcId": "vpc-0990dc6d",
+      "tags": []
+    },
+    "supplementaryConfiguration": {}
+  }

@@ -1,0 +1,41 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-11-12T06:56:53.125Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1478933813125",
+    "configurationItemMD5Hash": "24454d84f1c6f05857e9be2b47a68f0d",
+    "arn": "arn:aws:rds:us-east-1:264683526309:es:MyEventSub",
+    "resourceType": "AWS::RDS::EventSubscription",
+    "resourceId": "MyEventSub",
+    "resourceName": "MyEventSub",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2016-10-20T23:46:27.865Z",
+    "tags": {},
+    "relatedEvents": [
+      "94f00b50-be46-4081-8813-3417e86b50c4"
+    ],
+    "relationships": [],
+    "configuration": {
+      "customerAwsId": "264683526309",
+      "custSubscriptionId": "MyEventSub",
+      "snsTopicArn": "arn:aws:sns:us-east-1:264683526309:config-topic",
+      "status": "active",
+      "subscriptionCreationTime": "2016-10-20 23:46:27.865",
+      "sourceType": "db-instance",
+      "sourceIdsList": [
+        "myrdstest"
+      ],
+      "eventCategoriesList": [
+        "availability",
+        "backup",
+        "creation",
+        "deletion"
+      ],
+      "enabled": true
+    },
+    "supplementaryConfiguration": {
+      "Tags": []
+    }
+  }

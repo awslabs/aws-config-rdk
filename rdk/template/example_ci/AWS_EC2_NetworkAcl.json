@@ -1,0 +1,103 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-09-24T17:47:04.219Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "949",
+    "configurationItemMD5Hash": "6d0a7e737d25752747799994f0088091",
+    "arn": "arn:aws:ec2:us-east-1:264683526309:network-acl/acl-b48fd1d0",
+    "resourceType": "AWS::EC2::NetworkAcl",
+    "resourceId": "acl-b48fd1d0",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Multiple Availability Zones",
+    "tags": {},
+    "relatedEvents": [
+      "7656056e-4df8-4db6-a2fc-cf83e5461f7f"
+    ],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-29428871",
+        "relationshipName": "Is attached to Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-32e85b44",
+        "relationshipName": "Is attached to Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-38c20312",
+        "relationshipName": "Is attached to Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-e83ba2d5",
+        "relationshipName": "Is attached to Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-0990dc6d",
+        "relationshipName": "Is contained in Vpc"
+      }
+    ],
+    "configuration": {
+      "networkAclId": "acl-b48fd1d0",
+      "vpcId": "vpc-0990dc6d",
+      "isDefault": true,
+      "entries": [
+        {
+          "ruleNumber": 100,
+          "protocol": "-1",
+          "ruleAction": "allow",
+          "egress": true,
+          "cidrBlock": "0.0.0.0/0"
+        },
+        {
+          "ruleNumber": 32767,
+          "protocol": "-1",
+          "ruleAction": "deny",
+          "egress": true,
+          "cidrBlock": "0.0.0.0/0"
+        },
+        {
+          "ruleNumber": 100,
+          "protocol": "-1",
+          "ruleAction": "allow",
+          "egress": false,
+          "cidrBlock": "0.0.0.0/0"
+        },
+        {
+          "ruleNumber": 32767,
+          "protocol": "-1",
+          "ruleAction": "deny",
+          "egress": false,
+          "cidrBlock": "0.0.0.0/0"
+        }
+      ],
+      "associations": [
+        {
+          "networkAclAssociationId": "aclassoc-6073b518",
+          "networkAclId": "acl-b48fd1d0",
+          "subnetId": "subnet-38c20312"
+        },
+        {
+          "networkAclAssociationId": "aclassoc-6d73b515",
+          "networkAclId": "acl-b48fd1d0",
+          "subnetId": "subnet-32e85b44"
+        },
+        {
+          "networkAclAssociationId": "aclassoc-6f73b517",
+          "networkAclId": "acl-b48fd1d0",
+          "subnetId": "subnet-e83ba2d5"
+        },
+        {
+          "networkAclAssociationId": "aclassoc-6e73b516",
+          "networkAclId": "acl-b48fd1d0",
+          "subnetId": "subnet-29428871"
+        }
+      ],
+      "tags": []
+    },
+    "supplementaryConfiguration": {}
+  }
