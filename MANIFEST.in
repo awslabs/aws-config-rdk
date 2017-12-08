@@ -1,0 +1,10 @@
+include README.rst
+include rdk/template/*
+include rdk/template/example_ci/*
+incldue rdk/template/runtime/*
+include rdk/template/runtime/java8/*
+include rdk/template/runtime/java8/jars/*
+include rdk/template/runtime/java8/src/main/java/com/rdk/*
+include rdk/template/runtime/nodejs4.3/*
+include rdk/template/runtime/python2.7/*
+include rdk/template/runtime/python3.6/*
