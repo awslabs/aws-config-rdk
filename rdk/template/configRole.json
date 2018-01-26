@@ -17,7 +17,8 @@
     },
     "SourceEvents": {
       "Description": "Event Type",
-      "Type": "CommaDelimitedList"
+      "Type": "CommaDelimitedList",
+      "Default": "NONE"
     },
     "SourceRuntime": {
       "Description": "Runtime Language",
@@ -41,6 +42,9 @@
         "Description": "Lambda Function Handler",
         "Type": "String"
     }
+  },
+  "Conditions": {
+    "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]}
   },
   "Resources": {
     "rdkRuleCodeLambda": {
@@ -78,14 +82,22 @@
         "ConfigRuleName": {"Fn::Sub": "${AWS::StackName}" },
         "Description": {"Fn::Sub": "${AWS::StackName}" },
         "Scope": {
-          "ComplianceResourceTypes": { "Ref": "SourceEvents" }
+          "Fn::If": [ "EventTriggered",
+            { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },
+            { "Ref": "AWS::NoValue" }
+          ]
         },
         "Source": {
           "Owner": "CUSTOM_LAMBDA",
           "SourceIdentifier": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
           "SourceDetails": [{
             "EventSource": "aws.config",
-            "MessageType": "ConfigurationItemChangeNotification"
+            "MessageType": {
+              "Fn::If": [ "EventTriggered",
+                "ConfigurationItemChangeNotification",
+                "ScheduledNotification"
+              ]
+            }
           }, {
             "EventSource": "aws.config",
             "MessageType": "OversizedConfigurationItemChangeNotification"
@@ -151,7 +163,10 @@
               }
             ]
           }
-        } ]
+        } ],
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/ReadOnlyAccess"
+        ]
       }
     }
   },

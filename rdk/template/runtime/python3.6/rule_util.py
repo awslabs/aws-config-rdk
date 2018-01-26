@@ -1,6 +1,10 @@
+#    Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-# This file made available under CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/legalcode)
+#    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
 #
+#        http://aws.amazon.com/apache2.0/
+#
+#    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 import json
 import boto3
@@ -77,29 +81,50 @@ def is_applicable(configurationItem, event):
 # This decorates the lambda_handler in rule_code with the actual PutEvaluation call
 def rule_handler(lambda_handler):
     def handler_wrapper(event, context):
-        #print(event)
+        evaluations = []
+
+        print(event)
         check_defined(event, 'event')
         invokingEvent = json.loads(event['invokingEvent'])
         ruleParameters = {}
         if 'ruleParameters' in event:
             ruleParameters = json.loads(event['ruleParameters'])
+
         configurationItem = get_configuration_item(invokingEvent)
+
         if configurationItem is None:
-            print("RDK utility class does not yet support Scheduled Notifications.")
-            return ("Not_Applicable")
-        invokingEvent['configurationItem'] = configurationItem
-        event['invokingEvent'] = json.dumps(invokingEvent)
-        compliance = 'NOT_APPLICABLE'
-        if is_applicable(configurationItem, event):
-            # Invoke the compliance checking function.
             compliance = lambda_handler(event, context)
+
+            if isinstance(compliance, list):
+                for evaluation in compliance:
+                    missing_fields = False
+                    for field in ('ComplianceResourceType', 'ComplianceResourceId', 'ComplianceType', 'OrderingTimestamp'):
+                        if field not in evaluation:
+                            print("Missing " + field + " from custom evaluation.")
+                            missing_fields = True
+
+                    if not missing_fields:
+                        evaluations.append(evaluation)
+            else:
+                return ("NOT_APPLICABLE")
+        else:
+            invokingEvent['configurationItem'] = configurationItem
+            event['invokingEvent'] = json.dumps(invokingEvent)
+            compliance = 'NOT_APPLICABLE'
+
+            if is_applicable(configurationItem, event):
+                # Invoke the compliance checking function.
+                compliance = lambda_handler(event, context)
+
+                evaluations = [{
+                        'ComplianceResourceType': configurationItem['resourceType'],
+                        'ComplianceResourceId': configurationItem['resourceId'],
+                        'ComplianceType': compliance,
+                        'OrderingTimestamp': configurationItem['configurationItemCaptureTime']
+                }]
+
         # Put together the request that reports the evaluation status
-        evaluations = [{
-                'ComplianceResourceType': configurationItem['resourceType'],
-                'ComplianceResourceId': configurationItem['resourceId'],
-                'ComplianceType': compliance,
-                'OrderingTimestamp': configurationItem['configurationItemCaptureTime']
-        }]
+
         resultToken = event['resultToken']
         testMode = False
         if resultToken == 'TESTMODE':

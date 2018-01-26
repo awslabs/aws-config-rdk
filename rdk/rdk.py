@@ -206,6 +206,7 @@ class rdk():
 
         if not self.args.maximum_frequency:
             self.args.maximum_frequency = "TwentyFour_Hours"
+            print("Defaulting to TwentyFour_Hours Maximum Frequency.")
 
         #create rule directory.
         rule_path = os.path.join(os.getcwd(), rules_dir, self.args.rulename)
@@ -333,6 +334,10 @@ class rdk():
             my_s3.meta.client.upload_file(s3_src, code_bucket_name, s3_dst)
 
             #create CFN Parameters
+            source_events = "NONE"
+            if 'SourceEvents' in my_rule_params:
+                source_events = my_rule_params['SourceEvents']
+
             my_params = [
                 {
                     'ParameterKey': 'SourceBucket',
@@ -348,7 +353,7 @@ class rdk():
                 },
                 {
                     'ParameterKey': 'SourceEvents',
-                    'ParameterValue': my_rule_params['SourceEvents'],
+                    'ParameterValue': source_events,
                 },
                 {
                     'ParameterKey': 'SourcePeriodic',
@@ -714,7 +719,7 @@ class rdk():
         )
         parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
         parser.add_argument('-R','--runtime', required=is_required, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0','dotnetcore2.0'])
-        parser.add_argument('-r','--resource-types', required=is_required, help='Resource types that trigger event-based rule evaluation')
+        parser.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
         parser.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
         parser.add_argument('-i','--input-parameters', help="[optional] JSON for Config parameters for testing.")
         self.args = parser.parse_args(self.args.command_args, self.args)

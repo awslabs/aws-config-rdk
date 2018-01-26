@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: rdk
-Version: 0.2.33
+Version: 0.2.34
 Summary: Rule Development Kit CLI for AWS Config
 Home-page: https://github.com/michaelborchert/rdk
 Author: Michael Borchert
