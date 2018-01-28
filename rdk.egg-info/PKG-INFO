@@ -1,16 +1,15 @@
 Metadata-Version: 1.0
 Name: rdk
-Version: 0.2.34
+Version: 0.2.35
 Summary: Rule Development Kit CLI for AWS Config
 Home-page: https://github.com/michaelborchert/rdk
 Author: Michael Borchert
 Author-email: mborch@amazon.com
 License: Apache License Version 2.0
-Description-Content-Type: UNKNOWN
 Description: rdk
         ===
         Rule Development Kit - Version 2
-        This tool should be considered in "Open Beta".  I would not recommend relying on it for critical workloads, and would greatly appreciate feedback and bug reports at mborch@amazon.com!
+        This tool should be considered in "Open Beta".  I would greatly appreciate feedback and bug reports at mborch@amazon.com!
         
         The RDK is designed to support a "Compliance-as-Code" workflow that is intuitive and productive.  It abstracts away much of the undifferentiated heavy lifting associated with deploying AWS Config rules backed by custom lambda functions, and provides a streamlined develop-deploy-monitor iterative process.
         
@@ -74,7 +73,18 @@ Description: rdk
         
         Edit Rules Locally
         ---------------------------
-        Once you have created the rule, edit the python file in your rule directory (in the above example it would be ``MyRule/MyRule.py``, but may be deeper into the rule directory tree depending on your chosen Lambda runtime) to add whatever logic your Rule requires in the ``evaluate_compliance`` function.  You will have access to the CI that was sent by Config, as well as any parameters configured for the Config Rule.  Your function should return either ``COMPLIANT``, ``NONCOMPLIANT``, or ``NOT_APPLICABLE``.
+        Once you have created the rule, edit the python file in your rule directory (in the above example it would be ``MyRule/MyRule.py``, but may be deeper into the rule directory tree depending on your chosen Lambda runtime) to add whatever logic your Rule requires in the ``evaluate_compliance`` function.  You will have access to the CI that was sent by Config, as well as any parameters configured for the Config Rule.  Your function should return either a simple compliance status (one of ``COMPLIANT``, ``NONCOMPLIANT``, or ``NOT_APPLICABLE``), or if you're using the python runtimes you can return a JSON object with multiple evaluation responses that the RDK will send back to AWS Config.  An example would look like::
+          for sg in response['SecurityGroups']:
+                evaluations.append(
+                {
+                        'ComplianceResourceType': 'AWS::EC2::SecurityGroup',
+                        'ComplianceResourceId': sg['GroupId'],
+                        'ComplianceType': 'COMPLIANT',
+                        'OrderingTimestamp': str(datetime.datetime.now())
+                })
+        
+        
+            return evaluations
         
         If you want to see what the JSON structure of a CI looks like for creating your logic, you can use
         
@@ -141,11 +151,6 @@ Description: rdk
         
         email me at mborch@amazon.com if you are interested in contributing.
         
-        Versioning
-        ==========
-        
-        We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
-        
         Authors
         =======
         
@@ -154,12 +159,11 @@ Description: rdk
         * **Henry Huang** - *CFN templates and other code*
         * **Jonathan Rault** - *Design, testing, feedback*
         
-        See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
         
         License
         =======
         
-        This project is licensed under the Apache 2.0 License - see the [LICENSE.md](LICENSE.md) file for details
+        This project is licensed under the Apache 2.0 License
         
         Acknowledgments
         ===============

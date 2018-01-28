@@ -326,7 +326,7 @@ class rdk():
                 s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
                 s3_src = shutil.make_archive(os.path.join(rule_name, rule_name), 'zip', s3_src_dir)
 
-            s3_dst = os.path.join(rule_name, rule_name+".zip")
+            s3_dst = "/".join(rule_name, rule_name+".zip")
             code_bucket_name = code_bucket_prefix + account_id + my_session.region_name
             my_s3 = my_session.resource('s3')
 
