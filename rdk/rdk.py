@@ -200,12 +200,13 @@ class rdk():
             print("Runtime is required for 'create' command.")
             return 1
 
-        extension_mapping = {'java8':'.java', 'python2.7':'.py', 'python3.6':'.py','nodejs4.3':'.js', 'dotnetcore1.0':'cs'}
+        extension_mapping = {'java8':'.java', 'python2.7':'.py', 'python3.6':'.py','nodejs4.3':'.js', 'dotnetcore1.0':'cs', 'dotnetcore2.0':'cs'}
         if self.args.runtime not in extension_mapping:
             print ("rdk does nto support that runtime yet.")
 
         if not self.args.maximum_frequency:
             self.args.maximum_frequency = "TwentyFour_Hours"
+            print("Defaulting to TwentyFour_Hours Maximum Frequency.")
 
         #create rule directory.
         rule_path = os.path.join(os.getcwd(), rules_dir, self.args.rulename)
@@ -219,7 +220,7 @@ class rdk():
             #copy rule template into rule directory
             if self.args.runtime == 'java8':
                 self.__create_java_rule()
-            elif self.args.runtime == 'dotnetcore1.0':
+            elif self.args.runtime in ['dotnetcore1.0', 'dotnetcore2.0']:
                 self.__create_dotnet_rule()
             else:
                 src = os.path.join(os.getcwd(), rdk_dir, 'runtime', self.args.runtime, rule_handler + extension_mapping[self.args.runtime])
@@ -303,16 +304,21 @@ class rdk():
 
                 #set source as distribution zip
                 s3_src = os.path.join(os.getcwd(), rules_dir, rule_name, 'build', 'distributions', rule_name+".zip")
-            elif my_rule_params['SourceRuntime'] == "dotnetcore1.0":
+            elif my_rule_params['SourceRuntime'] in ["dotnetcore1.0","dotnetcore2.0"]:
                 print ("Packaging "+rule_name)
                 working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
                 commands = [["dotnet","restore"]]
-                commands.append(["dotnet","lambda","package","-c","Release","-f","netcoreapp1.0"])
+
+                app_runtime = "netcoreapp1.0"
+                if my_rule_params['SourceRuntime'] == "dotnetcore2.0":
+                    app_runtime = "netcoreapp2.0"
+
+                commands.append(["dotnet","lambda","package","-c","Release","-f", app_runtime])
 
                 for command in commands:
                     subprocess.call( command, cwd=working_dir)
 
-                s3_src_dir = os.path.join(os.getcwd(),rules_dir, rule_name,'bin','Release', 'netcoreapp1.0', 'publish')
+                s3_src_dir = os.path.join(os.getcwd(),rules_dir, rule_name,'bin','Release', app_runtime, 'publish')
                 s3_src = shutil.make_archive(os.path.join(rule_name, rule_name), 'zip', s3_src_dir)
             else:
                 print ("Zipping " + rule_name)
@@ -320,7 +326,7 @@ class rdk():
                 s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
                 s3_src = shutil.make_archive(os.path.join(rule_name, rule_name), 'zip', s3_src_dir)
 
-            s3_dst = os.path.join(rule_name, rule_name+".zip")
+            s3_dst = "/".join(rule_name, rule_name+".zip")
             code_bucket_name = code_bucket_prefix + account_id + my_session.region_name
             my_s3 = my_session.resource('s3')
 
@@ -328,6 +334,10 @@ class rdk():
             my_s3.meta.client.upload_file(s3_src, code_bucket_name, s3_dst)
 
             #create CFN Parameters
+            source_events = "NONE"
+            if 'SourceEvents' in my_rule_params:
+                source_events = my_rule_params['SourceEvents']
+
             my_params = [
                 {
                     'ParameterKey': 'SourceBucket',
@@ -343,7 +353,7 @@ class rdk():
                 },
                 {
                     'ParameterKey': 'SourceEvents',
-                    'ParameterValue': my_rule_params['SourceEvents'],
+                    'ParameterValue': source_events,
                 },
                 {
                     'ParameterKey': 'SourcePeriodic',
@@ -708,8 +718,8 @@ class rdk():
             usage="rdk "+self.args.command + " <rulename> " + usage_string
         )
         parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
-        parser.add_argument('-R','--runtime', required=is_required, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0'])
-        parser.add_argument('-r','--resource-types', required=is_required, help='Resource types that trigger event-based rule evaluation')
+        parser.add_argument('-R','--runtime', required=is_required, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0','dotnetcore2.0'])
+        parser.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
         parser.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
         parser.add_argument('-i','--input-parameters', help="[optional] JSON for Config parameters for testing.")
         self.args = parser.parse_args(self.args.command_args, self.args)
@@ -791,7 +801,7 @@ class rdk():
             return (rule_name+'.lambda_handler')
         elif params['SourceRuntime'] in ['java8']:
             return ('com.rdk.RuleUtil::handler')
-        elif params['SourceRuntime'] in ['dotnetcore1.0']:
+        elif params['SourceRuntime'] in ['dotnetcore1.0','dotnetcore2.0']:
             return ('csharp7.0::Rdk.CustomConfigHandler::FunctionHandler')
 
     def __get_test_CIs(self, rulename):
