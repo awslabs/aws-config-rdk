@@ -114,7 +114,7 @@ class rdk():
 
             if not bucket_exists:
                 print('Creating Config bucket '+config_bucket_name )
-                if my_session.region_name == "us-east-1":
+                if my_session.region_name == 'us-east-1':
                      my_s3.create_bucket(
                              Bucket=config_bucket_name
                      )
