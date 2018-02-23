@@ -1,0 +1,169 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-10-29T19:52:09.494Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1477770729494",
+    "configurationItemMD5Hash": "81e6fc8379f93bd68526f8a6769776b9",
+    "arn": "arn:aws:ec2:us-east-1:264683526309:vpc/vpc-0990dc6d",
+    "resourceType": "AWS::EC2::VPC",
+    "resourceId": "vpc-0990dc6d",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Multiple Availability Zones",
+    "tags": {},
+    "relatedEvents": [
+      "ca566c16-81b7-48cf-8573-241ab67880e7"
+    ],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::NetworkAcl",
+        "resourceId": "acl-b48fd1d0",
+        "relationshipName": "Contains NetworkAcl"
+      },
+      {
+        "resourceType": "AWS::EC2::NetworkInterface",
+        "resourceId": "eni-49ec78b5",
+        "relationshipName": "Contains NetworkInterface"
+      },
+      {
+        "resourceType": "AWS::EC2::NetworkInterface",
+        "resourceId": "eni-67e4348d",
+        "relationshipName": "Contains NetworkInterface"
+      },
+      {
+        "resourceType": "AWS::EC2::NetworkInterface",
+        "resourceId": "eni-70a4b7bf",
+        "relationshipName": "Contains NetworkInterface"
+      },
+      {
+        "resourceType": "AWS::EC2::NetworkInterface",
+        "resourceId": "eni-c09a049e",
+        "relationshipName": "Contains NetworkInterface"
+      },
+      {
+        "resourceType": "AWS::EC2::Instance",
+        "resourceId": "i-29e75b19",
+        "relationshipName": "Contains Instance"
+      },
+      {
+        "resourceType": "AWS::EC2::Instance",
+        "resourceId": "i-ebf3e058",
+        "relationshipName": "Contains Instance"
+      },
+      {
+        "resourceType": "AWS::EC2::InternetGateway",
+        "resourceId": "igw-a5f227c1",
+        "relationshipName": "Is attached to InternetGateway"
+      },
+      {
+        "resourceType": "AWS::EC2::RouteTable",
+        "resourceId": "rtb-50b9b034",
+        "relationshipName": "Contains RouteTable"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-0d46b170",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-1d56fc66",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-2b353152",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-2ed0d557",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-4161cb3a",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-48b41e33",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-4f49e334",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-62bba619",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-649a301f",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-7d7cd606",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-96b471ec",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-b854bbc5",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-e627199e",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-e868d092",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-f693878d",
+        "relationshipName": "Contains SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-29428871",
+        "relationshipName": "Contains Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-32e85b44",
+        "relationshipName": "Contains Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-38c20312",
+        "relationshipName": "Contains Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-e83ba2d5",
+        "relationshipName": "Contains Subnet"
+      }
+    ],
+    "configuration": {
+      "vpcId": "vpc-0990dc6d",
+      "state": "available",
+      "cidrBlock": "172.31.0.0/16",
+      "dhcpOptionsId": "dopt-3a32ab5f",
+      "tags": [],
+      "instanceTenancy": "default",
+      "isDefault": true
+    },
+    "supplementaryConfiguration": {}
+  }

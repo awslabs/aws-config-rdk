@@ -1,0 +1,79 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-09-24T17:32:17.358Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "151",
+    "configurationItemMD5Hash": "c3f9f3e66088b6163d2ef19d49aa108d",
+    "arn": "arn:aws:iam::264683526309:policy/ELB-policy",
+    "resourceType": "AWS::IAM::Policy",
+    "resourceId": "ANPAIJWML3NX3NT6UAGO4",
+    "resourceName": "ELB-policy",
+    "awsRegion": "global",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2016-04-29T17:11:26.000Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::IAM::Role",
+        "resourceId": "AROAIVXMURFRN7EZGVNNA",
+        "resourceName": "config-role",
+        "relationshipName": "Is attached to Role"
+      },
+      {
+        "resourceType": "AWS::IAM::Role",
+        "resourceId": "AROAIY7FPU7KRV7IZBNPC",
+        "resourceName": "config-role-ezcrc2",
+        "relationshipName": "Is attached to Role"
+      },
+      {
+        "resourceType": "AWS::IAM::Role",
+        "resourceId": "AROAJH5PQZ7LNGREGFM3K",
+        "resourceName": "config-role-ezcrc",
+        "relationshipName": "Is attached to Role"
+      },
+      {
+        "resourceType": "AWS::IAM::Role",
+        "resourceId": "AROAJPQ3VWRJFHJWRDBDY",
+        "resourceName": "config-role-ezcrc3",
+        "relationshipName": "Is attached to Role"
+      }
+    ],
+    "configuration": {
+      "policyName": "ELB-policy",
+      "policyId": "ANPAIJWML3NX3NT6UAGO4",
+      "arn": "arn:aws:iam::264683526309:policy/ELB-policy",
+      "path": "/",
+      "defaultVersionId": "v1",
+      "attachmentCount": 4,
+      "isAttachable": true,
+      "createDate": "2016-04-29T17:11:26.000Z",
+      "updateDate": "2016-04-29T17:11:26.000Z",
+      "policyVersionList": [
+        {
+          "document": [
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "Stmt1461949544000",
+                  "Effect": "Allow",
+                  "Action": [
+                    "elasticloadbalancing:Describe*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                }
+              ]
+            }
+          ],
+          "versionId": "v1",
+          "isDefaultVersion": true,
+          "createDate": "April 29, 2016 10:11:26 AM"
+        }
+      ]
+    },
+    "supplementaryConfiguration": {}
+  }

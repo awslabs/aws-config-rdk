@@ -1,0 +1,41 @@
+{
+    "version": "1.2",
+    "accountId": "382822795712",
+    "configurationItemCaptureTime": "2016-10-13T21:11:05.449Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1476393065449",
+    "configurationItemMD5Hash": "4bcb322336a1994c2ab7da964fca56a3",
+    "arn": "arn:aws:redshift:us-west-2:382822795712:eventsubscription:multiple-clusters",
+    "resourceType": "AWS::Redshift::EventSubscription",
+    "resourceId": "multiple-clusters",
+    "resourceName": "multiple-clusters",
+    "awsRegion": "us-west-2",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2016-10-10T17:10:41.746Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "customerAwsId": "382822795712",
+      "custSubscriptionId": "multiple-clusters",
+      "snsTopicArn": "arn:aws:sns:us-west-2:382822795712:config-topic1111",
+      "status": "active",
+      "subscriptionCreationTime": "2016-10-10T17:10:41.746Z",
+      "sourceType": "cluster",
+      "sourceIdsList": [
+        "more-clusters",
+        "test-cluster",
+        "cluster2"
+      ],
+      "eventCategoriesList": [
+        "security",
+        "management",
+        "configuration",
+        "monitoring"
+      ],
+      "severity": "INFO",
+      "enabled": true,
+      "tags": []
+    },
+    "supplementaryConfiguration": {}
+  }

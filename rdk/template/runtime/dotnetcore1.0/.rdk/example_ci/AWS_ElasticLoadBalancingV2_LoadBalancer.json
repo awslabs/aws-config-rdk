@@ -1,0 +1,93 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-11-11T02:22:46.556Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1478830966556",
+    "configurationItemMD5Hash": "c7647c4051b0d45ded82997c2e964cef",
+    "arn": "arn:aws:elasticloadbalancing:us-east-1:264683526309:loadbalancer/app/MyALB/268aa84731d32825",
+    "resourceType": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+    "resourceId": "arn:aws:elasticloadbalancing:us-east-1:264683526309:loadbalancer/app/MyALB/268aa84731d32825",
+    "resourceName": "MyALB",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Multiple Availability Zones",
+    "resourceCreationTime": "2016-11-11T02:13:38.770Z",
+    "tags": {},
+    "relatedEvents": [
+      "6cfc8538-2fb0-4e90-b3b5-82d05800cbc4"
+    ],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-2ed0d557",
+        "relationshipName": "Is associated with SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-29428871",
+        "relationshipName": "Is attached to Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-38c20312",
+        "relationshipName": "Is attached to Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-0990dc6d",
+        "relationshipName": "Is contained in Vpc"
+      }
+    ],
+    "configuration": {
+      "loadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:264683526309:loadbalancer/app/MyALB/268aa84731d32825",
+      "dNSName": "MyALB-1278615410.us-east-1.elb.amazonaws.com",
+      "canonicalHostedZoneId": "Z35SXDOTRQ7X7K",
+      "createdTime": "2016-11-11T02:13:38.770Z",
+      "loadBalancerName": "MyALB",
+      "scheme": "internet-facing",
+      "vpcId": "vpc-0990dc6d",
+      "state": {
+        "code": "active"
+      },
+      "type": "application",
+      "availabilityZones": [
+        {
+          "zoneName": "us-east-1a",
+          "subnetId": "subnet-29428871"
+        },
+        {
+          "zoneName": "us-east-1c",
+          "subnetId": "subnet-38c20312"
+        }
+      ],
+      "securityGroups": [
+        "sg-2ed0d557"
+      ]
+    },
+    "supplementaryConfiguration": {
+      "LoadBalancerAttributes": [
+        {
+          "key": "access_logs.s3.enabled",
+          "value": "false"
+        },
+        {
+          "key": "idle_timeout.timeout_seconds",
+          "value": "60"
+        },
+        {
+          "key": "access_logs.s3.prefix",
+          "value": ""
+        },
+        {
+          "key": "deletion_protection.enabled",
+          "value": "false"
+        },
+        {
+          "key": "access_logs.s3.bucket",
+          "value": ""
+        }
+      ],
+      "Tags": []
+    }
+  }
+

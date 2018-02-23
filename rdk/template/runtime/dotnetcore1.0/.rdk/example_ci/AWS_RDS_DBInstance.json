@@ -1,0 +1,130 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-10-20T23:42:01.525Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1477006921525",
+    "configurationItemMD5Hash": "92aebc31ddebc759abed4808282ef574",
+    "arn": "arn:aws:rds:us-east-1:264683526309:db:myrdstest",
+    "resourceType": "AWS::RDS::DBInstance",
+    "resourceId": "db-HHTTSRD6HXUIKXPFPI6WFVZ4PA",
+    "resourceName": "myrdstest",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Multiple Availability Zones",
+    "resourceCreationTime": "2016-10-20T23:42:01.744Z",
+    "tags": {
+      "workload-type": "production"
+    },
+    "relatedEvents": [
+      "740f5c56-c872-42c5-929e-8e9232fe1e45"
+    ],
+    "relationships": [
+      {
+        "resourceType": "AWS::RDS::DBSubnetGroup",
+        "resourceId": "default",
+        "relationshipName": "Is associated with DBSubnetGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-e627199e",
+        "relationshipName": "Is associated with SecurityGroup"
+      }
+    ],
+    "configuration": {
+      "dBInstanceIdentifier": "myrdstest",
+      "dBInstanceClass": "db.m3.xlarge",
+      "engine": "mysql",
+      "dBInstanceStatus": "creating",
+      "masterUsername": "foo",
+      "allocatedStorage": 100,
+      "preferredBackupWindow": "08:50-09:20",
+      "backupRetentionPeriod": 7,
+      "dBSecurityGroups": [],
+      "vpcSecurityGroups": [
+        {
+          "vpcSecurityGroupId": "sg-e627199e",
+          "status": "active"
+        }
+      ],
+      "dBParameterGroups": [
+        {
+          "dBParameterGroupName": "default.mysql5.6",
+          "parameterApplyStatus": "in-sync"
+        }
+      ],
+      "availabilityZone": "us-east-1a",
+      "dBSubnetGroup": {
+        "dBSubnetGroupName": "default",
+        "dBSubnetGroupDescription": "default",
+        "vpcId": "vpc-0990dc6d",
+        "subnetGroupStatus": "Complete",
+        "subnets": [
+          {
+            "subnetIdentifier": "subnet-29428871",
+            "subnetAvailabilityZone": {
+              "name": "us-east-1a"
+            },
+            "subnetStatus": "Active"
+          },
+          {
+            "subnetIdentifier": "subnet-38c20312",
+            "subnetAvailabilityZone": {
+              "name": "us-east-1c"
+            },
+            "subnetStatus": "Active"
+          },
+          {
+            "subnetIdentifier": "subnet-e83ba2d5",
+            "subnetAvailabilityZone": {
+              "name": "us-east-1e"
+            },
+            "subnetStatus": "Active"
+          },
+          {
+            "subnetIdentifier": "subnet-32e85b44",
+            "subnetAvailabilityZone": {
+              "name": "us-east-1d"
+            },
+            "subnetStatus": "Active"
+          }
+        ]
+      },
+      "preferredMaintenanceWindow": "thu:06:13-thu:06:43",
+      "pendingModifiedValues": {
+        "masterUserPassword": ""
+      },
+      "multiAZ": true,
+      "engineVersion": "5.6.27",
+      "autoMinorVersionUpgrade": true,
+      "readReplicaDBInstanceIdentifiers": [],
+      "licenseModel": "general-public-license",
+      "iops": 1000,
+      "optionGroupMemberships": [
+        {
+          "optionGroupName": "default:mysql-5-6",
+          "status": "in-sync"
+        }
+      ],
+      "publiclyAccessible": true,
+      "statusInfos": [],
+      "storageType": "io1",
+      "dbInstancePort": 0,
+      "storageEncrypted": true,
+      "kmsKeyId": "arn:aws:kms:us-east-1:264683526309:key/e20f3a10-781f-4582-93d7-6dfe67cac827",
+      "dbiResourceId": "db-HHTTSRD6HXUIKXPFPI6WFVZ4PA",
+      "cACertificateIdentifier": "rds-ca-2015",
+      "domainMemberships": [],
+      "copyTagsToSnapshot": false,
+      "monitoringInterval": 60,
+      "monitoringRoleArn": "arn:aws:iam::264683526309:role/rds-monitoring-role"
+    },
+    "supplementaryConfiguration": {
+      "Tags": [
+        {
+          "key": "workload-type",
+          "value": "production"
+        }
+      ]
+    }
+  }
+

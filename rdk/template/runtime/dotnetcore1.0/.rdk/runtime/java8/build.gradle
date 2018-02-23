@@ -1,0 +1,27 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile (
+        'com.amazonaws:aws-lambda-java-core:1.1.0',
+        'com.amazonaws:aws-lambda-java-events:1.2.0',
+        'com.amazonaws:aws-java-sdk-config:1.11.228',
+        'com.amazonaws:aws-java-sdk-iam:1.10.5',
+        'com.fasterxml.jackson.core:jackson-core:2.7.0',
+        'org.apache.commons:commons-lang3:3.0'
+    )
+    compile fileTree(dir: 'jars', include: '*.jar')
+}
+
+task buildZip(type: Zip) {
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtime
+    }
+}
+
+build.dependsOn buildZip

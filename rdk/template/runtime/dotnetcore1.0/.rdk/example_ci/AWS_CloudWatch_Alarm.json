@@ -1,0 +1,44 @@
+  {
+    "version": "1.2",
+    "accountId": "681361479661",
+    "configurationItemCaptureTime": "2017-05-17T00:53:27.675Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1494982407675",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:cloudwatch:us-east-1:681361479661:alarm:qwd",
+    "resourceType": "AWS::CloudWatch::Alarm",
+    "resourceId": "qwd",
+    "resourceName": "qwd",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "alarmName": "qwd",
+      "alarmArn": "arn:aws:cloudwatch:us-east-1:681361479661:alarm:qwd",
+      "alarmConfigurationUpdatedTimestamp": 1494981900510,
+      "actionsEnabled": true,
+      "alarmActions": [
+        "arn:aws:sns:us-east-1:681361479661:config-topic"
+      ],
+      "insufficientDataActions": [
+        "arn:aws:sns:us-east-1:681361479661:config-topic"
+      ],
+      "metricName": "CPUUtilization",
+      "namespace": "AWS/EC2",
+      "statistic": "Average",
+      "dimensions": [
+        {
+          "name": "InstanceId",
+          "value": "i-03402838daac1d611"
+        }
+      ],
+      "period": 300,
+      "evaluationPeriods": 1,
+      "threshold": 0,
+      "comparisonOperator": "GreaterThanOrEqualToThreshold",
+      "okactions": []
+    },
+    "supplementaryConfiguration": {}
+  }
