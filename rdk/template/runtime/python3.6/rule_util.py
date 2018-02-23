@@ -8,6 +8,7 @@
 
 import json
 import boto3
+import botocore
 import datetime
 
 # USE ENTIRE FILE AS IS
@@ -76,14 +77,39 @@ def is_applicable(configurationItem, event):
     check_defined(event, 'event')
     status = configurationItem['configurationItemStatus']
     eventLeftScope = event['eventLeftScope']
+    if(status == 'ResourceDeleted'):
+        print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
     return (status == 'OK' or status == 'ResourceDiscovered') and eventLeftScope == False
+
+#Get role credentials that will work in either custom or managed rules.
+def get_assume_role_credentials(role_arn):
+    try:
+        assume_role_response = sts_client.assume_role(RoleArn=role_arn, RoleSessionName="configLambdaExecution")
+        return assume_role_response['Credentials']
+    except botocore.exceptions.ClientError as ex:
+        # Scrub error message for any internal account info leaks
+        if 'AccessDenied' in ex.response['Error']['Code']:
+            ex.response['Error']['Message'] = "AWS Config does not have permission to assume the IAM role."
+        else:
+            ex.response['Error']['Message'] = "InternalError"
+            ex.response['Error']['Code'] = "InternalError"
+        raise ex
 
 # This decorates the lambda_handler in rule_code with the actual PutEvaluation call
 def rule_handler(lambda_handler):
     def handler_wrapper(event, context):
+        #Local method to get appropriate Boto3 client regardless of execution environment.
+        def get_client(service):
+            credentials = get_assume_role_credentials(event['executionRoleArn'])
+            return boto3.client(
+                service,
+                aws_access_key_id = credentials['AccessKeyId'],
+                aws_secret_access_key = credentials['SecretAccessKey'],
+                aws_session_token = credentials['SessionToken'])
+
         evaluations = []
 
-        print(event)
+        #print(event)
         check_defined(event, 'event')
         invokingEvent = json.loads(event['invokingEvent'])
         ruleParameters = {}
@@ -116,12 +142,12 @@ def rule_handler(lambda_handler):
                 # Invoke the compliance checking function.
                 compliance = lambda_handler(event, context)
 
-                evaluations = [{
-                        'ComplianceResourceType': configurationItem['resourceType'],
-                        'ComplianceResourceId': configurationItem['resourceId'],
-                        'ComplianceType': compliance,
-                        'OrderingTimestamp': configurationItem['configurationItemCaptureTime']
-                }]
+            evaluations = [{
+                    'ComplianceResourceType': configurationItem['resourceType'],
+                    'ComplianceResourceId': configurationItem['resourceId'],
+                    'ComplianceType': compliance,
+                    'OrderingTimestamp': configurationItem['configurationItemCaptureTime']
+            }]
 
         # Put together the request that reports the evaluation status
 
