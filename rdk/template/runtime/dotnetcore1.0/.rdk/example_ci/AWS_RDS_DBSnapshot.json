@@ -1,0 +1,55 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-10-21T00:41:53.585Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1477010513585",
+    "configurationItemMD5Hash": "dd408ea3937400462a249d4666bbd92c",
+    "arn": "arn:aws:rds:us-east-1:264683526309:snapshot:rds:myrdstest-2016-10-20-23-52",
+    "resourceType": "AWS::RDS::DBSnapshot",
+    "resourceId": "rds:myrdstest-2016-10-20-23-52",
+    "resourceName": "rds:myrdstest-2016-10-20-23-52",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "us-east-1a",
+    "resourceCreationTime": "2016-10-20T23:54:07.992Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-0990dc6d",
+        "relationshipName": "Is associated with Vpc"
+      }
+    ],
+    "configuration": {
+      "dBSnapshotIdentifier": "rds:myrdstest-2016-10-20-23-52",
+      "dBInstanceIdentifier": "myrdstest",
+      "snapshotCreateTime": "2016-10-20T23:54:07.992Z",
+      "engine": "mysql",
+      "allocatedStorage": 100,
+      "status": "available",
+      "port": 3306,
+      "availabilityZone": "us-east-1a",
+      "vpcId": "vpc-0990dc6d",
+      "instanceCreateTime": "2016-10-20T23:42:39.639Z",
+      "masterUsername": "foo",
+      "engineVersion": "5.6.27",
+      "licenseModel": "general-public-license",
+      "snapshotType": "automated",
+      "iops": 1000,
+      "optionGroupName": "default:mysql-5-6",
+      "percentProgress": 100,
+      "storageType": "io1",
+      "encrypted": true,
+      "kmsKeyId": "arn:aws:kms:us-east-1:264683526309:key/e20f3a10-781f-4582-93d7-6dfe67cac827"
+    },
+    "supplementaryConfiguration": {
+      "DBSnapshotAttributes": [
+        {
+          "attributeName": "restore",
+          "attributeValues": []
+        }
+      ],
+      "Tags": []
+    }
+  }

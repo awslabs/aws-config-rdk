@@ -1,0 +1,82 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-09-25T00:41:22.151Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "156",
+    "configurationItemMD5Hash": "a2321f67df5d6d13db8117cf815ad5ee",
+    "arn": "arn:aws:rds:us-east-1:264683526309:subgrp:default",
+    "resourceType": "AWS::RDS::DBSubnetGroup",
+    "resourceId": "default",
+    "resourceName": "default",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Multiple Availability Zones",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-29428871",
+        "relationshipName": "Is associated with Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-32e85b44",
+        "relationshipName": "Is associated with Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-38c20312",
+        "relationshipName": "Is associated with Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-e83ba2d5",
+        "relationshipName": "Is associated with Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-0990dc6d",
+        "relationshipName": "Is associated with Vpc"
+      }
+    ],
+    "configuration": {
+      "dBSubnetGroupName": "default",
+      "dBSubnetGroupDescription": "default",
+      "vpcId": "vpc-0990dc6d",
+      "subnetGroupStatus": "Complete",
+      "subnets": [
+        {
+          "subnetIdentifier": "subnet-29428871",
+          "subnetAvailabilityZone": {
+            "name": "us-east-1a"
+          },
+          "subnetStatus": "Active"
+        },
+        {
+          "subnetIdentifier": "subnet-38c20312",
+          "subnetAvailabilityZone": {
+            "name": "us-east-1c"
+          },
+          "subnetStatus": "Active"
+        },
+        {
+          "subnetIdentifier": "subnet-e83ba2d5",
+          "subnetAvailabilityZone": {
+            "name": "us-east-1e"
+          },
+          "subnetStatus": "Active"
+        },
+        {
+          "subnetIdentifier": "subnet-32e85b44",
+          "subnetAvailabilityZone": {
+            "name": "us-east-1d"
+          },
+          "subnetStatus": "Active"
+        }
+      ]
+    },
+    "supplementaryConfiguration": {
+      "Tags": []
+    }
+  }

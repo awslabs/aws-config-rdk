@@ -1,0 +1,87 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-11-06T17:56:56.560Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1478455016560",
+    "configurationItemMD5Hash": "0a2aae6878d94cd28a9ec808a10e8402",
+    "arn": "arn:aws:iam::264683526309:user/aaronfre",
+    "resourceType": "AWS::IAM::User",
+    "resourceId": "AIDAILEDWOGIPJFAKOJKW",
+    "resourceName": "aaronfre",
+    "awsRegion": "global",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2016-09-22T05:55:07.000Z",
+    "tags": {},
+    "relatedEvents": [
+      "d7a1f320-addf-4069-8f5a-8dac2e01f54f"
+    ],
+    "relationships": [
+      {
+        "resourceType": "AWS::IAM::Group",
+        "resourceId": "AGPAJNIBGFRSRIKL7VAD6",
+        "resourceName": "MyTestGroup",
+        "relationshipName": "Is attached to Group"
+      },
+      {
+        "resourceType": "AWS::IAM::Policy",
+        "resourceId": "ANPAIJWML3NX3NT6UAGO4",
+        "resourceName": "ELB-policy",
+        "relationshipName": "Is attached to CustomerManagedPolicy"
+      },
+      {
+        "resourceType": "AWS::IAM::Policy",
+        "resourceId": "ANPAJCD3LXS23FNRP2AJY",
+        "resourceName": "config-role-ap-northeast-1_AWSConfigDeliveryPermissions_ap-northeast-1",
+        "relationshipName": "Is attached to CustomerManagedPolicy"
+      }
+    ],
+    "configuration": {
+      "path": "/",
+      "userName": "aaronfre",
+      "userId": "AIDAILEDWOGIPJFAKOJKW",
+      "arn": "arn:aws:iam::264683526309:user/aaronfre",
+      "createDate": "2016-09-22T05:55:07.000Z",
+      "userPolicyList": [
+        {
+          "policyName": "policygen-aaronfre-201611060951",
+          "policyDocument": [
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "Stmt1478454695000",
+                  "Effect": "Allow",
+                  "Action": [
+                    "codedeploy:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "groupList": [
+        "MyTestGroup"
+      ],
+      "attachedManagedPolicies": [
+        {
+          "policyName": "ELB-policy",
+          "policyArn": "arn:aws:iam::264683526309:policy/ELB-policy"
+        },
+        {
+          "policyName": "AdministratorAccess",
+          "policyArn": "arn:aws:iam::aws:policy/AdministratorAccess"
+        },
+        {
+          "policyName": "config-role-ap-northeast-1_AWSConfigDeliveryPermissions_ap-northeast-1",
+          "policyArn": "arn:aws:iam::264683526309:policy/service-role/config-role-ap-northeast-1_AWSConfigDeliveryPermissions_ap-northeast-1"
+        }
+      ]
+    },
+    "supplementaryConfiguration": {}
+  }
+

@@ -1,0 +1,32 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-11-11T22:56:58.339Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1478905018339",
+    "configurationItemMD5Hash": "70691b885b535bb32e6d1848b7f87fce",
+    "arn": "arn:aws:ec2:us-east-1:264683526309:customer-gateway/cgw-5699703f",
+    "resourceType": "AWS::EC2::CustomerGateway",
+    "resourceId": "cgw-5699703f",
+    "awsRegion": "Not Applicable",
+    "availabilityZone": "Not Applicable",
+    "tags": {
+      "Name": "MyCustomerGateway-Gamma"
+    },
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "customerGatewayId": "cgw-5699703f",
+      "state": "available",
+      "type": "ipsec.1",
+      "ipAddress": "65.102.80.1",
+      "bgpAsn": "65000",
+      "tags": [
+        {
+          "key": "Name",
+          "value": "MyCustomerGateway-Gamma"
+        }
+      ]
+    },
+    "supplementaryConfiguration": {}
+  }

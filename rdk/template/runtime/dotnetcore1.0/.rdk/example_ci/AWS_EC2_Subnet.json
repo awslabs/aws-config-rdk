@@ -1,0 +1,54 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-10-28T00:41:33.513Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1477615293513",
+    "configurationItemMD5Hash": "4a857647e7ffd1495a78a76bccee9fd1",
+    "arn": "arn:aws:ec2:us-east-1:264683526309:subnet/subnet-29428871",
+    "resourceType": "AWS::EC2::Subnet",
+    "resourceId": "subnet-29428871",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "us-east-1a",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::NetworkAcl",
+        "resourceId": "acl-b48fd1d0",
+        "relationshipName": "Is attached to NetworkAcl"
+      },
+      {
+        "resourceType": "AWS::EC2::NetworkInterface",
+        "resourceId": "eni-70a4b7bf",
+        "relationshipName": "Contains NetworkInterface"
+      },
+      {
+        "resourceType": "AWS::EC2::NetworkInterface",
+        "resourceId": "eni-c09a049e",
+        "relationshipName": "Contains NetworkInterface"
+      },
+      {
+        "resourceType": "AWS::EC2::Instance",
+        "resourceId": "i-ebf3e058",
+        "relationshipName": "Contains Instance"
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-0990dc6d",
+        "relationshipName": "Is contained in Vpc"
+      }
+    ],
+    "configuration": {
+      "subnetId": "subnet-29428871",
+      "state": "available",
+      "vpcId": "vpc-0990dc6d",
+      "cidrBlock": "172.31.16.0/20",
+      "availableIpAddressCount": 4089,
+      "availabilityZone": "us-east-1a",
+      "defaultForAz": true,
+      "mapPublicIpOnLaunch": true,
+      "tags": []
+    },
+    "supplementaryConfiguration": {}
+  }

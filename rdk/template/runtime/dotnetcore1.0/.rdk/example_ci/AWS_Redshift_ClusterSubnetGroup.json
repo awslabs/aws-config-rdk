@@ -1,0 +1,69 @@
+{
+    "version": "1.2",
+    "accountId": "382822795712",
+    "configurationItemCaptureTime": "2016-10-13T21:11:05.898Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1476393065898",
+    "configurationItemMD5Hash": "415cc9ed7a5c561539df534d97457f07",
+    "arn": "arn:aws:redshift:us-west-2:382822795712:subnetgroup:default",
+    "resourceType": "AWS::Redshift::ClusterSubnetGroup",
+    "resourceId": "default",
+    "resourceName": "default",
+    "awsRegion": "us-west-2",
+    "availabilityZone": "Multiple Availability Zones",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-2810484d",
+        "relationshipName": "Is associated with Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-7471e02d",
+        "relationshipName": "Is associated with Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-fcf48b8b",
+        "relationshipName": "Is associated with Subnet"
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-af541fca",
+        "relationshipName": "Is associated with Vpc"
+      }
+    ],
+    "configuration": {
+      "clusterSubnetGroupName": "default",
+      "description": "default",
+      "vpcId": "vpc-af541fca",
+      "subnetGroupStatus": "Complete",
+      "subnets": [
+        {
+          "subnetIdentifier": "subnet-fcf48b8b",
+          "subnetAvailabilityZone": {
+            "name": "us-west-2b"
+          },
+          "subnetStatus": "Active"
+        },
+        {
+          "subnetIdentifier": "subnet-2810484d",
+          "subnetAvailabilityZone": {
+            "name": "us-west-2a"
+          },
+          "subnetStatus": "Active"
+        },
+        {
+          "subnetIdentifier": "subnet-7471e02d",
+          "subnetAvailabilityZone": {
+            "name": "us-west-2c"
+          },
+          "subnetStatus": "Active"
+        }
+      ],
+      "tags": []
+    },
+    "supplementaryConfiguration": {}
+  }

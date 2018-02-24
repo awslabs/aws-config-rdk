@@ -1,0 +1,105 @@
+{
+    "version": "1.2",
+    "accountId": "382822795712",
+    "configurationItemCaptureTime": "2016-10-18T15:30:24.713Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1476804624713",
+    "configurationItemMD5Hash": "ec724c476b82fc5406c7d073aef59bc1",
+    "arn": "arn:aws:redshift:us-west-2:382822795712:cluster:cluster-with-kms",
+    "resourceType": "AWS::Redshift::Cluster",
+    "resourceId": "cluster-with-kms",
+    "resourceName": "cluster-with-kms",
+    "awsRegion": "us-west-2",
+    "availabilityZone": "us-west-2c",
+    "resourceCreationTime": "2016-10-13T22:26:39.723Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::Redshift::ClusterParameterGroup",
+        "resourceId": "default.redshift-1.0",
+        "resourceName": "default.redshift-1.0",
+        "relationshipName": "Is associated with ClusterParameterGroup"
+      },
+      {
+        "resourceType": "AWS::Redshift::ClusterSubnetGroup",
+        "resourceId": "default",
+        "resourceName": "default",
+        "relationshipName": "Is associated with ClusterSubnetGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-859be8e1",
+        "relationshipName": "Is associated with SecurityGroup"
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-af541fca",
+        "relationshipName": "Is associated with Vpc"
+      }
+    ],
+    "configuration": {
+      "clusterIdentifier": "cluster-with-kms",
+      "nodeType": "dc1.large",
+      "clusterStatus": "available",
+      "masterUsername": "asdf",
+      "dBName": "asdfffffdb",
+      "endpoint": {
+        "address": "cluster-with-kms.ccuk7ac3adx1.us-west-2.redshift.amazonaws.com",
+        "port": 5439
+      },
+      "clusterCreateTime": "2016-10-13T22:26:39.723Z",
+      "automatedSnapshotRetentionPeriod": 1,
+      "clusterSecurityGroups": [],
+      "vpcSecurityGroups": [
+        {
+          "vpcSecurityGroupId": "sg-859be8e1",
+          "status": "active"
+        }
+      ],
+      "clusterParameterGroups": [
+        {
+          "parameterGroupName": "default.redshift-1.0",
+          "parameterApplyStatus": "in-sync",
+          "clusterParameterStatusList": []
+        }
+      ],
+      "clusterSubnetGroupName": "default",
+      "vpcId": "vpc-af541fca",
+      "availabilityZone": "us-west-2c",
+      "preferredMaintenanceWindow": "tue:10:00-tue:10:30",
+      "pendingModifiedValues": {},
+      "clusterVersion": "1.0",
+      "allowVersionUpgrade": true,
+      "numberOfNodes": 1,
+      "publiclyAccessible": true,
+      "encrypted": true,
+      "clusterSnapshotCopyStatus": {
+        "destinationRegion": "us-east-1",
+        "retentionPeriod": 1,
+        "snapshotCopyGrantName": "ffffffffff"
+      },
+      "clusterPublicKey": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCGL3qztF7Lx6k8K6yGcGhgqwrqKTVEvXQwir/EALhDKp42+cZwg+Qg6007eNzSSlew8gTAJRGUJtGZjmFCHJ1hLJThAnXxqbOZMtiIMKebYBhTnZV7wfrHbbM3xmy0YR7gd5aFxrSAHV1UH4S+fJu5fS9xduir+1z1GIR/isZNcSswYWSmJQ/jpZ/G9p/I5wkvBCjQrxY3SZBoj+E2+SGrLwTO79CBYcimUGDWUYj/UW1yAjVu+F0GLct8v4GNnxoD+EnYTRPRQs6W8i+cqRCGBW8N59Ai1oEcRDJT37flRQEx+bSSkMoRvIF/fnMZECm/mzPBfjarLWtLOBXYb+JN Amazon-Redshift\n",
+      "clusterNodes": [
+        {
+          "nodeRole": "SHARED",
+          "privateIPAddress": "172.31.11.135",
+          "publicIPAddress": "52.37.23.91"
+        }
+      ],
+      "clusterRevisionNumber": "1104",
+      "tags": [],
+      "kmsKeyId": "arn:aws:kms:us-west-2:382822795712:key/1734c784-c7d1-443c-8629-aef34db98b30",
+      "iamRoles": []
+    },
+    "supplementaryConfiguration": {
+      "LoggingStatus": {
+        "loggingEnabled": true,
+        "bucketName": "redshift-marclab",
+        "s3KeyPrefix": null,
+        "lastSuccessfulDeliveryTime": "2016-10-18T14:29:31.000Z",
+        "lastFailureTime": null,
+        "lastFailureMessage": null
+      }
+    }
+  }

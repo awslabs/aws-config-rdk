@@ -1,0 +1,130 @@
+{
+    "version": "1.2",
+    "accountId": "382822795712",
+    "configurationItemCaptureTime": "2016-10-13T22:44:21.281Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1476398661281",
+    "configurationItemMD5Hash": "fa9d08c690b7fcc0490594e6159f241d",
+    "arn": "arn:aws:redshift:us-west-2:382822795712:parametergroup:custom-parameter-group",
+    "resourceType": "AWS::Redshift::ClusterParameterGroup",
+    "resourceId": "custom-parameter-group",
+    "resourceName": "custom-parameter-group",
+    "awsRegion": "us-west-2",
+    "availabilityZone": "Not Applicable",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "parameterGroupName": "custom-parameter-group",
+      "parameterGroupFamily": "redshift-1.0",
+      "description": "custom-parameter-group",
+      "tags": []
+    },
+    "supplementaryConfiguration": {
+      "Parameters": [
+        {
+          "parameterName": "datestyle",
+          "parameterValue": "ISO, MDY",
+          "description": "Sets the display format for date and time values.",
+          "source": "engine-default",
+          "dataType": "string",
+          "allowedValues": null,
+          "applyType": "static",
+          "isModifiable": true,
+          "minimumEngineVersion": null
+        },
+        {
+          "parameterName": "enable_user_activity_logging",
+          "parameterValue": "false",
+          "description": "parameter for audit logging purpose",
+          "source": "engine-default",
+          "dataType": "boolean",
+          "allowedValues": "true,false",
+          "applyType": "static",
+          "isModifiable": true,
+          "minimumEngineVersion": null
+        },
+        {
+          "parameterName": "extra_float_digits",
+          "parameterValue": "2",
+          "description": "Sets the number of digits displayed for floating-point values",
+          "source": "user",
+          "dataType": "integer",
+          "allowedValues": "-15-2",
+          "applyType": "static",
+          "isModifiable": true,
+          "minimumEngineVersion": null
+        },
+        {
+          "parameterName": "max_cursor_result_set_size",
+          "parameterValue": "default",
+          "description": "Sets the max cursor result set size",
+          "source": "engine-default",
+          "dataType": "integer",
+          "allowedValues": "0-14400000",
+          "applyType": "static",
+          "isModifiable": true,
+          "minimumEngineVersion": null
+        },
+        {
+          "parameterName": "query_group",
+          "parameterValue": "default",
+          "description": "This parameter applies a user-defined label to a group of queries that are run during the same session..",
+          "source": "engine-default",
+          "dataType": "string",
+          "allowedValues": null,
+          "applyType": "static",
+          "isModifiable": true,
+          "minimumEngineVersion": null
+        },
+        {
+          "parameterName": "require_ssl",
+          "parameterValue": "false",
+          "description": "require ssl for all databaseconnections",
+          "source": "engine-default",
+          "dataType": "boolean",
+          "allowedValues": "true,false",
+          "applyType": "static",
+          "isModifiable": true,
+          "minimumEngineVersion": null
+        },
+        {
+          "parameterName": "search_path",
+          "parameterValue": "$user, public",
+          "description": "Sets the schema search order for names that are not schema-qualified.",
+          "source": "engine-default",
+          "dataType": "string",
+          "allowedValues": null,
+          "applyType": "static",
+          "isModifiable": true,
+          "minimumEngineVersion": null
+        },
+        {
+          "parameterName": "statement_timeout",
+          "parameterValue": "0",
+          "description": "Aborts any statement that takes over the specified number of milliseconds.",
+          "source": "engine-default",
+          "dataType": "integer",
+          "allowedValues": "0,100-2147483647",
+          "applyType": "static",
+          "isModifiable": true,
+          "minimumEngineVersion": null
+        },
+        {
+          "parameterName": "wlm_json_configuration",
+          "parameterValue": [
+            {
+              "query_concurrency": 5
+            }
+          ],
+          "description": "wlm json configuration",
+          "source": "engine-default",
+          "dataType": "string",
+          "allowedValues": null,
+          "applyType": "static",
+          "isModifiable": true,
+          "minimumEngineVersion": null
+        }
+      ]
+    }
+  }
