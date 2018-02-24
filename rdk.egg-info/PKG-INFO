@@ -1,12 +1,11 @@
 Metadata-Version: 1.0
 Name: rdk
-Version: 0.3.4
+Version: 0.3.5
 Summary: Rule Development Kit CLI for AWS Config
 Home-page: https://github.com/awslabs/aws-config-rdk/
 Author: Michael Borchert
 Author-email: mborch@amazon.com
 License: Apache License Version 2.0
-Description-Content-Type: UNKNOWN
 Description: rdk
         ===
         Rule Development Kit - Version 2
