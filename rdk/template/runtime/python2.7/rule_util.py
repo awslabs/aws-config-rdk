@@ -76,6 +76,8 @@ def is_applicable(configurationItem, event):
     check_defined(event, 'event')
     status = configurationItem['configurationItemStatus']
     eventLeftScope = event['eventLeftScope']
+    if(status == 'ResourceDeleted'):
+        print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
     return (status == 'OK' or status == 'ResourceDiscovered') and eventLeftScope == False
 
 # This decorates the lambda_handler in rule_code with the actual PutEvaluation call
@@ -116,12 +118,12 @@ def rule_handler(lambda_handler):
                 # Invoke the compliance checking function.
                 compliance = lambda_handler(event, context)
 
-                evaluations = [{
-                        'ComplianceResourceType': configurationItem['resourceType'],
-                        'ComplianceResourceId': configurationItem['resourceId'],
-                        'ComplianceType': compliance,
-                        'OrderingTimestamp': configurationItem['configurationItemCaptureTime']
-                }]
+            evaluations = [{
+                    'ComplianceResourceType': configurationItem['resourceType'],
+                    'ComplianceResourceId': configurationItem['resourceId'],
+                    'ComplianceType': compliance,
+                    'OrderingTimestamp': configurationItem['configurationItemCaptureTime']
+            }]
 
         # Put together the request that reports the evaluation status
 

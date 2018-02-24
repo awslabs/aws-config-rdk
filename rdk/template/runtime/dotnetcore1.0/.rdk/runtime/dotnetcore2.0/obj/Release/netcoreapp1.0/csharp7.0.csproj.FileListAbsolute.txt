@@ -1,0 +1,10 @@
+/Users/goraju/code-repo/csharp7.0/bin/Release/netcoreapp1.0/csharp7.0.deps.json
+/Users/goraju/code-repo/csharp7.0/bin/Release/netcoreapp1.0/csharp7.0.runtimeconfig.json
+/Users/goraju/code-repo/csharp7.0/bin/Release/netcoreapp1.0/csharp7.0.runtimeconfig.dev.json
+/Users/goraju/code-repo/csharp7.0/bin/Release/netcoreapp1.0/csharp7.0.dll
+/Users/goraju/code-repo/csharp7.0/bin/Release/netcoreapp1.0/csharp7.0.pdb
+/Users/goraju/code-repo/csharp7.0/obj/Release/netcoreapp1.0/csharp7.0.csproj.CoreCompileInputs.cache
+/Users/goraju/code-repo/csharp7.0/obj/Release/netcoreapp1.0/csharp7.0.AssemblyInfoInputs.cache
+/Users/goraju/code-repo/csharp7.0/obj/Release/netcoreapp1.0/csharp7.0.AssemblyInfo.cs
+/Users/goraju/code-repo/csharp7.0/obj/Release/netcoreapp1.0/csharp7.0.dll
+/Users/goraju/code-repo/csharp7.0/obj/Release/netcoreapp1.0/csharp7.0.pdb

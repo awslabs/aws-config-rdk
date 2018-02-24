@@ -5,7 +5,7 @@
 #        http://aws.amazon.com/apache2.0/
 #
 #    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
+from __future__ import print_function
 import os
 from os import path
 import sys
@@ -23,7 +23,13 @@ import textwrap
 import fileinput
 import subprocess
 from subprocess import call
-
+import fnmatch
+import unittest
+try:
+    from unittest.mock import MagicMock, patch, ANY
+except ImportError:
+    import mock
+    from mock import MagicMock, patch, ANY
 
 rdk_dir = '.rdk'
 rules_dir = ''
@@ -114,12 +120,17 @@ class rdk():
 
             if not bucket_exists:
                 print('Creating Config bucket '+config_bucket_name )
-                my_s3.create_bucket(
-                    Bucket=config_bucket_name,
-                    CreateBucketConfiguration={
-                        'LocationConstraint': my_session.region_name
-                    }
-                )
+                if my_session.region_name == 'us-east-1':
+                    my_s3.create_bucket(
+                        Bucket=config_bucket_name
+                    )
+                else:
+                    my_s3.create_bucket(
+                        Bucket=config_bucket_name,
+                        CreateBucketConfiguration={
+                            'LocationConstraint': my_session.region_name
+                        }
+                    )
 
         if not config_role_arn:
             #create config role
@@ -162,7 +173,7 @@ class rdk():
         print('Config setup complete.')
 
         #create code bucket
-        code_bucket_name = code_bucket_prefix + account_id + my_session.region_name
+        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
         response = my_s3.list_buckets()
         bucket_exists = False
         for bucket in response['Buckets']:
@@ -200,7 +211,7 @@ class rdk():
             print("Runtime is required for 'create' command.")
             return 1
 
-        extension_mapping = {'java8':'.java', 'python2.7':'.py', 'python3.6':'.py','nodejs4.3':'.js', 'dotnetcore1.0':'cs', 'dotnetcore2.0':'cs'}
+        extension_mapping = {'java8':'.java', 'python2.7':'.py', 'python3.6':'.py','nodejs4.3':'.js', 'dotnetcore1.0':'cs', 'dotnetcore2.0':'cs', 'python3.6-managed':'.py'}
         if self.args.runtime not in extension_mapping:
             print ("rdk does nto support that runtime yet.")
 
@@ -226,6 +237,16 @@ class rdk():
                 src = os.path.join(os.getcwd(), rdk_dir, 'runtime', self.args.runtime, rule_handler + extension_mapping[self.args.runtime])
                 dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename + extension_mapping[self.args.runtime])
                 shutil.copyfile(src, dst)
+
+                src = os.path.join(os.getcwd(), rdk_dir, 'runtime', self.args.runtime, 'rule_test' + extension_mapping[self.args.runtime])
+                if os.path.exists(src):
+                    dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename+"_test"+extension_mapping[self.args.runtime])
+                    shutil.copyfile(src, dst)
+                    #with fileinput.FileInput(dst, inplace=True) as file:
+                    f = fileinput.input(files=dst, inplace=True)
+                    for line in f:
+                        print(line.replace('<%RuleName%>', self.args.rulename), end='')
+                    f.close()
 
                 src = os.path.join(os.getcwd(), rdk_dir, 'runtime', self.args.runtime, util_filename + extension_mapping[self.args.runtime])
                 if os.path.exists(src):
@@ -326,8 +347,8 @@ class rdk():
                 s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
                 s3_src = shutil.make_archive(os.path.join(rule_name, rule_name), 'zip', s3_src_dir)
 
-            s3_dst = "/".join(rule_name, rule_name+".zip")
-            code_bucket_name = code_bucket_prefix + account_id + my_session.region_name
+            s3_dst = "/".join((rule_name, rule_name+".zip"))
+            code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
             my_s3 = my_session.resource('s3')
 
             print ("Uploading " + rule_name)
@@ -428,37 +449,27 @@ class rdk():
         return 0
 
     def test_local(self):
-        print ("Running test_local!")
-        self.__parse_test_args()
+        print ("Running local test!")
+        tests_successful = True
 
-        #Dynamically import the shared rule_util module.
-        util_path = os.path.join(rdk_dir, "rule_util.py")
-        imp.load_source('rule_util', util_path)
+        args = self.__parse_test_args()
 
         #Construct our list of rules to test.
         rule_names = self.__get_rule_list_for_command()
 
         for rule_name in rule_names:
+            rule_params = self.__get_rule_parameters(rule_name)
+            if rule_params['SourceRuntime'] not in ('python2.7','python3.6'):
+                print ("Skipping " + rule_name + " - Runtime not supported for local testing.")
+                continue
+
             print("Testing "+rule_name)
-            #Dynamically import the custom rule code, so that we can run the evaluate_compliance function.
-            module_path = os.path.join(".", os.path.dirname(rules_dir), rule_name, rule_name+".py")
-            module_name = str(rule_name).lower()
-            module = imp.load_source(module_name, module_path)
+            test_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            results = unittest.TextTestRunner(buffer=True, verbosity=2).run(self.__create_test_suite(test_dir))
+            print (results)
 
-            #Get CI JSON from either the CLI or one of the stored templates.
-            my_cis = self.__get_test_CIs(rule_name)
-
-            #Get Parameters from Rule config
-            my_rule_params = self.__get_rule_parameters(rule_name)
-            my_parameters = my_rule_params['InputParameters']
-
-            #Execute the evaluate_compliance function
-            for my_ci in my_cis:
-                print ("\t\tTesting CI " + my_ci['resourceType'])
-                result = getattr(module, 'evaluate_compliance')(my_ci, my_parameters)
-                print("\t\t\t"+result)
-
-        return 0
+            tests_successful = tests_successful and results.wasSuccessful()
+        return int(not tests_successful)
 
     def test_remote(self):
         print ("Running test_remote!")
@@ -590,6 +601,17 @@ class rdk():
 
         except cw_logs.exceptions.ResourceNotFoundException as e:
             print(e.response['Error']['Message'])
+
+    def __create_test_suite(self, test_dir):
+        tests = []
+        for (top, dirs, filenames) in os.walk(test_dir):
+            for filename in fnmatch.filter(filenames, '*_test.py'):
+                print(filename)
+                sys.path.append(top)
+                tests.append(filename[:-3])
+
+        suites = [unittest.defaultTestLoader.loadTestsFromName(test) for test in tests]
+        return unittest.TestSuite(suites)
 
     def __clean_rule_name(self, rule_name):
         output = rule_name

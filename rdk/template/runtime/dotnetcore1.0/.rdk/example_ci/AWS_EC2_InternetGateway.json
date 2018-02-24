@@ -1,0 +1,35 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-09-24T17:47:03.765Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "949",
+    "configurationItemMD5Hash": "4b662f4dface6f87805284f4632263c3",
+    "arn": "arn:aws:ec2:us-east-1:264683526309:internet-gateway/igw-a5f227c1",
+    "resourceType": "AWS::EC2::InternetGateway",
+    "resourceId": "igw-a5f227c1",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Multiple Availability Zones",
+    "tags": {},
+    "relatedEvents": [
+      "7656056e-4df8-4db6-a2fc-cf83e5461f7f"
+    ],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-0990dc6d",
+        "relationshipName": "Is attached to Vpc"
+      }
+    ],
+    "configuration": {
+      "internetGatewayId": "igw-a5f227c1",
+      "attachments": [
+        {
+          "vpcId": "vpc-0990dc6d",
+          "state": "available"
+        }
+      ],
+      "tags": []
+    },
+    "supplementaryConfiguration": {}
+  }

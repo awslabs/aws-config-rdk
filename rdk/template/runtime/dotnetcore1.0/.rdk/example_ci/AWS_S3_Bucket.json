@@ -1,0 +1,96 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-11-06T06:21:42.759Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1478413302759",
+    "configurationItemMD5Hash": "2da1efbd2e4eee634d8be076f3e2eda7",
+    "arn": "arn:aws:s3:::testbucket2-us-east-1",
+    "resourceType": "AWS::S3::Bucket",
+    "resourceId": "testbucket2-us-east-1",
+    "resourceName": "testbucket2-us-east-1",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Regional",
+    "resourceCreationTime": "2016-11-05T23:59:32.000Z",
+    "tags": {},
+    "relatedEvents": [
+      "e4a8244d-c94f-47f1-b441-424d31b0833a"
+    ],
+    "relationships": [],
+    "configuration": {
+      "name": "testbucket2-us-east-1",
+      "owner": {
+        "displayName": "aarkho",
+        "id": "28f61982c7ea8ba301f8d90b4fe979a567383f85e9706603da913d27f5522c59"
+      },
+      "creationDate": "2016-11-05T23:59:32.000Z"
+    },
+    "supplementaryConfiguration": {
+      "AccessControlList": {
+        "grantSet": null,
+        "grantList": [
+          {
+            "grantee": {
+              "id": "28f61982c7ea8ba301f8d90b4fe979a567383f85e9706603da913d27f5522c59",
+              "displayName": "aarkho"
+            },
+            "permission": "FullControl"
+          }
+        ],
+        "owner": {
+          "displayName": "aarkho",
+          "id": "28f61982c7ea8ba301f8d90b4fe979a567383f85e9706603da913d27f5522c59"
+        },
+        "isRequesterCharged": false
+      },
+      "BucketReplicationConfiguration": {
+        "roleARN": "arn:aws:iam::264683526309:role/testbucket2-us-east-1-testbucket2-us-west-2-s3-repl-role",
+        "rules": {
+          "testbucket2-us-east-1": {
+            "prefix": "",
+            "status": "Enabled",
+            "destinationConfig": {
+              "bucketARN": "arn:aws:s3:::testbucket2-us-west-2",
+              "storageClass": null
+            }
+          }
+        }
+      },
+      "BucketLoggingConfiguration": {
+        "destinationBucketName": null,
+        "logFilePrefix": null
+      },
+      "BucketPolicy": {
+        "policyText": {
+          "Version": "2012-10-17",
+          "Id": "Policy1478390053757",
+          "Statement": [
+            {
+              "Sid": "Stmt1478389920384",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": "arn:aws:s3:::testbucket2-us-east-1",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "BucketAccelerateConfiguration": {
+        "status": null
+      },
+      "IsRequesterPaysEnabled": "false",
+      "BucketVersioningConfiguration": {
+        "status": "Enabled",
+        "isMfaDeleteEnabled": null
+      },
+      "BucketNotificationConfiguration": {
+        "configurations": {}
+      }
+    }
+  }
+

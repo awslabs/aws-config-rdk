@@ -1,0 +1,44 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-11-11T22:56:58.508Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1478905018508",
+    "configurationItemMD5Hash": "e97b9c7499298297759073826f7567e7",
+    "arn": "arn:aws:ec2:us-east-1:264683526309:vpn-gateway/vgw-2ccb2245",
+    "resourceType": "AWS::EC2::VPNGateway",
+    "resourceId": "vgw-2ccb2245",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Regional",
+    "tags": {
+      "Name": "MyVirtualPrivateGateway-Gamma"
+    },
+    "relatedEvents": [
+      "da71988b-3383-424c-80e7-b052a02ac87c"
+    ],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-0990dc6d",
+        "relationshipName": "Is attached to Vpc"
+      }
+    ],
+    "configuration": {
+      "vpnGatewayId": "vgw-2ccb2245",
+      "state": "available",
+      "type": "ipsec.1",
+      "vpcAttachments": [
+        {
+          "vpcId": "vpc-0990dc6d",
+          "state": "attached"
+        }
+      ],
+      "tags": [
+        {
+          "key": "Name",
+          "value": "MyVirtualPrivateGateway-Gamma"
+        }
+      ]
+    },
+    "supplementaryConfiguration": {}
+  }

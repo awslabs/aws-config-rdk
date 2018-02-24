@@ -1,0 +1,27 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-07-25T17:54:07.601Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "29",
+    "configurationItemMD5Hash": "4128c6317609bb15a8eb83f045f5bac6",
+    "arn": "arn:aws:rds:us-east-1:264683526309:secgrp:default",
+    "resourceType": "AWS::RDS::DBSecurityGroup",
+    "resourceId": "default",
+    "resourceName": "default",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "ownerId": "264683526309",
+      "dBSecurityGroupName": "default",
+      "dBSecurityGroupDescription": "default",
+      "eC2SecurityGroups": [],
+      "iPRanges": []
+    },
+    "supplementaryConfiguration": {
+      "Tags": []
+    }
+  }

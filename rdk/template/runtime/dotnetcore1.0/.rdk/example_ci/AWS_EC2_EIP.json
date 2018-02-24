@@ -1,0 +1,22 @@
+  {
+    "version": "1.2",
+    "accountId": "264683526309",
+    "configurationItemCaptureTime": "2016-09-22T01:19:20.737Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1",
+    "configurationItemMD5Hash": "0c9d051e36e7494c37300714e1c9aa68",
+    "arn": "arn:aws:ec2:us-east-1:264683526309:eip-allocation/eipalloc-b67d33ce",
+    "resourceType": "AWS::EC2::EIP",
+    "resourceId": "eipalloc-b67d33ce",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "publicIp": "52.45.95.91",
+      "allocationId": "eipalloc-b67d33ce",
+      "domain": "vpc"
+    },
+    "supplementaryConfiguration": {}
+  }
