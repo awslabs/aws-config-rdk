@@ -22,7 +22,7 @@ setup(name='rdk',
       license='Apache License Version 2.0',
       packages=['rdk'],
       install_requires=[
-          'boto3', 'mock',
+          'boto3',
       ],
       scripts=['bin/rdk'],
       zip_safe=False,
