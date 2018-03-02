@@ -23,6 +23,7 @@ setup(name='rdk',
       packages=['rdk'],
       install_requires=[
           'boto3',
+          'mock',
       ],
       scripts=['bin/rdk'],
       zip_safe=False,
