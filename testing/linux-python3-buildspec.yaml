@@ -1,0 +1,20 @@
+version: 0.1
+
+phases:
+  install:
+    commands:
+      - echo Installing rdk...
+      - pip install .
+  pre_build:
+    commands:
+      - echo Starting tests
+      - rdk init
+  build:
+    commands:
+      - rdk create LP3-TestRule-P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3-TestRule-P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroup
+      - rdk test-local --all
+      - rdk deploy --all
+  post_build:
+    commands:
+      - echo Build completed on `date`
