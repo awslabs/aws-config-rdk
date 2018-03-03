@@ -25,6 +25,7 @@ import subprocess
 from subprocess import call
 import fnmatch
 import unittest
+
 try:
     from unittest.mock import MagicMock, patch, ANY
 except ImportError:
@@ -648,7 +649,14 @@ class rdk():
     def __print_log_event(self, event):
         time_string = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(event['timestamp']/1000))
 
-        rows, columns = os.popen('stty size', 'r').read().split()
+        rows = 24
+        columns = 80
+        try:
+            rows, columns = os.popen('stty size', 'r').read().split()
+        except ValueError as e:
+            #This was probably being run in a headless test environment which had no stty.
+            print("Using default terminal rows and columns.")
+
         line_wrap = int(columns) - 22
         message_lines = str(event['message']).splitlines()
         formatted_lines = []
