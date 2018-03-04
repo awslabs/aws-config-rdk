@@ -4,7 +4,7 @@ phases:
   build:
     commands:
       - echo Creating Windows build server and running tests
-      - testing/test_windows.sh 2
+      - bash testing/test_windows.sh 2
   post_build:
     commands:
       - echo Build completed on `date`
