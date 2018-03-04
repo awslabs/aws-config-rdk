@@ -21,25 +21,27 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
   #Construct powershell script to run test and publish results to S3
   user_data="
     <powershell>
-    Copy-S3Object -BucketName rdk-testing-source-bucket -KeyPrefix ${build_id} -LocalFolder C:/tmp
+    Copy-S3Object -BucketName rdk-testing-source-bucket -KeyPrefix ${build_id} -LocalFolder C:\tmp
     python -m pip install C:\tmp
     set AWS_DEFAULT_REGION=ap-southeast-1
     Set-DefaultAWSRegion -Region ap-southeast-1
-    python C:\${version_string}\Scripts\rdk --region ap-southeast-1 init >C:\tmp\output.txt
-    python C:\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${version}-TestRule-P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
-    python C:\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${version}-TestRule-P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
-    python C:\${version_string}\Scripts\rdk --region ap-southeast-1 test-local WP${version}-TestRule-P2  >>C:\tmp\output.txt
-    python C:\${version_string}\Scripts\rdk --region ap-southeast-1 test-local WP${version}-TestRule-P3  >>C:\tmp\output.txt
-    python C:\${version_string}\Scripts\rdk --region ap-southeast-1 deploy WP${version}-TestRule-P2  >>C:\tmp\output.txt
-    python C:\${version_string}\Scripts\rdk --region ap-southeast-1 deploy WP${version}-TestRule-P3 >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 init >C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${version}-TestRule-P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${version}-TestRule-P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 test-local WP${version}-TestRule-P2  >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 test-local WP${version}-TestRule-P3  >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 deploy WP${version}-TestRule-P2  >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 deploy WP${version}-TestRule-P3 >>C:\tmp\output.txt
     Start-Sleep -s 60
-    python C:\${version_string}\Scripts\rdk --region ap-southeast-1 logs WP${version}-TestRule-P3 >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 logs WP${version}-TestRule-P3 >>C:\tmp\output.txt
     Write-S3Object -BucketName rdk-testing-windows-results -File C:\tmp\output.txt -Key ${build_id}/${version_string}Output.txt
     </powershell>
   "
+  echo "${user_data}"
+
 
   #Launch EC2 instance from specified AMI to run test script via UserData
-  aws ec2 run-instances --image-id ${windows_ami} --instance-type t2.small --security-group-ids sg-4e5ef137 --subnet-id subnet-aa094fcd --iam-instance-profile Arn=arn:aws:iam::711761543063:instance-profile/WindowsBuildServer --user-data "${user_data}" --key-name WindowsBuild
+  #aws ec2 run-instances --image-id ${windows_ami} --instance-type t2.small --security-group-ids sg-4e5ef137 --subnet-id subnet-aa094fcd --iam-instance-profile Arn=arn:aws:iam::711761543063:instance-profile/WindowsBuildServer --user-data "${user_data}" --key-name WindowsBuild
 
   #Wait for output file to show up in S3, or for timeout.
   file_found=0
@@ -56,5 +58,5 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
   #Terminate build instance
 
   #return success or failure.
-  cat output.txt
+  cat ./output.txt
 fi
