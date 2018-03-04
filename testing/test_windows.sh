@@ -48,7 +48,7 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
   while [ ${file_found} -ne 1 ]; do
     aws s3 ls s3://rdk-testing-windows-results/${build_id}/${version_string}Output.txt
     if [[ $? -ne 0 ]]; then
-      echo Waiting for output file in S3
+      echo "Waiting for output file in S3";
       sleep 10;
     else
       file_found=1
