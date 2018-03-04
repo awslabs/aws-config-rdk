@@ -26,14 +26,14 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
     set AWS_DEFAULT_REGION=ap-southeast-1
     Set-DefaultAWSRegion -Region ap-southeast-1
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 init >C:\tmp\output.txt
-    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${version}-TestRule-P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
-    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${version}-TestRule-P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 test-local WP${version}-TestRule-P2  >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 test-local WP${version}-TestRule-P3  >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 deploy WP${version}-TestRule-P2  >>C:\tmp\output.txt
-    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 deploy WP${version}-TestRule-P3 >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 deploy WP${python_version}-TestRule-P3 >>C:\tmp\output.txt
     Start-Sleep -s 60
-    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 logs WP${version}-TestRule-P3 >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 logs WP${python_version}-TestRule-P3 >>C:\tmp\output.txt
     Write-S3Object -BucketName rdk-testing-windows-results -File C:\tmp\output.txt -Key ${build_id}/${version_string}Output.txt
     </powershell>
   "
