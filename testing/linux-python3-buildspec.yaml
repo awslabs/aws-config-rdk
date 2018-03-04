@@ -16,7 +16,7 @@ phases:
       - rdk test-local --all
       - rdk deploy --all
       - sleep 30
-      - rdk logs LP2-TestRule-P3
+      - rdk logs LP3-TestRule-P3
   post_build:
     commands:
       - echo Build completed on `date`
