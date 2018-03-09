@@ -67,13 +67,13 @@ class rdk():
         print ("Running init!")
 
         #if the .rdk directory exists, delete it.
-        if  os.path.exists(rdk_dir):
-            shutil.rmtree(rdk_dir)
+        #if  os.path.exists(rdk_dir):
+        #    shutil.rmtree(rdk_dir)
 
         #copy contents of template directory into .rdk directory
-        src = os.path.join(path.dirname(__file__), 'template')
-        dst = rdk_dir
-        shutil.copytree(src, dst)
+        #src = os.path.join(path.dirname(__file__), 'template')
+        #dst = rdk_dir
+        #shutil.copytree(src, dst)
 
         #create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
@@ -144,12 +144,12 @@ class rdk():
 
             if not role_exists:
                 print('Creating IAM role config-role')
-                assume_role_policy = open(os.path.join(rdk_dir, assume_role_policy_file), 'r').read()
+                assume_role_policy = open(os.path.join(path.dirname(__file__), 'template', assume_role_policy_file), 'r').read()
                 my_iam.create_role(RoleName=config_role_name, AssumeRolePolicyDocument=assume_role_policy, Path="/rdk/")
 
             #attach role policy
             my_iam.attach_role_policy(RoleName=config_role_name, PolicyArn='arn:aws:iam::aws:policy/service-role/AWSConfigRole')
-            policy_template = open(os.path.join(rdk_dir, delivery_permission_policy_file), 'r').read()
+            policy_template = open(os.path.join(path.dirname(__file__), 'template', , delivery_permission_policy_file), 'r').read()
             delivery_permissions_policy = policy_template.replace('ACCOUNTID', account_id)
             my_iam.put_role_policy(RoleName=config_role_name, PolicyName='ConfigDeliveryPermissions', PolicyDocument=delivery_permissions_policy)
 
@@ -235,11 +235,11 @@ class rdk():
             elif self.args.runtime in ['dotnetcore1.0', 'dotnetcore2.0']:
                 self.__create_dotnet_rule()
             else:
-                src = os.path.join(os.getcwd(), rdk_dir, 'runtime', self.args.runtime, rule_handler + extension_mapping[self.args.runtime])
+                src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, rule_handler + extension_mapping[self.args.runtime])
                 dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename + extension_mapping[self.args.runtime])
                 shutil.copyfile(src, dst)
 
-                src = os.path.join(os.getcwd(), rdk_dir, 'runtime', self.args.runtime, 'rule_test' + extension_mapping[self.args.runtime])
+                src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, 'rule_test' + extension_mapping[self.args.runtime])
                 if os.path.exists(src):
                     dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename+"_test"+extension_mapping[self.args.runtime])
                     shutil.copyfile(src, dst)
@@ -249,7 +249,7 @@ class rdk():
                         print(line.replace('<%RuleName%>', self.args.rulename), end='')
                     f.close()
 
-                src = os.path.join(os.getcwd(), rdk_dir, 'runtime', self.args.runtime, util_filename + extension_mapping[self.args.runtime])
+                src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, util_filename + extension_mapping[self.args.runtime])
                 if os.path.exists(src):
                     dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, util_filename + extension_mapping[self.args.runtime])
                     shutil.copyfile(src, dst)
@@ -391,7 +391,7 @@ class rdk():
                 }]
 
             #deploy config rule
-            cfn_body = os.path.join(os.getcwd(), rdk_dir, "configRole.json")
+            cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRole.json")
             my_cfn = my_session.client('cloudformation')
 
             try:
@@ -497,7 +497,7 @@ class rdk():
                 print ("\t\tTesting CI " + my_ci['resourceType'])
 
                 #Generate test event from templates
-                test_event = json.load(open(os.path.join(os.getcwd(), rdk_dir, event_template_filename), 'r'), strict=False)
+                test_event = json.load(open(os.path.join(path.dirname(__file__), 'template', event_template_filename), 'r'), strict=False)
                 my_invoking_event = json.loads(test_event['invokingEvent'])
                 my_invoking_event['configurationItem'] = my_ci
                 my_invoking_event['notificationCreationTime'] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.000Z')
@@ -603,6 +603,9 @@ class rdk():
         except cw_logs.exceptions.ResourceNotFoundException as e:
             print(e.response['Error']['Message'])
 
+    def __get_template_dir():
+        return os.path.join(path.dirname(__file__), 'template')
+
     def __create_test_suite(self, test_dir):
         tests = []
         for (top, dirs, filenames) in os.walk(test_dir):
@@ -623,20 +626,20 @@ class rdk():
         return output
 
     def __create_java_rule(self):
-        src = os.path.join(os.getcwd(), rdk_dir, 'runtime', 'java8','src')
+        src = os.path.join(path.dirname(__file__), 'template', 'runtime', 'java8','src')
         dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, 'src')
         shutil.copytree(src, dst)
 
-        src = os.path.join(os.getcwd(), rdk_dir, 'runtime', 'java8','jars')
+        src = os.path.join(path.dirname(__file__), 'template',  'runtime', 'java8','jars')
         dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, 'jars')
         shutil.copytree(src, dst)
 
-        src = os.path.join(os.getcwd(), rdk_dir, 'runtime', 'java8', 'build.gradle')
+        src = os.path.join(path.dirname(__file__), 'template',  'runtime', 'java8', 'build.gradle')
         dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, 'build.gradle')
         shutil.copyfile(src, dst)
 
     def __create_dotnet_rule(self):
-        runtime_path = os.path.join(os.getcwd(), rdk_dir, 'runtime', self.args.runtime)
+        runtime_path = os.path.join(path.dirname(__file__), 'template',  'runtime', self.args.runtime)
         dst_path = os.path.join(os.getcwd(), rules_dir, self.args.rulename)
         for obj in os.listdir(runtime_path):
             src = os.path.join(runtime_path, obj)
@@ -885,7 +888,7 @@ class TestCI():
     def __init__(self, ci_type):
         #convert ci_type string to filename format
         ci_file = ci_type.replace('::','_') + '.json'
-        self.ci_json = json.load(open(os.path.join(rdk_dir, example_ci_dir, ci_file), 'r'))
+        self.ci_json = json.load(open(os.path.join(path.dirname(__file__), 'template',  example_ci_dir, ci_file), 'r'))
 
     def get_json(self):
         return self.ci_json

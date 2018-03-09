@@ -16,8 +16,6 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
     version_string="Python36";
   fi
 
-  #Get start time
-
   #Construct powershell script to run test and publish results to S3
   user_data="
     <powershell>
