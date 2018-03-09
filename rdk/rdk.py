@@ -149,7 +149,7 @@ class rdk():
 
             #attach role policy
             my_iam.attach_role_policy(RoleName=config_role_name, PolicyArn='arn:aws:iam::aws:policy/service-role/AWSConfigRole')
-            policy_template = open(os.path.join(path.dirname(__file__), 'template', , delivery_permission_policy_file), 'r').read()
+            policy_template = open(os.path.join(path.dirname(__file__), 'template', delivery_permission_policy_file), 'r').read()
             delivery_permissions_policy = policy_template.replace('ACCOUNTID', account_id)
             my_iam.put_role_policy(RoleName=config_role_name, PolicyName='ConfigDeliveryPermissions', PolicyDocument=delivery_permissions_policy)
 
