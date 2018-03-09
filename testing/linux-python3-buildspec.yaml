@@ -13,7 +13,8 @@ phases:
     commands:
       - rdk create LP3-TestRule-P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3-TestRule-P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroup
-      - rdk modify LP3-TestRule-P3 --input-parameters '{"TestParameter":"TestVlaue"}'
+      - rdk create LP3-TestRule-JS --runtime nodejs4.3 --resource-types AWS::EC2::SecurityGroup
+      - rdk modify LP3-TestRule-P3 --input-parameters '{"TestParameter":"TestValue"}'
       - rdk test-local --all
       - rdk deploy --all
       - sleep 30
