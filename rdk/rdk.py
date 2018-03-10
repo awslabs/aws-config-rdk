@@ -466,6 +466,7 @@ class rdk():
 
             print("Testing "+rule_name)
             test_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            print("Looking for tests in " + test_dir)
             results = unittest.TextTestRunner(buffer=True, verbosity=2).run(self.__create_test_suite(test_dir))
             print (results)
 
@@ -615,6 +616,10 @@ class rdk():
                 tests.append(filename[:-3])
 
         suites = [unittest.defaultTestLoader.loadTestsFromName(test) for test in tests]
+        for suite in suites:
+            print("Debug!")
+            print(suite)
+
         return unittest.TestSuite(suites)
 
     def __clean_rule_name(self, rule_name):

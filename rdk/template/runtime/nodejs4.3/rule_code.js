@@ -14,20 +14,27 @@ const aws = require('aws-sdk');
 
 const config = new aws.ConfigService();
 
-// This is where it's determined whether the resource is compliant or not.
-// In this example, we simply decide that the resource is compliant if it is an instance and its type matches the type specified as the desired type.
-// If the resource is not an EC2 instance, then we deem this resource to be not applicable. (If the scope of the rule is specified to include only
-// instances, this rule would never have been invoked.)
-function evaluateCompliance(configurationItem, ruleParameters) {
-    return 'NOT_APPLICABLE';
+function evaluateCompliance(configurationItem, ruleParameters, callback) {
+
+    /*
+    ###############################
+    # Add your custom logic here. #
+    ###############################
+    */
+
+    callback('NOT_APPLICABLE');
 }
 
+//Boilerplate Code - You should not need to change anything below this comment.
 function rule_handler(event, context, callback) {
-    console.info(event);
+    //console.info(event);
     const invokingEvent = JSON.parse(event.invokingEvent);
     const configItem = invokingEvent.configurationItem;
     const ruleParameters = JSON.parse(event.ruleParameters);
-    callback(null, evaluateCompliance(configItem, ruleParameters));
+    evaluateCompliance(configItem, ruleParameters, function(results){
+      console.log(results);
+      callback(null, results);
+    });
 }
 
 // Helper function used to validate input
@@ -99,11 +106,12 @@ function getConfigurationItem(invokingEvent, callback) {
 
 // Check whether the resource has been deleted. If it has, then the evaluation is unnecessary.
 function isApplicable(configurationItem, event) {
-    checkDefined(configurationItem, 'configurationItem');
+    //checkDefined(configurationItem, 'configurationItem');
     checkDefined(event, 'event');
-    const status = configurationItem.configurationItemStatus;
+    //const status = configurationItem.configurationItemStatus;
     const eventLeftScope = event.eventLeftScope;
-    return (status === 'OK' || status === 'ResourceDiscovered') && eventLeftScope === false;
+    //return (status === 'OK' || status === 'ResourceDiscovered') && eventLeftScope === false;
+    return (eventLeftScope === false);
 }
 
 // This is the handler that's invoked by Lambda
@@ -116,71 +124,70 @@ exports.lambda_handler = function(event, context, callback) {
         if (err) {
             callback(err);
         }
-        if (!configurationItem){
-          callback("RDK utility class does not yet support Scheduled Notifications.")
-        }
-        let compliance = 'NOT_APPLICABLE';
-        const putEvaluationsRequest = {};
+        //let compliance = 'NOT_APPLICABLE';
         if (isApplicable(configurationItem, event)) {
             invokingEvent.configurationItem = configurationItem;
             event.invokingEvent = JSON.stringify(invokingEvent);
-            rule_handler(event, context, (err, computedCompliance) => {
+            rule_handler(event, context, (err, compliance_results) => {
                 if (err) {
                     callback(err);
                 }
-                compliance = computedCompliance;
+                //compliance = computedCompliance;
+                var putEvaluationsRequest = {};
+
+                // Put together the request that reports the evaluation status
+                if (typeof compliance_results === 'string' || compliance_results instanceof String){
+                  putEvaluationsRequest.Evaluations = [
+                      {
+                          ComplianceResourceType: configurationItem.resourceType,
+                          ComplianceResourceId: configurationItem.resourceId,
+                          ComplianceType: compliance_results,
+                          OrderingTimestamp: configurationItem.configurationItemCaptureTime
+                      }
+                  ];
+                } else if (compliance_results instanceof Array) {
+                  putEvaluationsRequest.Evaluations = [];
+
+                  var fields = ['ComplianceResourceType', 'ComplianceResourceId', 'ComplianceType', 'OrderingTimestamp'];
+
+                  for (var i = 0; i < compliance_results.length; i++) {
+                    var missing_fields = false;
+                    for (var j = 0; j < fields.length; j++) {
+                      if (!compliance_results[i].hasOwnProperty(fields[j])) {
+                        console.info("Missing " + fields[j] + " from custom evaluation.");
+                        missing_fields = true;
+                      }
+                    }
+
+                    if (!missing_fields){
+                      putEvaluationsRequest.Evaluations.push(compliance_results[i]);
+                    }
+                  }
+                } else {
+                  putEvaluationsRequest.Evaluations = [
+                      {
+                          ComplianceResourceType: configurationItem.resourceType,
+                          ComplianceResourceId: configurationItem.resourceId,
+                          ComplianceType: 'INSUFFICIENT_DATA',
+                          OrderingTimestamp: configurationItem.configurationItemCaptureTime
+                      }
+                  ];
+                }
+
+                putEvaluationsRequest.ResultToken = event.resultToken;
+
+                // Invoke the Config API to report the result of the evaluation
+                config.putEvaluations(putEvaluationsRequest, (error, data) => {
+                    if (error) {
+                        callback(error, null);
+                    } else if (data.FailedEvaluations.length > 0) {
+                        // Ends the function execution if any evaluation results are not successfully reported.
+                        callback(JSON.stringify(data), null);
+                    } else {
+                        callback(null, data);
+                    }
+                });
             });
         }
-        // Put together the request that reports the evaluation status
-        if (typeof compliance === 'string' || compliance instanceof String){
-          putEvaluationsRequest.Evaluations = [
-              {
-                  ComplianceResourceType: configurationItem.resourceType,
-                  ComplianceResourceId: configurationItem.resourceId,
-                  ComplianceType: compliance,
-                  OrderingTimestamp: configurationItem.configurationItemCaptureTime,
-              }
-          ];
-        } else if (compliance instanceof Array) {
-          fields = ['ComplianceResourceType', 'ComplianceResourceId', 'ComplianceType', 'OrderingTimestamp'];
-          for (var i = 0; i < compliace.length; i++) {
-            compliance_result = compliance[i];
-
-            var missing_fields = false;
-            for (var j = 0; j < fields.length; j++) {
-              if (!compliance_result.hasOwnProperty(fields[j])) {
-                console.info("Missing " + fields[j] + " from custom evaluation.");
-                missing_fields = true;
-              }
-            }
-
-            if (!missing_fields){
-              putEvaluationsRequest.Evaluations.append(compliance_result);
-            }
-          }
-        } else {
-          putEvaluationsRequest.Evaluations = [
-              {
-                  ComplianceResourceType: configurationItem.resourceType,
-                  ComplianceResourceId: configurationItem.resourceId,
-                  ComplianceType: 'NOT_APPLICABLE',
-                  OrderingTimestamp: configurationItem.configurationItemCaptureTime,
-              }
-          ];
-        }
-
-        putEvaluationsRequest.ResultToken = event.resultToken;
-
-        // Invoke the Config API to report the result of the evaluation
-        config.putEvaluations(putEvaluationsRequest, (error, data) => {
-            if (error) {
-                callback(error, null);
-            } else if (data.FailedEvaluations.length > 0) {
-                // Ends the function execution if any evaluation results are not successfully reported.
-                callback(JSON.stringify(data), null);
-            } else {
-                callback(null, data);
-            }
-        });
     });
 };

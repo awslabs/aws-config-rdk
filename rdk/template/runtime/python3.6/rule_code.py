@@ -10,7 +10,6 @@ import json
 import boto3
 import botocore
 import datetime
-#from rule_util import *
 
 aws_config = boto3.client('config')
 
