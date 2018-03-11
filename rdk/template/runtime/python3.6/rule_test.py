@@ -19,7 +19,7 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-import <%RuleName%> as rule
+rule = __import__('<%RuleName%>')
 
 class SampleTest(unittest.TestCase):
     def setUp(self):

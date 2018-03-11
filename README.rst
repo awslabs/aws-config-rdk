@@ -38,7 +38,7 @@ Usage
 
 Configure your env
 ------------------
-To use the RDK, create a directory that will be your working directory.  This should be committed to a source code repo, and ideally created as a python virtualenv.  In that directory, run the ``init`` command to set up your AWS Config environment and copy template files into a .rdk directory in your working directory.
+To use the RDK, it's recommended to create a directory that will be your working directory.  This should be committed to a source code repo, and ideally created as a python virtualenv.  In that directory, run the ``init`` command to set up your AWS Config environment.
 
 ::
 
@@ -51,11 +51,11 @@ To use the RDK, create a directory that will be your working directory.  This sh
   Config setup complete.
   Creating Code bucket config-rule-code-bucket-780784666283ap-southeast-1
 
-Running ``init`` subsequent times will validate your AWS Config setup and re-create your .rdk directory from whatever version of rdk is installed.
+Running ``init`` subsequent times will validate your AWS Config setup and re-create any S3 buckets or IAM resources that are needed.
 
 Create Rules
 ------------
-In your working directory, use the ``create`` command to start creating a new custom rule.  You must specify the runtime for the lambda function that will back the Rule, and you must also specify a resource type (or comma-separated list of types) that the Rule will evaluate.  This will add a new directory for the rule and populate it with several files, including a skeleton of your Lambda code.
+In your working directory, use the ``create`` command to start creating a new custom rule.  You must specify the runtime for the lambda function that will back the Rule, and you can also specify a resource type (or comma-separated list of types) that the Rule will evaluate or a maximum frequency for a periodic rule.  This will add a new directory for the rule and populate it with several files, including a skeleton of your Lambda code.
 
 ::
 
@@ -65,18 +65,22 @@ In your working directory, use the ``create`` command to start creating a new cu
 
 Edit Rules Locally
 ---------------------------
-Once you have created the rule, edit the python file in your rule directory (in the above example it would be ``MyRule/MyRule.py``, but may be deeper into the rule directory tree depending on your chosen Lambda runtime) to add whatever logic your Rule requires in the ``evaluate_compliance`` function.  You will have access to the CI that was sent by Config, as well as any parameters configured for the Config Rule.  Your function should return either a simple compliance status (one of ``COMPLIANT``, ``NONCOMPLIANT``, or ``NOT_APPLICABLE``), or if you're using the python runtimes you can return a JSON object with multiple evaluation responses that the RDK will send back to AWS Config.  An example would look like::
+Once you have created the rule, edit the python file in your rule directory (in the above example it would be ``MyRule/MyRule.py``, but may be deeper into the rule directory tree depending on your chosen Lambda runtime) to add whatever logic your Rule requires in the ``evaluate_compliance`` function.  You will have access to the CI that was sent by Config, as well as any parameters configured for the Config Rule.  Your function should return either a simple compliance status (one of ``COMPLIANT``, ``NONCOMPLIANT``, or ``NOT_APPLICABLE``), or if you're using the python or node runtimes you can return a JSON object with multiple evaluation responses that the RDK will send back to AWS Config.  An example would look like::
+
   for sg in response['SecurityGroups']:
         evaluations.append(
         {
                 'ComplianceResourceType': 'AWS::EC2::SecurityGroup',
                 'ComplianceResourceId': sg['GroupId'],
                 'ComplianceType': 'COMPLIANT',
+                'Annotation': 'This is an important note.',
                 'OrderingTimestamp': str(datetime.datetime.now())
         })
 
 
     return evaluations
+
+This is particularly useful for periodic rules that are not triggered by any CI change (which means the CI that is passed in will be null), and also for attaching annotations to your evaluation results.
 
 If you want to see what the JSON structure of a CI looks like for creating your logic, you can use
 
@@ -86,6 +90,23 @@ $ rdk sample-ci <Resource Type>
 
 to output a formatted JSON document.
 
+Write and Run Unit Tests
+------------------------
+If you are writing Config Rules using either of the Python runtimes there will be a <rule name>_test.py file deployed along with your Lambda function skeleton.  This can be used to write unit tests according to the standard Python unittest framework (documented here: https://docs.python.org/3/library/unittest.html), which can be run using the `test-local` rdk command::
+
+  $ rdk test-local MyTestRule
+  Running local test!
+  Testing MyTestRule
+  Looking for tests in /Users/mborch/Code/rdk-dev/MyTestRule
+
+  ---------------------------------------------------------------------
+
+  Ran 0 tests in 0.000s
+
+  OK
+  <unittest.runner.TextTestResult run=0 errors=0 failures=0>
+
+The test file includes setup for the MagicMock library that can be used to stub boto3 API calls if your rule logic will involve making API calls to gather additional information about your AWS environment.  For some tips on how to do this, check out this blog post: https://sgillies.net/2017/10/19/mock-is-magic.html
 
 Modify Rule
 -----------
@@ -101,7 +122,7 @@ It is worth noting that until you actually call the ``deploy`` command your rule
 
 Deploy Rule
 -----------
-Once you have completed your compliance validation code and set your Rule's configuration, you can deploy the Rule to your account using the ``deploy`` command.  This will zip up your code (and the other associated code files) into a deployable package (or run a gradle build if you have selected the java8 runtime or run the lambda packaging step from the dotnet CLI if you have selected the dotnetcore1.0 runtime), copy that zip file to S3, and then launch or update a CloudFormation stack that defines your Config Rule, Lambda function, and the necessary permissions and IAM Roles for it to function.  Since CloudFormation does not deeply inspect Lambda code objects in S3 to construct its changeset, the ``deploy`` command will also directly update the Lambda function for any subsequent deployments to make sure code changes are propagated correctly.
+Once you have completed your compliance validation code and set your Rule's configuration, you can deploy the Rule to your account using the ``deploy`` command.  This will zip up your code (and the other associated code files, if any) into a deployable package (or run a gradle build if you have selected the java8 runtime or run the lambda packaging step from the dotnet CLI if you have selected the dotnetcore1.0 runtime), copy that zip file to S3, and then launch or update a CloudFormation stack that defines your Config Rule, Lambda function, and the necessary permissions and IAM Roles for it to function.  Since CloudFormation does not deeply inspect Lambda code objects in S3 to construct its changeset, the ``deploy`` command will also directly update the Lambda function for any subsequent deployments to make sure code changes are propagated correctly.
 
 ::
 
@@ -118,7 +139,7 @@ Once you have completed your compliance validation code and set your Rule's conf
 The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.
 
 View Logs For Deployed Rule
-------------------
+---------------------------
 Once the Rule has been deployed to AWS you can get the CloudWatch logs associated with your lambda function using the ``logs`` command.
 
 ::
@@ -136,18 +157,18 @@ You can use the ``-n`` and ``-f`` command line flags just like the UNIX ``tail``
 Running the tests
 =================
 
-No tests yet.
+The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environemnts (currently Ubuntu linux running python2.7, Ubuntu linux running python 3.6, and Windows Server running python2.7).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
 
 Contributing
 ============
 
-email me at mborch@amazon.com if you are interested in contributing.
+email me at mborch@amazon.com if you are interested in contributing.  I'm using the github issues log as my "to-do" list, and I'm also happy to get PR's if you see something you want to fix.
 
 Authors
 =======
 
+* **Michael Borchert** - *Python version & current maintainer*
 * **Greg Kim and Chris Gutierrez** - *Initial work and CI definitions*
-* **Michael Borchert** - *Python version*
 * **Henry Huang** - *CFN templates and other code*
 * **Jonathan Rault** - *Design, testing, feedback*
 

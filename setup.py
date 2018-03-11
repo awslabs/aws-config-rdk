@@ -13,7 +13,7 @@ def readme():
         return f.read()
 
 setup(name='rdk',
-      version='0.3.7',
+      version='0.3.9',
       description='Rule Development Kit CLI for AWS Config',
       long_description=readme(),
       url='https://github.com/awslabs/aws-config-rdk/',
@@ -23,6 +23,7 @@ setup(name='rdk',
       packages=['rdk'],
       install_requires=[
           'boto3',
+          'mock',
       ],
       scripts=['bin/rdk'],
       zip_safe=False,

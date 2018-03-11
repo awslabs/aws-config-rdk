@@ -1,0 +1,10 @@
+version: 0.1
+
+phases:
+  build:
+    commands:
+      - echo Creating Windows build server and running tests
+      - bash testing/test_windows.sh 2
+  post_build:
+    commands:
+      - echo Build completed on `date`
