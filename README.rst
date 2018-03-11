@@ -66,6 +66,7 @@ In your working directory, use the ``create`` command to start creating a new cu
 Edit Rules Locally
 ---------------------------
 Once you have created the rule, edit the python file in your rule directory (in the above example it would be ``MyRule/MyRule.py``, but may be deeper into the rule directory tree depending on your chosen Lambda runtime) to add whatever logic your Rule requires in the ``evaluate_compliance`` function.  You will have access to the CI that was sent by Config, as well as any parameters configured for the Config Rule.  Your function should return either a simple compliance status (one of ``COMPLIANT``, ``NONCOMPLIANT``, or ``NOT_APPLICABLE``), or if you're using the python or node runtimes you can return a JSON object with multiple evaluation responses that the RDK will send back to AWS Config.  An example would look like::
+
   for sg in response['SecurityGroups']:
         evaluations.append(
         {
@@ -92,12 +93,14 @@ to output a formatted JSON document.
 Write and Run Unit Tests
 ------------------------
 If you are writing Config Rules using either of the Python runtimes there will be a <rule name>_test.py file deployed along with your Lambda function skeleton.  This can be used to write unit tests according to the standard Python unittest framework (documented here: https://docs.python.org/3/library/unittest.html), which can be run using the `test-local` rdk command::
+
   $ rdk test-local MyTestRule
   Running local test!
   Testing MyTestRule
   Looking for tests in /Users/mborch/Code/rdk-dev/MyTestRule
 
-  ----------------------------------------------------------------------
+  ---------------------------------------------------------------------
+
   Ran 0 tests in 0.000s
 
   OK
@@ -136,7 +139,7 @@ Once you have completed your compliance validation code and set your Rule's conf
 The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.
 
 View Logs For Deployed Rule
-------------------
+---------------------------
 Once the Rule has been deployed to AWS you can get the CloudWatch logs associated with your lambda function using the ``logs`` command.
 
 ::
