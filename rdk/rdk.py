@@ -40,7 +40,7 @@ rule_handler = 'rule_code'
 rule_template = 'rdk-rule.template'
 config_bucket_prefix = 'config-bucket-'
 config_role_name = 'config-role'
-assume_role_policy_file = 'configRoleAssumeRolePolicyDoc.json'
+assume_role_policy_file = 'configRuleAssumeRolePolicyDoc.json'
 delivery_permission_policy_file = 'deliveryPermissionsPolicy.json'
 code_bucket_prefix = 'config-rule-code-bucket-'
 parameter_file_name = 'parameters.json'
@@ -391,7 +391,7 @@ class rdk():
                 }]
 
             #deploy config rule
-            cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRole.json")
+            cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRule.json")
             my_cfn = my_session.client('cloudformation')
 
             try:
