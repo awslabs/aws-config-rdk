@@ -59,9 +59,11 @@ In your working directory, use the ``create`` command to start creating a new cu
 
 ::
 
-  $ rdk create MyRule --runtime python3.6 --resource-types AWS::EC2::Instance --maximum-frequency One_Hour --input-parameters '{"desiredInstanceType":"t2.micro"}'
+  $ rdk create MyRule --runtime python3.6 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
   Running create!
   Local Rule files created.
+
+Note that you can create rules that use EITHER resource-types OR maximum-frequency, but not both.  We have found that rules that try to be both event-triggered as well as periodic wind up being very complicated and so we do not recommend it as a best practice.
 
 Edit Rules Locally
 ---------------------------
@@ -80,7 +82,7 @@ Once you have created the rule, edit the python file in your rule directory (in 
 
     return evaluations
 
-This is particularly useful for periodic rules that are not triggered by any CI change (which means the CI that is passed in will be null), and also for attaching annotations to your evaluation results.
+This is necessary for periodic rules that are not triggered by any CI change (which means the CI that is passed in will be null), and also for attaching annotations to your evaluation results.
 
 If you want to see what the JSON structure of a CI looks like for creating your logic, you can use
 

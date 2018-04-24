@@ -44,7 +44,8 @@
     }
   },
   "Conditions": {
-    "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]}
+    "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
+    "PeriodicTriggered" : { "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}
   },
   "Resources": {
     "rdkRuleCodeLambda": {
@@ -87,6 +88,12 @@
             { "Ref": "AWS::NoValue" }
           ]
         },
+        "MaximumExecutionFrequency": {
+          "Fn::If": ["PeriodicTriggered",
+            { "Ref": "SourcePeriodic" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
         "Source": {
           "Owner": "CUSTOM_LAMBDA",
           "SourceIdentifier": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
@@ -97,10 +104,13 @@
                 "ConfigurationItemChangeNotification",
                 "ScheduledNotification"
               ]
+            },
+            "MaximumExecutionFrequency": {
+              "Fn::If": [ "PeriodicTriggered",
+                { "Ref": "SourcePeriodic" } ,
+                { "Ref": "AWS::NoValue" }
+              ]
             }
-          }, {
-            "EventSource": "aws.config",
-            "MessageType": "OversizedConfigurationItemChangeNotification"
           }]
         },
         "InputParameters": { "Ref": "SourceInputParameters" }

@@ -41,7 +41,7 @@ rule_handler = 'rule_code'
 rule_template = 'rdk-rule.template'
 config_bucket_prefix = 'config-bucket-'
 config_role_name = 'config-role'
-assume_role_policy_file = 'configRoleAssumeRolePolicyDoc.json'
+assume_role_policy_file = 'configRuleAssumeRolePolicyDoc.json'
 delivery_permission_policy_file = 'deliveryPermissionsPolicy.json'
 code_bucket_prefix = 'config-rule-code-bucket-'
 parameter_file_name = 'parameters.json'
@@ -279,6 +279,16 @@ class rdk():
         #Get existing parameters
         old_params = self.__read_params_file()
 
+        if self.args.maximum_frequency and old_params['Parameters']['SourceEvents']:
+            print("Removing Source Events and changing to Periodic Rule.")
+            self.args.resource_types = ""
+            old_params['Parameters']['SourceEvents'] = ""
+
+        if self.args.resource_types and old_params['Parameters']['SourcePeriodic']:
+            print("Removing Max Frequency and changing to Event-based Rule.")
+            self.args.maximum_frequency = ""
+            old_params['Parameters']['SourcePeriodic'] = ""
+
         if not self.args.runtime and old_params['Parameters']['SourceRuntime']:
             self.args.runtime = old_params['Parameters']['SourceRuntime']
 
@@ -379,6 +389,10 @@ class rdk():
             if 'SourceEvents' in my_rule_params:
                 source_events = my_rule_params['SourceEvents']
 
+            source_periodic = "NONE"
+            if 'SourcePeriodic' in my_rule_params:
+                source_periodic = my_rule_params['SourcePeriodic']
+
             my_params = [
                 {
                     'ParameterKey': 'SourceBucket',
@@ -398,7 +412,7 @@ class rdk():
                 },
                 {
                     'ParameterKey': 'SourcePeriodic',
-                    'ParameterValue': my_rule_params['SourcePeriodic'],
+                    'ParameterValue': source_periodic,
                 },
                 {
                     'ParameterKey': 'SourceInputParameters',
@@ -410,7 +424,7 @@ class rdk():
                 }]
 
             #deploy config rule
-            cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRole.json")
+            cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRule.json")
             my_cfn = my_session.client('cloudformation')
 
             try:
@@ -768,7 +782,7 @@ class rdk():
         usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>]"
 
         if is_required:
-            usage_string = "--runtime <runtime> --resource-types <resource types> [optional configuration flags]"
+            usage_string = "--runtime <runtime> [ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags]"
 
         parser = argparse.ArgumentParser(
             prog='rdk '+self.args.command,
@@ -776,8 +790,9 @@ class rdk():
         )
         parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
         parser.add_argument('-R','--runtime', required=is_required, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0','dotnetcore2.0'])
-        parser.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
-        parser.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
+        group = parser.add_mutually_exclusive_group(required=is_required)
+        group.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
+        group.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
         parser.add_argument('-i','--input-parameters', help="[optional] JSON for Config parameters for testing.")
         self.args = parser.parse_args(self.args.command_args, self.args)
 
