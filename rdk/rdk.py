@@ -217,9 +217,9 @@ class rdk():
         if self.args.runtime not in extension_mapping:
             print ("rdk does nto support that runtime yet.")
 
-        if not self.args.maximum_frequency:
-            self.args.maximum_frequency = "TwentyFour_Hours"
-            print("Defaulting to TwentyFour_Hours Maximum Frequency.")
+        #if not self.args.maximum_frequency:
+        #    self.args.maximum_frequency = "TwentyFour_Hours"
+        #    print("Defaulting to TwentyFour_Hours Maximum Frequency.")
 
         #create rule directory.
         rule_path = os.path.join(os.getcwd(), rules_dir, self.args.rulename)
