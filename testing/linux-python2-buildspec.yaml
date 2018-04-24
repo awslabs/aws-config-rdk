@@ -15,6 +15,7 @@ phases:
       - rdk create LP2-TestRule-P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP2-TestRule-JS --runtime nodejs4.3 --resource-types AWS::EC2::SecurityGroup
       - rdk modify LP2-TestRule-P3 --input-parameters '{"TestParameter":"TestValue"}'
+      - rdk create LP2-TestRule-P3-Periodic --runtime python3.6 --maximum-frequency One_Hour
       - rdk test-local --all
       - rdk deploy --all
       - sleep 30
