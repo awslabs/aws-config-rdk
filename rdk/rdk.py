@@ -749,7 +749,7 @@ class rdk():
         usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>]"
 
         if is_required:
-            usage_string = "--runtime <runtime> --resource-types <resource types> [optional configuration flags]"
+            usage_string = "--runtime <runtime> [ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags]"
 
         parser = argparse.ArgumentParser(
             prog='rdk '+self.args.command,
@@ -757,8 +757,9 @@ class rdk():
         )
         parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
         parser.add_argument('-R','--runtime', required=is_required, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0','dotnetcore2.0'])
-        parser.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
-        parser.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
+        group = parser.add_mutually_exclusive_group(required=True)
+        group.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
+        group.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
         parser.add_argument('-i','--input-parameters', help="[optional] JSON for Config parameters for testing.")
         self.args = parser.parse_args(self.args.command_args, self.args)
 
