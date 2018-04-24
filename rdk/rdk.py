@@ -10,6 +10,7 @@ import os
 from os import path
 import sys
 import shutil
+import tempfile
 import boto3
 import json
 import time
@@ -340,13 +341,31 @@ class rdk():
                 for command in commands:
                     subprocess.call( command, cwd=working_dir)
 
+                # Remove old zip file if it already exists
+                package_file_dst = os.path.join(rule_name, rule_name+".zip")
+                self.__delete_package_file(package_file_dst)
+
+                # Create new package in temp directory, copy to rule directory
+                # This copy avoids the archiver trying to include the output zip in itself
                 s3_src_dir = os.path.join(os.getcwd(),rules_dir, rule_name,'bin','Release', app_runtime, 'publish')
-                s3_src = shutil.make_archive(os.path.join(rule_name, rule_name), 'zip', s3_src_dir)
+                tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+                shutil.copy(tmp_src, package_file_dst)
+                s3_src = os.path.abspath(package_file_dst)
+                self.__delete_package_file(tmp_src)
+
             else:
                 print ("Zipping " + rule_name)
                 #zip rule code files and upload to s3 bucket
+
+                # Remove old zip file if it already exists
+                package_file_dst = os.path.join(rule_name, rule_name+".zip")
+                self.__delete_package_file(package_file_dst)
+
                 s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
-                s3_src = shutil.make_archive(os.path.join(rule_name, rule_name), 'zip', s3_src_dir)
+                tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+                shutil.copy(tmp_src, package_file_dst)
+                s3_src = os.path.abspath(package_file_dst)
+                self.__delete_package_file(tmp_src)
 
             s3_dst = "/".join((rule_name, rule_name+".zip"))
             code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
@@ -888,6 +907,12 @@ class rdk():
             sys.exit(1)
 
         return my_lambda_arn
+
+    def __delete_package_file(self, file):
+        try:
+            os.remove(file)
+        except OSError:
+            pass
 
 class TestCI():
     def __init__(self, ci_type):
