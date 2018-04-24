@@ -73,32 +73,8 @@
         "Principal": "config.amazonaws.com"
       }
     },
-    "rdkConfigRulePeriodic":{
+    "rdkConfigRule": {
       "Type": "AWS::Config::ConfigRule",
-      "Condition": "PeriodicTriggered",
-      "DependsOn": [
-        "ConfigPermissionToCallrdkRuleCodeLambda",
-        "rdkLambdaRole"
-      ],
-      "Properties": {
-        "ConfigRuleName": {"Fn::Sub": "${AWS::StackName}" },
-        "Description": {"Fn::Sub": "${AWS::StackName}" },
-        "MaximumExecutionFrequency": {"Ref": "SourcePeriodic"},
-        "InputParameters": { "Ref": "SourceInputParameters" },
-        "Source": {
-          "Owner": "CUSTOM_LAMBDA",
-          "SourceIdentifier": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
-          "SourceDetails": [{
-            "EventSource": "aws.config",
-            "MaximumExecutionFrequency": {"Ref": "SourcePeriodic"},
-            "MessageType": "ScheduledNotification"
-          }]
-        }
-      }
-    },
-    "rdkConfigRuleEventDriven": {
-      "Type": "AWS::Config::ConfigRule",
-      "Condition": "EventTriggered",
       "DependsOn": [
         "ConfigPermissionToCallrdkRuleCodeLambda",
         "rdkLambdaRole"
@@ -112,6 +88,12 @@
             { "Ref": "AWS::NoValue" }
           ]
         },
+        "MaximumExecutionFrequency": {
+          "Fn::If": ["PeriodicTriggered",
+            { "Ref": "SourcePeriodic" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
         "Source": {
           "Owner": "CUSTOM_LAMBDA",
           "SourceIdentifier": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
@@ -122,10 +104,13 @@
                 "ConfigurationItemChangeNotification",
                 "ScheduledNotification"
               ]
+            },
+            "MaximumExecutionFrequency": {
+              "Fn::If": [ "PeriodicTriggered",
+                { "Ref": "SourcePeriodic" } ,
+                { "Ref": "AWS::NoValue" }
+              ]
             }
-          }, {
-            "EventSource": "aws.config",
-            "MessageType": "OversizedConfigurationItemChangeNotification"
           }]
         },
         "InputParameters": { "Ref": "SourceInputParameters" }
