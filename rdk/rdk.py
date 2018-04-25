@@ -217,9 +217,9 @@ class rdk():
         if self.args.runtime not in extension_mapping:
             print ("rdk does nto support that runtime yet.")
 
-        if not self.args.maximum_frequency:
-            self.args.maximum_frequency = "TwentyFour_Hours"
-            print("Defaulting to TwentyFour_Hours Maximum Frequency.")
+        #if not self.args.maximum_frequency:
+        #    self.args.maximum_frequency = "TwentyFour_Hours"
+        #    print("Defaulting to TwentyFour_Hours Maximum Frequency.")
 
         #create rule directory.
         rule_path = os.path.join(os.getcwd(), rules_dir, self.args.rulename)
@@ -256,7 +256,7 @@ class rdk():
                     shutil.copyfile(src, dst)
 
             #Write the parameters to a file in the rule directory.
-            self.__write_params_file()
+            self.__populate_params()
 
             print ("Local Rule files created.")
         except Exception as e:
@@ -277,32 +277,37 @@ class rdk():
         self.args.rulename = self.__clean_rule_name(self.args.rulename)
 
         #Get existing parameters
-        old_params = self.__read_params_file()
+        old_params = self.__read_params_file(self.args.rulename)
+        if 'SourceEvents' in old_params['Parameters']:
+            if self.args.maximum_frequency and old_params['Parameters']['SourceEvents']:
+                    print("Removing Source Events and changing to Periodic Rule.")
+                    self.args.resource_types = ""
+                    old_params['Parameters']['SourceEvents'] = ""
+            if not self.args.resource_types and old_params['Parameters']['SourceEvents']:
+                self.args.resource_types = old_params['Parameters']['SourceEvents']
 
-        if self.args.maximum_frequency and old_params['Parameters']['SourceEvents']:
-            print("Removing Source Events and changing to Periodic Rule.")
-            self.args.resource_types = ""
-            old_params['Parameters']['SourceEvents'] = ""
+        if 'SourcePeriodic' in old_params['Parameters']:
+            if self.args.resource_types and old_params['Parameters']['SourcePeriodic']:
+                print("Removing Max Frequency and changing to Event-based Rule.")
+                self.args.maximum_frequency = ""
+                old_params['Parameters']['SourcePeriodic'] = ""
+            if not self.args.maximum_frequency and old_params['Parameters']['SourcePeriodic']:
+                self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
 
-        if self.args.resource_types and old_params['Parameters']['SourcePeriodic']:
-            print("Removing Max Frequency and changing to Event-based Rule.")
-            self.args.maximum_frequency = ""
-            old_params['Parameters']['SourcePeriodic'] = ""
 
         if not self.args.runtime and old_params['Parameters']['SourceRuntime']:
             self.args.runtime = old_params['Parameters']['SourceRuntime']
 
-        if not self.args.maximum_frequency and old_params['Parameters']['SourcePeriodic']:
-            self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
-
-        if not self.args.resource_types and old_params['Parameters']['SourceEvents']:
-            self.args.resource_types = old_params['Parameters']['SourceEvents']
 
         if not self.args.input_parameters and old_params['Parameters']['InputParameters']:
             self.args.input_parameters = old_params['Parameters']['InputParameters']
 
+        if 'RuleSets' in old_params['Parameters']:
+            if not self.args.rulesets:
+                self.args.rulesets = old_params['Parameters']['RuleSets']
+
         #Write the parameters to a file in the rule directory.
-        self.__write_params_file()
+        self.__populate_params()
 
         print ("Modified Rule '"+self.args.rulename+"'.  Use the `deploy` command to push your changes to AWS.")
 
@@ -310,7 +315,11 @@ class rdk():
         parser = argparse.ArgumentParser(prog='rdk deploy')
         parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to deploy.  Rule(s) will be pushed to AWS.')
         parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
+        parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
+
+        if self.args.rulesets:
+            self.args.rulesets = self.args.rulesets.split(',')
 
         #run the deploy code
         print ("Running deploy!")
@@ -572,8 +581,8 @@ class rdk():
 
     def logs(self):
         parser = argparse.ArgumentParser(
-            prog='rdk '+self.args.command,
-            usage="rdk "+self.args.command + " <rulename> [-n/--number NUMBER] [-f/--follow]")
+            prog='rdk ' + self.args.command,
+            usage="rdk " + self.args.command + " <rulename> [-n/--number NUMBER] [-f/--follow]")
         parser.add_argument('rulename', metavar='<rulename>', help='Rule whose logs will be displayed')
         parser.add_argument('-f','--follow',  action='store_true', help='Continuously poll Lambda logs and write to stdout.')
         parser.add_argument('-n','--number',  default=3, help='Number of previous logged events to display.')
@@ -636,6 +645,84 @@ class rdk():
 
         except cw_logs.exceptions.ResourceNotFoundException as e:
             print(e.response['Error']['Message'])
+
+    def rulesets(self):
+        parser = argparse.ArgumentParser(
+            prog='rdk ' + self.args.command,
+            usage='rdk ' + self.args.command + " [list | [ [ add | remove ] <ruleset> <rulename> ]"
+        )
+        parser.add_argument('subcommand', help="One of list, add, or remove")
+        parser.add_argument('ruleset', nargs='?')
+        parser.add_argument('rulename', nargs='?')
+        self.args = parser.parse_args(self.args.command_args, self.args)
+
+        if self.args.subcommand in ['add','remove'] and (not self.args.ruleset or not self.args.rulename):
+            print("You must specify a ruleset name and a rule for the `add` and `remove` commands.")
+            return 1
+
+        if self.args.subcommand == "list":
+            self.__list_rulesets()
+        elif self.args.subcommand == "add":
+            self.__add_ruleset_rule(self.args.ruleset, self.args.rulename)
+        elif self.args.subcommand == "remove":
+            self.__remove_ruleset_rule(self.args.ruleset, self.args.rulename)
+        else :
+            print("Unknown subcommand.")
+
+    def __remove_ruleset_rule(self, ruleset, rulename):
+        params = self.__read_params_file(rulename)
+        if 'RuleSets' in params['Parameters']:
+            if self.args.ruleset in params['Parameters']['RuleSets']:
+                params['Parameters']['RuleSets'].remove(self.args.ruleset)
+            else :
+                print("Rule " + rulename + " is not in RuleSet " + ruleset)
+        else:
+            print("Rule " + rulename + " is not in any RuleSets")
+
+        self.__write_params_file(rulename, params['Parameters'])
+
+        print(rulename + " removed from RuleSet " + ruleset)
+
+    def __add_ruleset_rule(self, ruleset, rulename):
+        params = self.__read_params_file(rulename)
+        if 'RuleSets' in params['Parameters']:
+            if self.args.ruleset in params['Parameters']['RuleSets']:
+                print("Rule is already in the specified RuleSet.")
+            else :
+                params['Parameters']['RuleSets'].append(self.args.ruleset)
+        else:
+            rulesets = [self.args.ruleset]
+            params['Parameters']['RuleSets'] = rulesets
+
+        self.__write_params_file(rulename, params['Parameters'])
+
+        print(rulename + " added to RuleSet " + ruleset)
+
+    def __list_rulesets(self):
+        rulesets = []
+        rules = []
+
+        for obj_name in os.listdir('.'):
+            #print(obj_name)
+            params_file_path = os.path.join('.', obj_name, parameter_file_name)
+            if os.path.isfile(params_file_path):
+                parameters_file = open(params_file_path, 'r')
+                my_params = json.load(parameters_file)
+                parameters_file.close()
+                if 'RuleSets' in my_params['Parameters']:
+                    rulesets.extend(my_params['Parameters']['RuleSets'])
+
+                    if self.args.ruleset in my_params['Parameters']['RuleSets']:
+                        #print("Found rule! " + obj_name)
+                        rules.append(obj_name)
+
+        if self.args.ruleset:
+            rules.sort()
+            print("Rules in", self.args.ruleset, ": ", *rules)
+        else:
+            deduped = list(set(rulesets))
+            deduped.sort()
+            print("RuleSets: ", *deduped)
 
     def __get_template_dir():
         return os.path.join(path.dirname(__file__), 'template')
@@ -766,6 +853,18 @@ class rdk():
                                 rule_names.append(obj_name)
                             if os.path.exists(os.path.join(obj_path, 'RuleCode.cs')):
                                 rule_names.append(obj_name)
+        elif self.args.rulesets:
+            for obj_name in os.listdir('.'):
+                params_file_path = os.path.join('.', obj_name, parameter_file_name)
+                if os.path.isfile(params_file_path):
+                    parameters_file = open(params_file_path, 'r')
+                    my_params = json.load(parameters_file)
+                    parameters_file.close()
+                    if 'RuleSets' in my_params['Parameters']:
+                        s_input = set(self.args.rulesets)
+                        s_params = set(my_params['Parameters']['RuleSets'])
+                        if s_input.intersection(s_params):
+                            rule_names.append(obj_name)
         else:
             rule_names.append(self.__clean_rule_name(self.args.rulename[0]))
 
@@ -779,10 +878,10 @@ class rdk():
         return my_json['Parameters']
 
     def __parse_rule_args(self, is_required):
-        usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>]"
+        usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--rulesets <RuleSet tags>]"
 
         if is_required:
-            usage_string = "--runtime <runtime> [ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags]"
+            usage_string = "--runtime <runtime> [ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--rulesets <RuleSet tags>]"
 
         parser = argparse.ArgumentParser(
             prog='rdk '+self.args.command,
@@ -794,7 +893,11 @@ class rdk():
         group.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
         group.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
         parser.add_argument('-i','--input-parameters', help="[optional] JSON for Config parameters for testing.")
+        parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
+
+        if self.args.rulesets:
+            self.args.rulesets = self.args.rulesets.split(',')
 
     def __parse_test_args(self):
         parser = argparse.ArgumentParser(prog='rdk '+self.args.command)
@@ -803,13 +906,17 @@ class rdk():
         parser.add_argument('--test-ci-json', '-j', help="[optional] JSON for test CI for testing.")
         parser.add_argument('--test-ci-types', '-t', help="[optional] CI type to use for testing.")
         parser.add_argument('--verbose', '-v', action='store_true', help='Enable full log output')
+        parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
 
         if self.args.all and self.args.rulename:
             print("You may specify either specific rules or --all, but not both.")
             return 1
 
-    def __write_params_file(self):
+        if self.args.rulesets:
+            self.args.rulesets = self.args.rulesets.split(',')
+
+    def __populate_params(self):
         #create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
 
@@ -843,15 +950,21 @@ class rdk():
         if self.args.maximum_frequency:
             parameters['SourcePeriodic'] = self.args.maximum_frequency
 
+        if self.args.rulesets:
+            parameters['RuleSets'] = self.args.rulesets
+
+        self.__write_params_file(self.args.rulename, parameters)
+
+    def __write_params_file(self, rulename, parameters):
         my_params = {"Parameters": parameters}
-        params_file_path = os.path.join(os.getcwd(), rules_dir, self.args.rulename, parameter_file_name)
+        params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
         parameters_file = open(params_file_path, 'w')
         json.dump(my_params, parameters_file, indent=2)
         parameters_file.close()
 
-    def __read_params_file(self):
+    def __read_params_file(self, rulename):
         my_params = {}
-        params_file_path = os.path.join(os.getcwd(), rules_dir, self.args.rulename, parameter_file_name)
+        params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
         parameters_file = open(params_file_path, 'r')
         my_params = json.load(parameters_file)
         parameters_file.close()
