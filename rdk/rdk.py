@@ -302,8 +302,9 @@ class rdk():
         if not self.args.input_parameters and old_params['Parameters']['InputParameters']:
             self.args.input_parameters = old_params['Parameters']['InputParameters']
 
-        if not self.args.rulesets and old_params['Parameters']['RuleSets']:
-            self.args.rulesets = old_params['Parameters']['RuleSets']
+        if 'RuleSets' in old_params['Parameters']:
+            if not self.args.rulesets:
+                self.args.rulesets = old_params['Parameters']['RuleSets']
 
         #Write the parameters to a file in the rule directory.
         self.__populate_params()
@@ -679,7 +680,7 @@ class rdk():
             print("Rule " + rulename + " is not in any RuleSets")
 
         self.__write_params_file(rulename, params['Parameters'])
-        
+
         print(rulename + " removed from RuleSet " + ruleset)
 
     def __add_ruleset_rule(self, ruleset, rulename):
@@ -712,7 +713,7 @@ class rdk():
                     rulesets.extend(my_params['Parameters']['RuleSets'])
 
                     if self.args.ruleset in my_params['Parameters']['RuleSets']:
-                        print("Found rule! " + obj_name)
+                        #print("Found rule! " + obj_name)
                         rules.append(obj_name)
 
         if self.args.ruleset:
@@ -952,7 +953,7 @@ class rdk():
         if self.args.rulesets:
             parameters['RuleSets'] = self.args.rulesets
 
-        __write_params_file(self.args.rulename, parameters)
+        self.__write_params_file(self.args.rulename, parameters)
 
     def __write_params_file(self, rulename, parameters):
         my_params = {"Parameters": parameters}
