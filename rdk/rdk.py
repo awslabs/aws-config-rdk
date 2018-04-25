@@ -278,28 +278,32 @@ class rdk():
 
         #Get existing parameters
         old_params = self.__read_params_file()
+        if 'SourceEvents' in old_params['Parameters']:
+            if self.args.maximum_frequency and old_params['Parameters']['SourceEvents']:
+                    print("Removing Source Events and changing to Periodic Rule.")
+                    self.args.resource_types = ""
+                    old_params['Parameters']['SourceEvents'] = ""
+            if not self.args.resource_types and old_params['Parameters']['SourceEvents']:
+                self.args.resource_types = old_params['Parameters']['SourceEvents']
 
-        if self.args.maximum_frequency and old_params['Parameters']['SourceEvents']:
-            print("Removing Source Events and changing to Periodic Rule.")
-            self.args.resource_types = ""
-            old_params['Parameters']['SourceEvents'] = ""
+        if 'SourcePeriodic' in old_params['Parameters']:
+            if self.args.resource_types and old_params['Parameters']['SourcePeriodic']:
+                print("Removing Max Frequency and changing to Event-based Rule.")
+                self.args.maximum_frequency = ""
+                old_params['Parameters']['SourcePeriodic'] = ""
+            if not self.args.maximum_frequency and old_params['Parameters']['SourcePeriodic']:
+                self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
 
-        if self.args.resource_types and old_params['Parameters']['SourcePeriodic']:
-            print("Removing Max Frequency and changing to Event-based Rule.")
-            self.args.maximum_frequency = ""
-            old_params['Parameters']['SourcePeriodic'] = ""
 
         if not self.args.runtime and old_params['Parameters']['SourceRuntime']:
             self.args.runtime = old_params['Parameters']['SourceRuntime']
 
-        if not self.args.maximum_frequency and old_params['Parameters']['SourcePeriodic']:
-            self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
-
-        if not self.args.resource_types and old_params['Parameters']['SourceEvents']:
-            self.args.resource_types = old_params['Parameters']['SourceEvents']
 
         if not self.args.input_parameters and old_params['Parameters']['InputParameters']:
             self.args.input_parameters = old_params['Parameters']['InputParameters']
+
+        if not self.args.rulesets and old_params['Parameters']['RuleSets']:
+            self.args.rulesets = old_params['Parameters']['RuleSets']
 
         #Write the parameters to a file in the rule directory.
         self.__write_params_file()
@@ -310,7 +314,11 @@ class rdk():
         parser = argparse.ArgumentParser(prog='rdk deploy')
         parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to deploy.  Rule(s) will be pushed to AWS.')
         parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
+        parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
+
+        if self.args.rulesets:
+            self.args.rulesets = self.args.rulesets.split(',')
 
         #run the deploy code
         print ("Running deploy!")
@@ -766,6 +774,18 @@ class rdk():
                                 rule_names.append(obj_name)
                             if os.path.exists(os.path.join(obj_path, 'RuleCode.cs')):
                                 rule_names.append(obj_name)
+        elif self.args.rulesets:
+            for obj_name in os.listdir('.'):
+                params_file_path = os.path.join('.', obj_name, parameter_file_name)
+                if os.path.isfile(params_file_path):
+                    parameters_file = open(params_file_path, 'r')
+                    my_params = json.load(parameters_file)
+                    parameters_file.close()
+                    if 'RuleSets' in my_params['Parameters']:
+                        s_input = set(self.args.rulesets)
+                        s_params = set(my_params['Parameters']['RuleSets'])
+                        if s_input.intersection(s_params):
+                            rule_names.append(obj_name)
         else:
             rule_names.append(self.__clean_rule_name(self.args.rulename[0]))
 
@@ -794,7 +814,11 @@ class rdk():
         group.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
         group.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
         parser.add_argument('-i','--input-parameters', help="[optional] JSON for Config parameters for testing.")
+        parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
+
+        if self.args.rulesets:
+            self.args.rulesets = self.args.rulesets.split(',')
 
     def __parse_test_args(self):
         parser = argparse.ArgumentParser(prog='rdk '+self.args.command)
@@ -803,11 +827,15 @@ class rdk():
         parser.add_argument('--test-ci-json', '-j', help="[optional] JSON for test CI for testing.")
         parser.add_argument('--test-ci-types', '-t', help="[optional] CI type to use for testing.")
         parser.add_argument('--verbose', '-v', action='store_true', help='Enable full log output')
+        parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
 
         if self.args.all and self.args.rulename:
             print("You may specify either specific rules or --all, but not both.")
             return 1
+
+        if self.args.rulesets:
+            self.args.rulesets = self.args.rulesets.split(',')
 
     def __write_params_file(self):
         #create custom session based on whatever credentials are available to us
@@ -842,6 +870,9 @@ class rdk():
 
         if self.args.maximum_frequency:
             parameters['SourcePeriodic'] = self.args.maximum_frequency
+
+        if self.args.rulesets:
+            parameters['RuleSets'] = self.args.rulesets
 
         my_params = {"Parameters": parameters}
         params_file_path = os.path.join(os.getcwd(), rules_dir, self.args.rulename, parameter_file_name)
