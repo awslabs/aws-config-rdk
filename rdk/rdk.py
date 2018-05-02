@@ -404,6 +404,10 @@ class rdk():
 
             my_params = [
                 {
+                    'ParameterKey': 'RuleName',
+                    'ParameterValue': rule_name,
+                },
+                {
                     'ParameterKey': 'SourceBucket',
                     'ParameterValue': code_bucket_name,
                 },
@@ -437,7 +441,7 @@ class rdk():
             my_cfn = my_session.client('cloudformation')
 
             try:
-                my_stack_name = __get_stack_name_from_rule_name(rule_name)
+                my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
                 my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
                 #If we've gotten here, stack exists and we should update it.
                 print ("Updating CloudFormation Stack for " + rule_name)

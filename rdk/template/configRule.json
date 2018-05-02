@@ -3,6 +3,12 @@
   "Description": "AWS CloudFormation template to create custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template.",
 
   "Parameters": {
+    "RuleName": {
+      "Description": "Name of the Rule",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255"
+    },
     "SourceBucket": {
       "Description": "Name of the S3 bucket that you have stored the rule zip files in.",
       "Type": "String",
@@ -51,10 +57,10 @@
     "rdkRuleCodeLambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-        "FunctionName": { "Fn::Sub": "RDK-Rule-Function-${AWS::StackName}"},
+        "FunctionName": { "Fn::Join" : [ "", [ "RDK-Rule-Function-", { "Ref": "RuleName" }]]},
         "Code": {
           "S3Bucket": { "Ref": "SourceBucket" },
-          "S3Key": { "Fn::Sub": "${AWS::StackName}/${AWS::StackName}.zip" }
+          "S3Key": { "Fn::Join" : [ "", [ { "Ref": "RuleName" }, "/", { "Ref": "RuleName" }, ".zip"]]}
         },
         "Description": "Create a new AWS lambda function for rule code",
         "Handler": { "Ref": "SourceHandler"},
@@ -80,8 +86,8 @@
         "rdkLambdaRole"
       ],
       "Properties": {
-        "ConfigRuleName": {"Fn::Sub": "${AWS::StackName}" },
-        "Description": {"Fn::Sub": "${AWS::StackName}" },
+        "ConfigRuleName": { "Ref": "RuleName" },
+        "Description": { "Ref": "RuleName" },
         "Scope": {
           "Fn::If": [ "EventTriggered",
             { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },
