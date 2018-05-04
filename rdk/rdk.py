@@ -404,6 +404,10 @@ class rdk():
 
             my_params = [
                 {
+                    'ParameterKey': 'RuleName',
+                    'ParameterValue': rule_name,
+                },
+                {
                     'ParameterKey': 'SourceBucket',
                     'ParameterValue': code_bucket_name,
                 },
@@ -437,12 +441,13 @@ class rdk():
             my_cfn = my_session.client('cloudformation')
 
             try:
-                my_stack = my_cfn.describe_stacks(StackName=rule_name)
+                my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
+                my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
                 #If we've gotten here, stack exists and we should update it.
                 print ("Updating CloudFormation Stack for " + rule_name)
                 try:
                     response = my_cfn.update_stack(
-                        StackName=rule_name,
+                        StackName=my_stack_name,
                         TemplateBody=open(cfn_body, "r").read(),
                         Parameters=my_params,
                         Capabilities=[
@@ -476,7 +481,7 @@ class rdk():
                 #If we're in the exception, the stack does not exist and we should create it.
                 print ("Creating CloudFormation Stack for " + rule_name)
                 response = my_cfn.create_stack(
-                    StackName=rule_name,
+                    StackName=my_stack_name,
                     TemplateBody=open(cfn_body, "r").read(),
                     Parameters=my_params,
                     Capabilities=[
@@ -485,7 +490,7 @@ class rdk():
                 )
 
             #wait for changes to propagate.
-            self.__wait_for_cfn_stack(my_cfn, rule_name)
+            self.__wait_for_cfn_stack(my_cfn, my_stack_name)
 
         print('Config deploy complete.')
 
@@ -837,7 +842,12 @@ class rdk():
             session_args['aws_secret_access_key']=self.args.secret_access_key
 
         return boto3.session.Session(**session_args)
+    
+    def __get_stack_name_from_rule_name(self, rule_name):
+        output = rule_name.replace("_","")
 
+        return output
+        
     def __get_rule_list_for_command(self):
         rule_names = []
         if self.args.all:
