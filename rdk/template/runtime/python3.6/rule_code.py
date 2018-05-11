@@ -1,17 +1,23 @@
-#    Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-#    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
+# Licensed under the Apache License, Version 2.0 (the "License"). You may
+# not use this file except in compliance with the License. A copy of the License is located at
 #
 #        http://aws.amazon.com/apache2.0/
 #
-#    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
+# the specific language governing permissions and limitations under the License.
 
 import json
+import datetime
 import boto3
 import botocore
-import datetime
 
-aws_config = boto3.client('config')
+AWS_CONFIG_CLIENT = boto3.client('config')
+
+DEFAULT_RESOURCE_TYPE = "AWS::::Account"
+ASSUME_ROLE_MODE = False
 
 def evaluate_compliance(configuration_item, rule_parameters):
 
@@ -42,9 +48,10 @@ def is_scheduled_notification(messageType):
     check_defined(messageType, 'messageType')
     return messageType == 'ScheduledNotification'
 
-# Get configurationItem using getResourceConfigHistory API. in case of OversizedConfigurationItemChangeNotification
+# Get configurationItem using getResourceConfigHistory API
+# in case of OversizedConfigurationItemChangeNotification
 def get_configuration(resourceType, resourceId, configurationCaptureTime):
-    result = aws_config.get_resource_config_history(
+    result = AWS_CONFIG_CLIENT.get_resource_config_history(
         resourceType=resourceType,
         resourceId=resourceId,
         laterTime=configurationCaptureTime,
@@ -67,7 +74,9 @@ def convert_api_configuration(configurationItem):
             configurationItem['relationships'][i]['name'] = configurationItem['relationships'][i]['relationshipName']
     return configurationItem
 
-# Based on the type of message get the configuration item either from configurationItem in the invoking event or using the getResourceConfigHistiry API in getConfiguration function.
+# Based on the type of message get the configuration item
+# either from configurationItem in the invoking event
+# or using the getResourceConfigHistiry API in getConfiguration function.
 def get_configuration_item(invokingEvent):
     check_defined(invokingEvent, 'invokingEvent')
     if is_oversized_changed_notification(invokingEvent['messageType']):
@@ -75,8 +84,7 @@ def get_configuration_item(invokingEvent):
         return get_configuration(configurationItemSummary['resourceType'], configurationItemSummary['resourceId'], configurationItemSummary['configurationItemCaptureTime'])
     elif is_scheduled_notification(invokingEvent['messageType']):
         return None
-    else:
-        return check_defined(invokingEvent['configurationItem'], 'configurationItem')
+    return check_defined(invokingEvent['configurationItem'], 'configurationItem')
 
 # Check whether the resource has been deleted. If it has, then the evaluation is unnecessary.
 def is_applicable(configurationItem, event):
@@ -84,12 +92,23 @@ def is_applicable(configurationItem, event):
     check_defined(event, 'event')
     status = configurationItem['configurationItemStatus']
     eventLeftScope = event['eventLeftScope']
-    if(status == 'ResourceDeleted'):
+    if status == 'ResourceDeleted':
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
-    return (status == 'OK' or status == 'ResourceDiscovered') and eventLeftScope == False
+    return (status == 'OK' or status == 'ResourceDiscovered') and not eventLeftScope
 
-#Get role credentials that will work in either custom or managed rules.
+# This gets the client after assuming the Config service role
+# either in the same AWS account or cross-account.
+def get_client(service, event=None):
+    if not event:
+        return boto3.client(service)
+    credentials = get_assume_role_credentials(event["executionRoleArn"])
+    return boto3.client(service, aws_access_key_id=credentials['AccessKeyId'],
+                        aws_secret_access_key=credentials['SecretAccessKey'],
+                        aws_session_token=credentials['SessionToken']
+                       )
+
 def get_assume_role_credentials(role_arn):
+    sts_client = boto3.client('sts')
     try:
         assume_role_response = sts_client.assume_role(RoleArn=role_arn, RoleSessionName="configLambdaExecution")
         return assume_role_response['Credentials']
@@ -102,16 +121,33 @@ def get_assume_role_credentials(role_arn):
             ex.response['Error']['Code'] = "InternalError"
         raise ex
 
+# This generate an evaluation for config
+def build_evaluation(resource_id, compliance_type, timestamp, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
+    eval = {}
+    if annotation:
+        eval['Annotation'] = annotation
+    eval['ComplianceResourceType'] = resource_type
+    eval['ComplianceResourceId'] = resource_id
+    eval['ComplianceType'] = compliance_type
+    eval['OrderingTimestamp'] = timestamp
+    return eval
+
+def build_evaluation_from_config_item(configuration_item, compliance_type, annotation=None):
+    eval_ci = {}
+    if annotation:
+        eval_ci['Annotation'] = annotation
+    eval_ci['ComplianceResourceType'] = configuration_item['resourceType']
+    eval_ci['ComplianceResourceId'] = configuration_item['resourceId']
+    eval_ci['ComplianceType'] = compliance_type
+    eval_ci['OrderingTimestamp'] = configuration_item['configurationItemCaptureTime']
+    return eval_ci
+
 # This decorates the lambda_handler in rule_code with the actual PutEvaluation call
 def lambda_handler(event, context):
-    #Local method to get appropriate Boto3 client regardless of execution environment.
-    def get_client(service):
-        credentials = get_assume_role_credentials(event['executionRoleArn'])
-        return boto3.client(
-            service,
-            aws_access_key_id = credentials['AccessKeyId'],
-            aws_secret_access_key = credentials['SecretAccessKey'],
-            aws_session_token = credentials['SessionToken'])
+
+    global AWS_CONFIG_CLIENT
+    if ASSUME_ROLE_MODE:
+        AWS_CONFIG_CLIENT = get_client('config', event)
 
     evaluations = []
 
@@ -127,12 +163,7 @@ def lambda_handler(event, context):
     compliance_result = evaluate_compliance(configuration_item, rule_parameters)
 
     if isinstance(compliance_result, str):
-        evaluations = [{
-                'ComplianceResourceType': configuration_item['resourceType'],
-                'ComplianceResourceId': configuration_item['resourceId'],
-                'ComplianceType': compliance_result,
-                'OrderingTimestamp': configuration_item['configurationItemCaptureTime']
-        }]
+        evaluations.append(build_evaluation_from_config_item(configuration_item, compliance_result))
     elif isinstance(compliance_result, list):
         for evaluation in compliance_result:
             missing_fields = False
@@ -144,13 +175,7 @@ def lambda_handler(event, context):
             if not missing_fields:
                 evaluations.append(evaluation)
     else:
-        evaluations = [{
-                'ComplianceResourceType': configuration_item['resourceType'],
-                'ComplianceResourceId': configuration_item['resourceId'],
-                'ComplianceType': 'NOT_APPLICABLE',
-                'OrderingTimestamp': configuration_item['configurationItemCaptureTime']
-        }]
-
+        evaluations.append(build_evaluation_from_config_item(configuration_item, 'NOT_APPLICABLE'))
 
     # Put together the request that reports the evaluation status
     resultToken = event['resultToken']
@@ -159,6 +184,6 @@ def lambda_handler(event, context):
         # Used solely for RDK test to skip actual put_evaluation API call
         testMode = True
     # Invoke the Config API to report the result of the evaluation
-    aws_config.put_evaluations(Evaluations=evaluations, ResultToken=resultToken, TestMode=testMode)
+    AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluations, ResultToken=resultToken, TestMode=testMode)
     # Used solely for RDK test to be able to test Lambda function
-    #return evaluations
+    return evaluations
