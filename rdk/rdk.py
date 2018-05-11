@@ -466,7 +466,7 @@ class rdk():
                     else:
                         raise
 
-                my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name)
+                my_lambda_arn = self.__get_lambda_arn_for_rule(my_stack_name)
 
                 print("Publishing Lambda code...")
                 my_lambda_client = my_session.client('lambda')
@@ -553,7 +553,8 @@ class rdk():
                 test_event['ruleParameters'] = json.dumps(my_parameters)
 
                 #Get the Lambda function associated with the Rule
-                my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name)
+                my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
+                my_lambda_arn = self.__get_lambda_arn_for_rule(my_stack_name)
 
                 #Call Lambda function with test event.
                 result = my_lambda_client.invoke(
@@ -1023,17 +1024,17 @@ class rdk():
 
         return test_ci_list
 
-    def __get_lambda_arn_for_rule(self, rulename):
+    def __get_lambda_arn_for_rule(self, stack_name):
         #create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
 
         my_cfn = my_session.client('cloudformation')
 
         #Since CFN won't detect changes to the lambda code stored in S3 as a reason to update the stack, we need to manually update the code reference in Lambda once the CFN has run.
-        self.__wait_for_cfn_stack(my_cfn, rulename)
+        self.__wait_for_cfn_stack(my_cfn, stack_name)
 
         #Lamba function is an output of the stack.
-        my_updated_stack = my_cfn.describe_stacks(StackName=rulename)
+        my_updated_stack = my_cfn.describe_stacks(StackName=stack_name)
         cfn_outputs = my_updated_stack['Stacks'][0]['Outputs']
         my_lambda_arn = 'NOTFOUND'
         for output in cfn_outputs:
