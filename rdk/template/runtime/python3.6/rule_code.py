@@ -174,6 +174,14 @@ def lambda_handler(event, context):
 
             if not missing_fields:
                 evaluations.append(evaluation)
+    elif isinstance(compliance_result, dict):
+        missing_fields = False
+        for field in ('ComplianceResourceType', 'ComplianceResourceId', 'ComplianceType', 'OrderingTimestamp'):
+            if field not in compliance_result:
+                print("Missing " + field + " from custom evaluation.")
+                missing_fields = True
+        if not missing_fields:
+            evaluations.append(compliance_result)
     else:
         evaluations.append(build_evaluation_from_config_item(configuration_item, 'NOT_APPLICABLE'))
 
