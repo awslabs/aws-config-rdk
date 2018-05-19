@@ -92,7 +92,8 @@ class rdk():
         config_role_arn = ""
         delivery_channel_exists = False
         config_bucket_exists = False
-
+        config_bucket_name = config_bucket_prefix + account_id
+        
         #Check to see if the ConfigRecorder has been created.
         recorders = my_config.describe_configuration_recorders()
         if len(recorders['ConfigurationRecorders']) > 0:
@@ -106,18 +107,17 @@ class rdk():
         if len(delivery_channels['DeliveryChannels']) > 0:
             delivery_channel_exists = True
             config_bucket_name = delivery_channels['DeliveryChannels'][0]['s3BucketName']
-            print("Found Bucket: " + config_bucket_name)
-            config_bucket_exists = True
 
         my_s3 = my_session.client('s3')
 
         if not config_bucket_exists:
-            #create config bucket
-            config_bucket_name = config_bucket_prefix + account_id
+            #check whether bucket exists if not create config bucket
             response = my_s3.list_buckets()
             bucket_exists = False
             for bucket in response['Buckets']:
                 if bucket['Name'] == config_bucket_name:
+                    print("Found Bucket: " + config_bucket_name)
+                    config_bucket_exists = True
                     bucket_exists = True
 
             if not bucket_exists:
