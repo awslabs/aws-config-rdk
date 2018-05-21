@@ -176,6 +176,14 @@
                 ],
                 "Effect": "Allow",
                 "Resource": "*"
+              },
+              {
+                "Sid": "5",
+                "Action": [
+                  "sts:AssumeRole"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
               }
             ]
           }
