@@ -145,8 +145,15 @@ class rdk():
 
             if not role_exists:
                 print('Creating IAM role config-role')
-                assume_role_policy = open(os.path.join(path.dirname(__file__), 'template', assume_role_policy_file), 'r').read()
-                my_iam.create_role(RoleName=config_role_name, AssumeRolePolicyDocument=assume_role_policy, Path="/rdk/")
+                assume_role_policy = json.loads(open(os.path.join(path.dirname(__file__), 'template', assume_role_policy_file), 'r').read())
+                assume_role_policy['Statement'].append({
+                    "Effect": "Allow",
+                    "Principal": {
+                        "AWS": str(account_id)
+                        },
+                        "Action": "sts:AssumeRole"
+                    })
+                my_iam.create_role(RoleName=config_role_name, AssumeRolePolicyDocument=json.dumps(assume_role_policy), Path="/rdk/")
 
             #attach role policy
             my_iam.attach_role_policy(RoleName=config_role_name, PolicyArn='arn:aws:iam::aws:policy/service-role/AWSConfigRole')
