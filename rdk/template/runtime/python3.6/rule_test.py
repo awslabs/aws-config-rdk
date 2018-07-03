@@ -8,6 +8,17 @@ except ImportError:
 import botocore
 from botocore.exceptions import ClientError
 
+##############
+# Parameters #
+##############
+
+# Define the default resource to report to Config Rules
+DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+
+#############
+# Main Code #
+#############
+
 config_client_mock = MagicMock()
 sts_client_mock = MagicMock()
 
@@ -29,7 +40,7 @@ class SampleTest(unittest.TestCase):
     rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
     
     invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
-    
+
     def setUp(self):
         pass
 
@@ -39,11 +50,7 @@ class SampleTest(unittest.TestCase):
     def test_sample_2(self):
         response = rule.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
         resp_expected = []
-        resp_expected.append({
-            'ComplianceResourceType' : 'AWS::IAM::Role',
-            'ComplianceResourceId' : 'some-resource-id',
-            'ComplianceType': "NOT_APPLICABLE"
-        })
+        resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
         assert_successful_evaluation(self, response, resp_expected)
 
 ####################
@@ -78,6 +85,20 @@ def build_lambda_scheduled_event(rule_parameters=None):
     if rule_parameters:
         event_to_return['ruleParameters'] = rule_parameters
     return event_to_return
+
+def build_expected_response(compliance_type, compliance_resource_id, compliance_resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
+    if not annotation:
+        return {
+            'ComplianceType': compliance_type,
+            'ComplianceResourceId': compliance_resource_id,
+            'ComplianceResourceType': compliance_resource_type
+            }
+    return {
+        'ComplianceType': compliance_type,
+        'ComplianceResourceId': compliance_resource_id,
+        'ComplianceResourceType': compliance_resource_type,
+        'Annotation': Annotation
+        }
 
 def assert_successful_evaluation(testClass, response, resp_expected, evaluations_count=1):
     if isinstance(response, dict):

@@ -19,7 +19,7 @@ import botocore
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = "AWS::::Account"
+DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
@@ -28,23 +28,23 @@ ASSUME_ROLE_MODE = False
 # Main Code #
 #############
 
-def evaluate_compliance(event, configuration_item, rule_parameters):
+def evaluate_compliance(event, configuration_item, valid_rule_parameters):
     """Form the evaluation(s) to be return to Config Rules
-    
-    Return either: 
+
+    Return either:
     None -- when no result needs to be displayed
     a string -- either COMPLIANT, NON_COMPLIANT or NOT_APPLICABLE
     a dictionary -- the evaluation dictionary, usually built by build_evaluation_from_config_item()
     a list of dictionary -- a list of evaluation dictionary , usually built by build_evaluation()
-    
+
     Keyword arguments:
     event -- the event variable given in the lambda handler
     configuration_item -- the configurationItem dictionary in the invokingEvent
-    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
-    
+    valid_rule_parameters -- the output of the evaluate_parameters() representing validated parameters of the Config Rule
+
     Advanced Notes:
-    1 -- the deleted resources are taken care of by the Boilerplate code
-    2 -- if a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
+    1 -- if a resource is deleted and generate a configuration change with ResourceDeleted status, the Boilerplate code will put a NOT_APPLICABLE on this resource automatically.
+    2 -- if a None or a list of dictionary is returned, the old evaluation(s) which are not returned in the new evaluation list are returned as NOT_APPLICABLE by the Boilerplate code
     3 -- if None or an empty string, list or dict is returned, the Boilerplate code will put a "shadow" evaluation to feedback that the evaluation took place properly
     """
 
@@ -54,9 +54,33 @@ def evaluate_compliance(event, configuration_item, rule_parameters):
 
     return 'NOT_APPLICABLE'
 
+def evaluate_parameters(rule_parameters):
+    """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
+
+    Return:
+    anything suitable for the evaluate_compliance()
+
+    Keyword arguments:
+    rule_parameters -- the Key/Value dictionary of the Config Rules parameters
+    """
+    valid_rule_parameters = rule_parameters
+    return valid_rule_parameters
+
 ####################
 # Helper Functions #
 ####################
+
+# Build an error to be displayed in the logs when the parameter is invalid.
+def build_parameters_value_error_response(ex):
+    """Return an error dictionary when the evaluate_parameters() raises a ValueError.
+
+    Keyword arguments:
+    ex -- Exception text
+    """
+    return  build_error_response(internalErrorMessage="Customer error while parsing input parameters",
+                                 internalErrorDetails="Parameter value is invalid",
+                                 customerErrorCode="InvalidParameterValueException",
+                                 customerErrorMessage=str(ex))
 
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
@@ -86,9 +110,6 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     resource_type -- the CloudFormation resource type (or AWS::::Account) to report on the rule (default DEFAULT_RESOURCE_TYPE)
     annotation -- an annotation to be added to the evaluation (default None)
     """
-    if imag == 0.0 and real == 0.0:
-        return complex_zero
-    ...
     eval_cc = {}
     if annotation:
         eval_cc['Annotation'] = annotation
@@ -118,10 +139,6 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
 ####################
 # Boilerplate Code #
 ####################
-
-# Helper function to check if rule parameters exist
-def parameters_exist(parameters):
-    return len(parameters) != 0
 
 # Helper function used to validate input
 def check_defined(reference, reference_name):
@@ -207,7 +224,7 @@ def get_assume_role_credentials(role_arn):
 # This removes older evaluation (usually useful for periodic rule not reporting on AWS::::Account).
 def clean_up_old_evaluations(latest_evaluations, event):
 
-    cleaned_evalations = []
+    cleaned_evaluations = []
 
     old_eval = AWS_CONFIG_CLIENT.get_compliance_details_by_config_rule(
         ConfigRuleName=event['configRuleName'],
@@ -236,9 +253,9 @@ def clean_up_old_evaluations(latest_evaluations, event):
             if old_resource_id == latest_eval['ComplianceResourceId']:
                 newer_founded = True
         if not newer_founded:
-            cleaned_evalations.append(build_evaluation(old_resource_id, "NOT_APPLICABLE", event))
+            cleaned_evaluations.append(build_evaluation(old_resource_id, "NOT_APPLICABLE", event))
 
-    return cleaned_evalations + latest_evaluations
+    return cleaned_evaluations + latest_evaluations
 
 # This decorates the lambda_handler in rule_code with the actual PutEvaluation call
 def lambda_handler(event, context):
@@ -254,10 +271,15 @@ def lambda_handler(event, context):
         rule_parameters = json.loads(event['ruleParameters'])
 
     try:
+        valid_rule_parameters = evaluate_parameters(rule_parameters)
+    except ValueError as ex:
+        return build_parameters_value_error_response(ex)
+
+    try:
         configuration_item = get_configuration_item(invoking_event)
         if invoking_event['messageType'] in ['ConfigurationItemChangeNotification', 'ScheduledNotification', 'OversizedConfigurationItemChangeNotification']:
             if is_applicable(configuration_item, event):
-                compliance_result = evaluate_compliance(event, configuration_item, rule_parameters)
+                compliance_result = evaluate_compliance(event, configuration_item, valid_rule_parameters)
             else:
                 compliance_result = "NOT_APPLICABLE"
         else:
@@ -273,7 +295,8 @@ def lambda_handler(event, context):
     latest_evaluations = []
 
     if not compliance_result:
-        evaluations.append(build_evaluation(event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::::Account'))
+        latest_evaluations.append(build_evaluation(event['accountId'], "NOT_APPLICABLE", event, resource_type='AWS::::Account'))
+        evaluations = clean_up_old_evaluations(latest_evaluations, event)
     elif isinstance(compliance_result, str):
         evaluations.append(build_evaluation_from_config_item(configuration_item, compliance_result))
     elif isinstance(compliance_result, list):
