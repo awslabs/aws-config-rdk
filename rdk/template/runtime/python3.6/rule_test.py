@@ -1,3 +1,4 @@
+import sys
 import unittest
 try:
     from unittest.mock import MagicMock, patch, ANY
@@ -6,14 +7,16 @@ except ImportError:
     from mock import MagicMock, patch, ANY
 import botocore
 from botocore.exceptions import ClientError
-import sys
 
 config_client_mock = MagicMock()
+sts_client_mock = MagicMock()
 
 class Boto3Mock():
     def client(self, client_name, *args, **kwargs):
         if client_name == 'config':
             return config_client_mock
+        elif client_name == 'sts':
+            return sts_client_mock
         else:
             raise Exception("Attempting to create an unknown client")
 
@@ -22,8 +25,74 @@ sys.modules['boto3'] = Boto3Mock()
 rule = __import__('<%RuleName%>')
 
 class SampleTest(unittest.TestCase):
+
+    rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
+    
+    invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
+    
     def setUp(self):
         pass
 
     def test_sample(self):
-        self.assertTrue(True);
+        self.assertTrue(True)
+
+    def test_sample_2(self):
+        response = rule.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
+        resp_expected = []
+        resp_expected.append({
+            'ComplianceResourceType' : 'AWS::IAM::Role',
+            'ComplianceResourceId' : 'some-resource-id',
+            'ComplianceType': "NOT_APPLICABLE"
+        })
+        assert_successful_evaluation(self, response, resp_expected)
+
+####################
+# Helper Functions #
+####################
+
+def build_lambda_configurationchange_event(invoking_event, rule_parameters=None):
+    event_to_return = {
+        'configRuleName':'myrule',
+        'executionRoleArn':'roleArn',
+        'eventLeftScope': True,
+        'invokingEvent': invoking_event,
+        'accountId': '123456789012',
+        'configRuleArn': 'arn:aws:config:us-east-1:123456789012:config-rule/config-rule-8fngan',
+        'resultToken':'token'
+    }
+    if rule_parameters:
+        event_to_return['ruleParameters'] = rule_parameters
+    return event_to_return
+
+def build_lambda_scheduled_event(rule_parameters=None):
+    invoking_event = '{"messageType":"ScheduledNotification","notificationCreationTime":"2017-12-23T22:11:18.158Z"}'
+    event_to_return = {
+        'configRuleName':'myrule',
+        'executionRoleArn':'roleArn',
+        'eventLeftScope': True,
+        'invokingEvent': invoking_event,
+        'accountId': '123456789012',
+        'configRuleArn': 'arn:aws:config:us-east-1:123456789012:config-rule/config-rule-8fngan',
+        'resultToken':'token'
+    }
+    if rule_parameters:
+        event_to_return['ruleParameters'] = rule_parameters
+    return event_to_return
+
+def assert_successful_evaluation(testClass, response, resp_expected, evaluations_count=1):
+    if isinstance(response, dict):
+        testClass.assertEquals(resp_expected['ComplianceType'], response['ComplianceType'])
+        testClass.assertEquals(resp_expected['ComplianceResourceType'], response['ComplianceResourceType'])
+        testClass.assertEquals(resp_expected['ComplianceResourceId'], response['ComplianceResourceId'])
+        testClass.assertTrue(response['OrderingTimestamp'])
+        if 'Annotation' in resp_expected or 'Annotation' in response:
+            testClass.assertEquals(resp_expected['Annotation'], response['Annotation'])
+    elif isinstance(response, list):
+        testClass.assertEquals(evaluations_count, len(response))
+        for i, response_expected in enumerate(resp_expected):
+            testClass.assertEquals(response_expected['ComplianceType'], response[i]['ComplianceType'])
+            testClass.assertEquals(response_expected['ComplianceResourceType'], response[i]['ComplianceResourceType'])
+            testClass.assertEquals(response_expected['ComplianceResourceId'], response[i]['ComplianceResourceId'])
+            testClass.assertTrue(response[i]['OrderingTimestamp'])
+            if 'Annotation' in response_expected or 'Annotation' in response[i]:
+                testClass.assertEquals(response_expected['Annotation'], response[i]['Annotation'])
