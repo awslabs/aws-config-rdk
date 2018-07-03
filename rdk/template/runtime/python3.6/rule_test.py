@@ -97,7 +97,7 @@ def build_expected_response(compliance_type, compliance_resource_id, compliance_
         'ComplianceType': compliance_type,
         'ComplianceResourceId': compliance_resource_id,
         'ComplianceResourceType': compliance_resource_type,
-        'Annotation': Annotation
+        'Annotation': annotation
         }
 
 def assert_successful_evaluation(testClass, response, resp_expected, evaluations_count=1):
