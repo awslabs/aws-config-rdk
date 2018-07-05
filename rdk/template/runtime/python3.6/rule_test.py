@@ -48,7 +48,7 @@ class SampleTest(unittest.TestCase):
         self.assertTrue(True)
 
     def test_sample_2(self):
-        sts_mock()
+        rule.ASSUME_ROLE_MODE = False
         response = rule.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
         resp_expected = []
         resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))

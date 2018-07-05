@@ -277,14 +277,14 @@ def lambda_handler(event, context):
 
     try:
         AWS_CONFIG_CLIENT = get_client('config', event)
-        configuration_item = get_configuration_item(invoking_event)
         if invoking_event['messageType'] in ['ConfigurationItemChangeNotification', 'ScheduledNotification', 'OversizedConfigurationItemChangeNotification']:
+            configuration_item = get_configuration_item(invoking_event)
             if is_applicable(configuration_item, event):
                 compliance_result = evaluate_compliance(event, configuration_item, valid_rule_parameters)
             else:
                 compliance_result = "NOT_APPLICABLE"
         else:
-            return {'internalErrorMessage': 'Unexpected message type ' + str(invoking_event)}
+            return build_internal_error_response('Unexpected message type', str(invoking_event))
     except botocore.exceptions.ClientError as ex:
         if is_internal_error(ex):
             return build_internal_error_response("Unexpected error while completing API request", str(ex))
