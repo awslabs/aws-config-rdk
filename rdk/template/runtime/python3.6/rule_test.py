@@ -48,6 +48,7 @@ class SampleTest(unittest.TestCase):
         self.assertTrue(True)
 
     def test_sample_2(self):
+        sts_mock()
         response = rule.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
         resp_expected = []
         resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
@@ -61,7 +62,7 @@ def build_lambda_configurationchange_event(invoking_event, rule_parameters=None)
     event_to_return = {
         'configRuleName':'myrule',
         'executionRoleArn':'roleArn',
-        'eventLeftScope': False,
+        'eventLeftScope': True,
         'invokingEvent': invoking_event,
         'accountId': '123456789012',
         'configRuleArn': 'arn:aws:config:us-east-1:123456789012:config-rule/config-rule-8fngan',
@@ -76,7 +77,7 @@ def build_lambda_scheduled_event(rule_parameters=None):
     event_to_return = {
         'configRuleName':'myrule',
         'executionRoleArn':'roleArn',
-        'eventLeftScope': True,
+        'eventLeftScope': False,
         'invokingEvent': invoking_event,
         'accountId': '123456789012',
         'configRuleArn': 'arn:aws:config:us-east-1:123456789012:config-rule/config-rule-8fngan',
@@ -129,3 +130,12 @@ def assert_customer_error_response(testClass, response, customerErrorCode=None, 
         testClass.assertTrue(response['internalErrorMessage'])
     if "internalErrorDetails" in response:
         testClass.assertTrue(response['internalErrorDetails'])
+
+def sts_mock():
+    assume_role_response = {
+        "Credentials": {
+            "AccessKeyId": "string",
+            "SecretAccessKey": "string",
+            "SessionToken": "string"}}
+    sts_client_mock.reset_mock(return_value=True)
+    sts_client_mock.assume_role = MagicMock(return_value=assume_role_response)
