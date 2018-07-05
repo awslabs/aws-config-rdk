@@ -117,3 +117,15 @@ def assert_successful_evaluation(testClass, response, resp_expected, evaluations
             testClass.assertTrue(response[i]['OrderingTimestamp'])
             if 'Annotation' in response_expected or 'Annotation' in response[i]:
                 testClass.assertEquals(response_expected['Annotation'], response[i]['Annotation'])
+
+def assert_customer_error_response(testClass, response, customerErrorCode=None, customerErrorMessage=None):
+    if customerErrorCode:
+        testClass.assertEqual(customerErrorCode, response['customerErrorCode'])
+    if customerErrorMessage:
+        testClass.assertEqual(customerErrorMessage, response['customerErrorMessage'])
+    testClass.assertTrue(response['customerErrorCode'])
+    testClass.assertTrue(response['customerErrorMessage'])
+    if "internalErrorMessage" in response:
+        testClass.assertTrue(response['internalErrorMessage'])
+    if "internalErrorDetails" in response:
+        testClass.assertTrue(response['internalErrorDetails'])
