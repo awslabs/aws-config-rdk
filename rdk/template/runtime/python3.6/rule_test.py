@@ -139,3 +139,25 @@ def sts_mock():
             "SessionToken": "string"}}
     sts_client_mock.reset_mock(return_value=True)
     sts_client_mock.assume_role = MagicMock(return_value=assume_role_response)
+
+##################
+# Commun Testing #
+##################
+
+class TestStsErrors(unittest.TestCase):
+
+    def test_sts_unknown_error(self):
+        rule.ASSUME_ROLE_MODE = True
+        sts_client_mock.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
+            {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
+        response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        assert_customer_error_response(
+            self, response, 'InternalError', 'InternalError')
+
+    def test_sts_access_denied(self):
+        rule.ASSUME_ROLE_MODE = True
+        sts_client_mock.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
+            {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
+        response = rule.lambda_handler(build_lambda_configurationchange_event('{}'), {})
+        assert_customer_error_response(
+            self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')

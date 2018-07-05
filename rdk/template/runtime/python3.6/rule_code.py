@@ -214,6 +214,7 @@ def get_assume_role_credentials(role_arn):
         return assume_role_response['Credentials']
     except botocore.exceptions.ClientError as ex:
         # Scrub error message for any internal account info leaks
+        print(str(ex))
         if 'AccessDenied' in ex.response['Error']['Code']:
             ex.response['Error']['Message'] = "AWS Config does not have permission to assume the IAM role."
         else:
@@ -261,7 +262,6 @@ def clean_up_old_evaluations(latest_evaluations, event):
 def lambda_handler(event, context):
 
     global AWS_CONFIG_CLIENT
-    AWS_CONFIG_CLIENT = get_client('config', event)
 
     #print(event)
     check_defined(event, 'event')
@@ -276,6 +276,7 @@ def lambda_handler(event, context):
         return build_parameters_value_error_response(ex)
 
     try:
+        AWS_CONFIG_CLIENT = get_client('config', event)
         configuration_item = get_configuration_item(invoking_event)
         if invoking_event['messageType'] in ['ConfigurationItemChangeNotification', 'ScheduledNotification', 'OversizedConfigurationItemChangeNotification']:
             if is_applicable(configuration_item, event):
