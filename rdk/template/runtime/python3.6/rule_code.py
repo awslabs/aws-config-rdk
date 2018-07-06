@@ -77,8 +77,8 @@ def build_parameters_value_error_response(ex):
     Keyword arguments:
     ex -- Exception text
     """
-    return  build_error_response(internalErrorMessage="Customer error while parsing input parameters",
-                                 internalErrorDetails="Parameter value is invalid",
+    return  build_error_response(internalErrorMessage="Parameter value is invalid",
+                                 internalErrorDetails="An ValueError was raised during the validation of the Parameter value",
                                  customerErrorCode="InvalidParameterValueException",
                                  customerErrorMessage=str(ex))
 

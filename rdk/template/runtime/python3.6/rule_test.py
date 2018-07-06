@@ -141,7 +141,7 @@ def sts_mock():
     sts_client_mock.assume_role = MagicMock(return_value=assume_role_response)
 
 ##################
-# Commun Testing #
+# Common Testing #
 ##################
 
 class TestStsErrors(unittest.TestCase):
