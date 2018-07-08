@@ -742,7 +742,7 @@ class rdk():
                 message_type = "ScheduledNotification"
 
             source["Owner"] = "CUSTOM_LAMBDA"
-            source["SourceIdentifier"] = '{ "Fn::Sub": "arn:aws:lambda:${LambdaRegion}:${LambdaAccountId}:function:RDK-Rule-Function-'+rule_name+'"}'
+            source["SourceIdentifier"] = { "Fn::Sub": "arn:aws:lambda:${LambdaRegion}:${LambdaAccountId}:function:RDK-Rule-Function-"+rule_name }
             source["SourceDetails"][0]["EventSource"] = "aws.config"
             source["SourceDetails"][0]["MessageType"] = message_type
 
@@ -757,7 +757,9 @@ class rdk():
 
         template["Resources"] = resources
 
-        return json.dumps(template, indent=2)
+        output_file = open(self.args.output_file, 'w')
+        output_file.write(json.dumps(template, indent=2))
+        print("CloudFormation template written to " + self.args.output_file)
 
     def __remove_ruleset_rule(self, ruleset, rulename):
         params = self.__read_params_file(rulename)
