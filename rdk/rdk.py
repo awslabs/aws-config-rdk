@@ -684,7 +684,7 @@ class rdk():
             print("Unknown subcommand.")
 
     def create_rule_template(self):
-        arser = argparse.ArgumentParser(prog='rdk create-rule-template')
+        parser = argparse.ArgumentParser(prog='rdk create-rule-template')
         parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to include in template.  A CloudFormation template will be created, but Rule(s) will not be pushed to AWS.')
         parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be included in the generated CloudFormation template.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names to be included in the generated template.')
@@ -696,63 +696,68 @@ class rdk():
 
         print ("Generating CloudFormation template!")
 
-        template_output = ""
-        #First add the common elements - parameters and config service policy
+        #First add the common elements - description, parameters, and resource section header
+        template = {}
+        template["AWSTemplateFormatVersion"] = "2010-09-09"
+        template["Description"] = "AWS CloudFormation template to create custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template."
 
-        #Parameterize the account ID that contains the Lambda functions.
+        parameters = {}
+        parameters["LambdaAccountId"] = {}
+        parameters["LambdaAccountId"]["Description"] = "Account ID that contains Lambda functions for Config Rules."
+        parameters["LambdaAccountId"]["Type"] = "String"
+        parameters["LambdaAccountId"]["MinLength"] = "12"
+        parameters["LambdaAccountId"]["MaxLength"] = "12"
+        parameters["LambdaRegion"] = {}
+        parameters["LambdaRegion"]["Description"] = "Region that contains Lambda functions for Config Rules."
+        parameters["LambdaRegion"]["Type"] = "String"
+        template["Parameters"] = parameters
 
+        resources = {}
 
         #Next, go through each rule in our rule list and add the CFN to deploy it.
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             params = self.__get_rule_parameters(rule_name)
 
+            config_rule = {}
+            config_rule["Type"] = "AWS::Config::ConfigRule"
+
+            properties = {}
+            source = {}
+            source["SourceDetails"] = []
+            source["SourceDetails"].append({})
+
+            properties["ConfigRuleName"] = rule_name
+            properties["Description"] = rule_name
+
             #If there are SourceEvents specified for the Rule, generate the Scope clause.
-            scope_clause = ""
             if 'SourceEvents' in params:
-                scope_clause = """
-                    Scope:
-                        ComplianceResourceTypes: {0.SourceEvents}
-                """.format(params)
+                properties["Scope"] = params['SourceEvents']
 
             #If there is a MaximumExecutionFrequency specified for the Rule, Generate the MEF clause.
-            mef_clause = ""
+            message_type = "ConfigurationItemChangeNotification"
             if 'SourcePeriodic' in params:
-                mef_clause = """
-                    MaximumExecutionFrequency: {0.SourcePeriodic}
-                """.format(params)
+                properties["MaximumExecutionFrequency"] = params['SourcePeriodic']
+                source["SourceDetails"][0]["MaximumExecutionFrequency"] = params['SourcePeriodic']
+                message_type = "ScheduledNotification"
 
-            rule_snippet = '''
-                {0}ConfigRule:
-                    Type: AWS::Config::ConfigRule,
-                    Properties:
-                        ConfigRuleName: {0}
-                        Description: {0}
-                        {1}
-                        {2}
-                        "Source": {
-                            "Owner": "CUSTOM_LAMBDA",
-                            "SourceIdentifier": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
-                            "SourceDetails": [{
-                                "EventSource": "aws.config",
-                                "MessageType": {
-                                    "Fn::If": [ "EventTriggered",
-                                        "ConfigurationItemChangeNotification",
-                                        "ScheduledNotification"
-                                    ]
-                                },
-                                "MaximumExecutionFrequency": {
-                                    "Fn::If": [ "PeriodicTriggered",
-                                        { "Ref": "SourcePeriodic" } ,
-                                        { "Ref": "AWS::NoValue" }
-                                    ]
-                                }
-                            }]
-                        },
-                        "InputParameters": { "Ref": "SourceInputParameters" }
-                    }
-                }
-            '''.format(rule_name, scope_clause, mef_clause)
+            source["Owner"] = "CUSTOM_LAMBDA"
+            source["SourceIdentifier"] = '{ "Fn::Sub": "arn:aws:lambda:${LambdaRegion}:${LambdaAccountId}:function:RDK-Rule-Function-'+rule_name+'"}'
+            source["SourceDetails"][0]["EventSource"] = "aws.config"
+            source["SourceDetails"][0]["MessageType"] = message_type
+
+            properties["Source"] = source
+
+            if 'SourceInputParameters' in params:
+                properties["InputParameters"] = params['SourceInputParameters']
+
+            config_rule["Properties"] = properties
+
+            resources[rule_name+"ConfigRule"] = config_rule
+
+        template["Resources"] = resources
+
+        return json.dumps(template, indent=2)
 
     def __remove_ruleset_rule(self, ruleset, rulename):
         params = self.__read_params_file(rulename)
