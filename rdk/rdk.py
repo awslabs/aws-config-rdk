@@ -324,6 +324,7 @@ class rdk():
         parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to deploy.  Rule(s) will be pushed to AWS.')
         parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
+        parser.add_argument('-f','--functions-only', required=False, help="Only deploy Lambda functions.  Useful for cross-account deployments.")
         self.args = parser.parse_args(self.args.command_args, self.args)
 
         if self.args.rulesets:
@@ -449,7 +450,7 @@ class rdk():
             my_cfn = my_session.client('cloudformation')
 
             try:
-                my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
+                my_stack_name = self.__get_alphanumeric_rule_name(rule_name)
                 my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
                 #If we've gotten here, stack exists and we should update it.
                 print ("Updating CloudFormation Stack for " + rule_name)
@@ -561,7 +562,7 @@ class rdk():
                 test_event['ruleParameters'] = json.dumps(my_parameters)
 
                 #Get the Lambda function associated with the Rule
-                my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
+                my_stack_name = self.__get_alphanumeric_rule_name(rule_name)
                 my_lambda_arn = self.__get_lambda_arn_for_rule(my_stack_name)
 
                 #Call Lambda function with test event.
@@ -932,6 +933,11 @@ class rdk():
 
     def __get_stack_name_from_rule_name(self, rule_name):
         output = rule_name.replace("_","")
+
+        return output
+
+    def __get_alphanumeric_rule_name(self, rule_name):
+        output = rule_name.replace("_","").replace("-","")
 
         return output
 
