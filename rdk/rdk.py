@@ -754,7 +754,7 @@ class rdk():
 
             config_rule["Properties"] = properties
 
-            resources[rule_name+"ConfigRule"] = config_rule
+            resources[self.__get_alphanumeric_rule_name(rule_name)+"ConfigRule"] = config_rule
 
         template["Resources"] = resources
 
