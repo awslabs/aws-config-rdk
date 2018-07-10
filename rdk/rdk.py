@@ -324,16 +324,20 @@ class rdk():
         parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to deploy.  Rule(s) will be pushed to AWS.')
         parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
-        parser.add_argument('-f','--functions-only', required=False, help="Only deploy Lambda functions.  Useful for cross-account deployments.")
+        parser.add_argument('-f','--functions-only', action='store_true', required=False, help="Only deploy Lambda functions.  Useful for cross-account deployments.")
+        parser.add_argument('--stack-name', default="RDK-Config-Rule-Functions", required=False, help="Optional Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
         self.args = parser.parse_args(self.args.command_args, self.args)
+
+        if self.args.stack_name and not self.args.functions_only:
+            print("--stack-name can only be specified when using the --functions-only feature.")
+            sys.exit(1)
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
 
+
         #run the deploy code
         print ("Running deploy!")
-
-        rule_names = self.__get_rule_list_for_command()
 
         #create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
@@ -342,65 +346,108 @@ class rdk():
         my_sts = my_session.client('sts')
         response = my_sts.get_caller_identity()
         account_id = response['Account']
+
+        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
+
+        #If we're only deploying the Lambda functions (and role + permissions), branch here.  Someday the "main" execution path should use the same generated CFN templates for single-account deployment.
+        if self.args.functions_only:
+            #Generate the template
+            function_template = self.__create_function_cloudformation_template()
+
+            #Generate CFN parameter json
+            cfn_params = [
+                {
+                    'ParameterKey': 'SourceBucket',
+                    'ParameterValue': code_bucket_name,
+                }
+            ]
+
+            #Write template to S3
+            my_s3_client = my_session.client('s3')
+            my_s3_client.put_object(
+                Body=bytes(function_template, 'utf-8'),
+                Bucket=code_bucket_name,
+                Key=self.args.stack_name + ".json"
+            )
+
+            #Package code and push to S3
+            s3_code_objects = {}
+            rule_names = self.__get_rule_list_for_command()
+            for rule_name in rule_names:
+                rule_params = self.__get_rule_parameters(rule_name)
+                s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
+                s3_code_objects[rule_name] = s3_dst
+
+            #Check if stack exists.  If it does, update it.  If it doesn't, create it.
+            my_cfn = my_session.client('cloudformation')
+            try:
+                my_stack = my_cfn.describe_stacks(StackName=self.args.stack_name)
+
+                #If we've gotten here, stack exists and we should update it.
+                print ("Updating CloudFormation Stack for Lambda functions.")
+                try:
+                    response = my_cfn.update_stack(
+                        StackName=self.args.stack_name,
+                        TemplateURL="https://s3-" + my_session.region_name + ".amazonaws.com/"+code_bucket_name+"/" + self.args.stack_name + ".json",
+                        Parameters=cfn_params,
+                        Capabilities=[
+                            'CAPABILITY_IAM',
+                        ],
+                    )
+
+                    #wait for changes to propagate.
+                    self.__wait_for_cfn_stack(my_cfn, self.args.stack_name)
+                except ClientError as e:
+                    if e.response['Error']['Code'] == 'ValidationError':
+                        if 'No updates are to be performed.' in str(e):
+                            #No changes made to Config rule definition, so CloudFormation won't do anything.
+                            print("No changes to Config Rule.")
+                        else:
+                            #Something unexpected has gone wrong.  Emit an error and bail.
+                            print(e)
+                            return 1
+                    else:
+                        raise
+
+                #Push lambda code to functions.
+
+                for rule_name in rule_names:
+                    my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name, my_session.region_name, account_id)
+
+                    print("Publishing Lambda code...")
+                    my_lambda_client = my_session.client('lambda')
+                    my_lambda_client.update_function_code(
+                        FunctionName=my_lambda_arn,
+                        S3Bucket=code_bucket_name,
+                        S3Key=s3_code_objects[rule_name],
+                        Publish=True
+                    )
+                    print("Lambda code updated.")
+            except ClientError as e:
+                #If we're in the exception, the stack does not exist and we should create it.
+                print ("Creating CloudFormation Stack for Lambda Functions.")
+                response = my_cfn.create_stack(
+                    StackName=self.args.stack_name,
+                    TemplateURL="https://s3-" + my_session.region_name + ".amazonaws.com/"+code_bucket_name+"/" + self.args.stack_name + ".json",
+                    Parameters=cfn_params,
+                    Capabilities=[
+                        'CAPABILITY_IAM',
+                    ],
+                )
+
+                #wait for changes to propagate.
+                self.__wait_for_cfn_stack(my_cfn, self.args.stack_name)
+                print("CloudFormation stack deployment complete.")
+
+            #We're done!  Return with great success.
+            sys.exit(0)
+
+        #If we're deploying both the functions and the Config rules, run the following process:
+        rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             my_rule_params = self.__get_rule_parameters(rule_name)
             s3_src = ""
-
-            if my_rule_params['SourceRuntime'] == "java8":
-                #Do java build and package.
-                print ("Running Gradle Build for "+rule_name)
-                working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
-                command = ["gradle","build"]
-                subprocess.call( command, cwd=working_dir)
-
-                #set source as distribution zip
-                s3_src = os.path.join(os.getcwd(), rules_dir, rule_name, 'build', 'distributions', rule_name+".zip")
-            elif my_rule_params['SourceRuntime'] in ["dotnetcore1.0","dotnetcore2.0"]:
-                print ("Packaging "+rule_name)
-                working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
-                commands = [["dotnet","restore"]]
-
-                app_runtime = "netcoreapp1.0"
-                if my_rule_params['SourceRuntime'] == "dotnetcore2.0":
-                    app_runtime = "netcoreapp2.0"
-
-                commands.append(["dotnet","lambda","package","-c","Release","-f", app_runtime])
-
-                for command in commands:
-                    subprocess.call( command, cwd=working_dir)
-
-                # Remove old zip file if it already exists
-                package_file_dst = os.path.join(rule_name, rule_name+".zip")
-                self.__delete_package_file(package_file_dst)
-
-                # Create new package in temp directory, copy to rule directory
-                # This copy avoids the archiver trying to include the output zip in itself
-                s3_src_dir = os.path.join(os.getcwd(),rules_dir, rule_name,'bin','Release', app_runtime, 'publish')
-                tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
-                shutil.copy(tmp_src, package_file_dst)
-                s3_src = os.path.abspath(package_file_dst)
-                self.__delete_package_file(tmp_src)
-
-            else:
-                print ("Zipping " + rule_name)
-                #zip rule code files and upload to s3 bucket
-
-                # Remove old zip file if it already exists
-                package_file_dst = os.path.join(rule_name, rule_name+".zip")
-                self.__delete_package_file(package_file_dst)
-
-                s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
-                tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
-                shutil.copy(tmp_src, package_file_dst)
-                s3_src = os.path.abspath(package_file_dst)
-                self.__delete_package_file(tmp_src)
-
-            s3_dst = "/".join((rule_name, rule_name+".zip"))
-            code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
-            my_s3 = my_session.resource('s3')
-
-            print ("Uploading " + rule_name)
-            my_s3.meta.client.upload_file(s3_src, code_bucket_name, s3_dst)
+            s3_dst = self.__upload_function_code(rule_name, my_rule_params, account_id, my_session, code_bucket_name)
 
             #create CFN Parameters
             source_events = "NONE"
@@ -475,7 +522,7 @@ class rdk():
                     else:
                         raise
 
-                my_lambda_arn = self.__get_lambda_arn_for_rule(my_stack_name)
+                my_lambda_arn = self.__get_lambda_arn_for_stack(my_stack_name)
 
                 print("Publishing Lambda code...")
                 my_lambda_client = my_session.client('lambda')
@@ -563,7 +610,7 @@ class rdk():
 
                 #Get the Lambda function associated with the Rule
                 my_stack_name = self.__get_alphanumeric_rule_name(rule_name)
-                my_lambda_arn = self.__get_lambda_arn_for_rule(my_stack_name)
+                my_lambda_arn = self.__get_lambda_arn_for_stack(my_stack_name)
 
                 #Call Lambda function with test event.
                 result = my_lambda_client.invoke(
@@ -689,7 +736,7 @@ class rdk():
         parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to include in template.  A CloudFormation template will be created, but Rule(s) will not be pushed to AWS.')
         parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be included in the generated CloudFormation template.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names to be included in the generated template.')
-        parser.add_argument('-o','--output-file', required=True, help="filename of generated CloudFormation template")
+        parser.add_argument('-o','--output-file', required=True, default="RDK-Config-Rules", help="filename of generated CloudFormation template")
         self.args = parser.parse_args(self.args.command_args, self.args)
 
         if self.args.rulesets:
@@ -733,7 +780,8 @@ class rdk():
 
             #If there are SourceEvents specified for the Rule, generate the Scope clause.
             if 'SourceEvents' in params:
-                properties["Scope"] = params['SourceEvents']
+                source_events = params['SourceEvents'].split(",")
+                properties["Scope"] = {"ComplianceResourceTypes": source_events}
 
             #If there is a MaximumExecutionFrequency specified for the Rule, Generate the MEF clause.
             message_type = "ConfigurationItemChangeNotification"
@@ -743,7 +791,7 @@ class rdk():
                 message_type = "ScheduledNotification"
 
             source["Owner"] = "CUSTOM_LAMBDA"
-            source["SourceIdentifier"] = { "Fn::Sub": "arn:aws:lambda:${LambdaRegion}:${LambdaAccountId}:function:RDK-Rule-Function-"+rule_name }
+            source["SourceIdentifier"] = { "Fn::Sub": "arn:aws:lambda:${LambdaRegion}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_alphanumeric_rule_name(rule_name) }
             source["SourceDetails"][0]["EventSource"] = "aws.config"
             source["SourceDetails"][0]["MessageType"] = message_type
 
@@ -1122,7 +1170,7 @@ class rdk():
 
         return test_ci_list
 
-    def __get_lambda_arn_for_rule(self, stack_name):
+    def __get_lambda_arn_for_stack(self, stack_name):
         #create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
 
@@ -1145,11 +1193,195 @@ class rdk():
 
         return my_lambda_arn
 
+    def __get_lambda_arn_for_rule(self, rule_name, region, account):
+        return "arn:aws:lambda:{}:{}:function:RDK-Rule-Function-{}".format(region, account, self.__get_alphanumeric_rule_name(rule_name))
+
     def __delete_package_file(self, file):
         try:
             os.remove(file)
         except OSError:
             pass
+
+    def __upload_function_code(self, rule_name, params, account_id, session, code_bucket_name):
+        if params['SourceRuntime'] == "java8":
+            #Do java build and package.
+            print ("Running Gradle Build for "+rule_name)
+            working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            command = ["gradle","build"]
+            subprocess.call( command, cwd=working_dir)
+
+            #set source as distribution zip
+            s3_src = os.path.join(os.getcwd(), rules_dir, rule_name, 'build', 'distributions', rule_name+".zip")
+        elif params['SourceRuntime'] in ["dotnetcore1.0","dotnetcore2.0"]:
+            print ("Packaging "+rule_name)
+            working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            commands = [["dotnet","restore"]]
+
+            app_runtime = "netcoreapp1.0"
+            if params['SourceRuntime'] == "dotnetcore2.0":
+                app_runtime = "netcoreapp2.0"
+
+            commands.append(["dotnet","lambda","package","-c","Release","-f", app_runtime])
+
+            for command in commands:
+                subprocess.call( command, cwd=working_dir)
+
+            # Remove old zip file if it already exists
+            package_file_dst = os.path.join(rule_name, rule_name+".zip")
+            self.__delete_package_file(package_file_dst)
+
+            # Create new package in temp directory, copy to rule directory
+            # This copy avoids the archiver trying to include the output zip in itself
+            s3_src_dir = os.path.join(os.getcwd(),rules_dir, rule_name,'bin','Release', app_runtime, 'publish')
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+            shutil.copy(tmp_src, package_file_dst)
+            s3_src = os.path.abspath(package_file_dst)
+            self.__delete_package_file(tmp_src)
+
+        else:
+            print ("Zipping " + rule_name)
+            # Remove old zip file if it already exists
+            package_file_dst = os.path.join(rule_name, rule_name+".zip")
+            self.__delete_package_file(package_file_dst)
+
+            #zip rule code files and upload to s3 bucket
+            s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+            shutil.copy(tmp_src, package_file_dst)
+            s3_src = os.path.abspath(package_file_dst)
+            self.__delete_package_file(tmp_src)
+
+        s3_dst = "/".join((rule_name, rule_name+".zip"))
+
+        my_s3 = session.resource('s3')
+
+        print ("Uploading " + rule_name)
+        my_s3.meta.client.upload_file(s3_src, code_bucket_name, s3_dst)
+        print ("Upload complete.")
+
+        return s3_dst
+
+    def __create_function_cloudformation_template(self):
+        print ("Generating CloudFormation template for Lambda Functions!")
+
+        #First add the common elements - description, parameters, and resource section header
+        template = {}
+        template["AWSTemplateFormatVersion"] = "2010-09-09"
+        template["Description"] = "AWS CloudFormation template to create Lamdba functions for backing custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template."
+
+        parameters = {}
+        parameters["SourceBucket"] = {}
+        parameters["SourceBucket"]["Description"] = "Name of the S3 bucket that you have stored the rule zip files in."
+        parameters["SourceBucket"]["Type"] = "String"
+        parameters["SourceBucket"]["MinLength"] = "1"
+        parameters["SourceBucket"]["MaxLength"] = "255"
+
+        template["Parameters"] = parameters
+
+        resources = {}
+
+        lambda_role = {}
+        lambda_role["Type"] = "AWS::IAM::Role"
+        lambda_role["Properties"] = {}
+        lambda_role["Properties"]["Path"] = "/rdk/"
+        lambda_role["Properties"]["AssumeRolePolicyDocument"] = {
+          "Version": "2012-10-17",
+          "Statement": [ {
+            "Sid": "AllowLambdaAssumeRole",
+            "Effect": "Allow",
+            "Principal": { "Service": "lambda.amazonaws.com" },
+            "Action": "sts:AssumeRole"
+          } ]
+        }
+        lambda_role["Properties"]["Policies"] = [{
+          "PolicyName": "ConfigRulePolicy",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "1",
+                "Action": [
+                  "s3:GetObject"
+                ],
+                "Effect": "Allow",
+                "Resource": { "Fn::Join" : [ "/", [ "arn:aws:s3:::", { "Ref": "SourceBucket" }, "*" ] ] }
+              },
+              {
+                "Sid": "2",
+                "Action": [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents",
+                  "logs:DescribeLogStreams"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
+              },
+              {
+                "Sid": "3",
+                "Action": [
+                  "config:PutEvaluations"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
+              },
+              {
+                "Sid": "4",
+                "Action": [
+                  "iam:List*",
+                  "iam:Describe*",
+                  "iam:Get*"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
+              },
+              {
+                "Sid": "5",
+                "Action": [
+                  "sts:AssumeRole"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
+              }
+            ]
+          }
+        } ]
+        lambda_role["Properties"]["ManagedPolicyArns"] = ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
+        resources["rdkLambdaRole"] = lambda_role
+
+        rule_names = self.__get_rule_list_for_command()
+        for rule_name in rule_names:
+            alphanum_rule_name = self.__get_alphanumeric_rule_name(rule_name)
+            params = self.__get_rule_parameters(rule_name)
+
+            lambda_function = {}
+            lambda_function["Type"] = "AWS::Lambda::Function"
+            lambda_function["DependsOn"] = "rdkLambdaRole"
+            properties = {}
+            properties["FunctionName"] = "RDK-Rule-Function-" + alphanum_rule_name
+            properties["Code"] = {"S3Bucket": { "Ref": "SourceBucket"}, "S3Key": rule_name+"/"+rule_name+".zip"}
+            properties["Description"] = "Function for AWS Config Rule " + rule_name
+            properties["Handler"] = self.__get_handler(rule_name, params)
+            properties["MemorySize"] = "256"
+            properties["Role"] = {"Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]}
+            properties["Runtime"] = params["SourceRuntime"]
+            properties["Timeout"] = 60
+            lambda_function["Properties"] = properties
+            resources[alphanum_rule_name+"LambdaFunction"] = lambda_function
+
+            lambda_permissions = {}
+            lambda_permissions["Type"] = "AWS::Lambda::Permission"
+            lambda_permissions["DependsOn"] = alphanum_rule_name+"LambdaFunction"
+            lambda_permissions["Properties"] = {
+                "FunctionName": {"Fn::GetAtt": [ alphanum_rule_name+"LambdaFunction", "Arn" ] },
+                "Action": "lambda:InvokeFunction",
+                "Principal": "config.amazonaws.com"
+            }
+            resources[alphanum_rule_name+"LambdaPermissions"]=lambda_permissions
+
+        template['Resources'] = resources
+
+        return json.dumps(template, indent=2)
 
 class TestCI():
     def __init__(self, ci_type):
