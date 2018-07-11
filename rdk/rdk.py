@@ -401,7 +401,7 @@ class rdk():
                     if e.response['Error']['Code'] == 'ValidationError':
                         if 'No updates are to be performed.' in str(e):
                             #No changes made to Config rule definition, so CloudFormation won't do anything.
-                            print("No changes to Config Rule.")
+                            print("No changes to Config Rule configurations.")
                         else:
                             #Something unexpected has gone wrong.  Emit an error and bail.
                             print(e)
@@ -410,7 +410,6 @@ class rdk():
                         raise
 
                 #Push lambda code to functions.
-
                 for rule_name in rule_names:
                     my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name, my_session.region_name, account_id)
 
@@ -755,12 +754,61 @@ class rdk():
         parameters["LambdaAccountId"]["Type"] = "String"
         parameters["LambdaAccountId"]["MinLength"] = "12"
         parameters["LambdaAccountId"]["MaxLength"] = "12"
-        parameters["LambdaRegion"] = {}
-        parameters["LambdaRegion"]["Description"] = "Region that contains Lambda functions for Config Rules."
-        parameters["LambdaRegion"]["Type"] = "String"
         template["Parameters"] = parameters
 
         resources = {}
+
+        #Create Config Role
+        resources["ConfigRole"] = {}
+        resources["ConfigRole"]["RoleName"] = config_role_name
+        resources["ConfigRole"]["Path"] = "/rdk/"
+        resources["ConfigRole"]["ManagedPolicyArns"] = ["arn:aws:iam::aws:policy/service-role/AWSConfigRole", "arn:aws:iam::aws:policy/ReadOnlyAccess"]
+        resources["ConfigRole"]["AssumeRolePolicyDocument"] = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "LOCAL",
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": [
+                            "config.amazonaws.com"
+                        ]
+                    },
+                    "Action": "sts:AssumeRole"
+                },
+                {
+                    "Sid": "REMOTE",
+                    "Effect": "Allow",
+                    "Principal": {
+                        "AWS": {"Fn::Sub": "arn:aws:iam:${LambdaAccountId}:root"}
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+
+        #Create Bucket for Config Data
+        resources["ConfigBucket"] = {
+            "BucketName" : {"Fn::Sub": config_bucket_prefix+"-${AWS::AccountId}-${AWS::RegionId}" }
+        }
+
+        #Create ConfigurationRecorder and DeliveryChannel
+        resources["ConfigurationRecorder"] = {
+            "Name": "default",
+            "RoleARN": {"Fn::GetAtt": ["ConfigRole", "Arn"]},
+            "RecordingGroup": {
+                "AllSupported":True,
+                "IncludeGlobalResourceTypes": True
+            }
+        }
+
+        resources["DeliveryChannel"] = {
+            "Name": "default",
+            "S3BucketName": {"Ref": "ConfigBucket"},
+            "ConfigSnapshotDeliveryProperties": {
+                "DeliveryFrequency":"One_Hour"
+            }
+        }
 
         #Next, go through each rule in our rule list and add the CFN to deploy it.
         rule_names = self.__get_rule_list_for_command()
@@ -791,7 +839,7 @@ class rdk():
                 message_type = "ScheduledNotification"
 
             source["Owner"] = "CUSTOM_LAMBDA"
-            source["SourceIdentifier"] = { "Fn::Sub": "arn:aws:lambda:${LambdaRegion}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_alphanumeric_rule_name(rule_name) }
+            source["SourceIdentifier"] = { "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_alphanumeric_rule_name(rule_name) }
             source["SourceDetails"][0]["EventSource"] = "aws.config"
             source["SourceDetails"][0]["MessageType"] = message_type
 
