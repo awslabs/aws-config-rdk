@@ -156,9 +156,28 @@ Once the Rule has been deployed to AWS you can get the CloudWatch logs associate
 
 You can use the ``-n`` and ``-f`` command line flags just like the UNIX ``tail`` command to view a larger number of log events and to continuously poll for new events.  The latter option can be useful in conjunction with manually initiating Config Evaluations for your deploy Config Rule to make sure it is behaving as expected.
 
+
+
+Running the tests
+=================
+
+The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environemnts (currently Ubuntu linux running python2.7, Ubuntu linux running python 3.6, and Windows Server running python2.7).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
+
+
+Advanced Features
+=================
+Cross-Account Deployments
+-------------------------
+Features have been added to the RDK to facilitate the cross-account deployment pattern that enterprise customers have standardized on for custom Config Rules, in which the Lambda functions are deployed to a single central "Security" or "Compliance" account, and the Config Rules are deployed to any number of "Satellite" accounts that used by other teams or departments.  This gives the compliance team confidence that their Rule logic cannot be tampered with and makes it much easier to modify rule logic without having to go through a complex deployment process to potentially hundreds of AWS accounts.  The cross-account pattern uses two RDK features - function-only deployments and the `create-rule-template` command.
+
+*Function-Only Deployment*
+By using the `-f` or `--functions-only` flag on the `deploy` command, the RDK will deploy only the necessary Lambda Functions, Lambda Execution Role, and Lambda Permissions to the account specified by the execution credentials.  It accomplishes this by batching up all of the Lambda function CloudFormation snippets for the selected Rule(s) into a single dynamically generated template and deploy that CloudFormation template.  One consequence of this is that subsequent deployments that specify a different set of Rules will update that CloudFormation stack, and any Rules that were included in the first deployment but not in the second will be removed.  You can use the `--stack-name` parameter to override the default CloudFormation stack name if you need to manage different subsets of your Lambda Functions independently.  The intended usage is to deploy the functions for all of the Config rules in the Security/Compliance account, which can be done simply by using `rdk deploy -f --all`.
+
+*
+
 RuleSets
 --------
-New as of version 0.3.11, it is possible to add RuleSet tags to rules that can be used to deploy and test groups of rules together.  Rules can belong to multiple RuleSets, and RuleSet membership is stored only in the parameters.json metadata.  The `deploy` and `test-local` commands are RuleSet-aware such that a RuleSet can be passed in as the target instead of `--all` or a specific named Rule.
+New as of version 0.3.11, it is possible to add RuleSet tags to rules that can be used to deploy and test groups of rules together.  Rules can belong to multiple RuleSets, and RuleSet membership is stored only in the parameters.json metadata.  The `deploy`, `create-rule-template`, and `test-local` commands are RuleSet-aware such that a RuleSet can be passed in as the target instead of `--all` or a specific named Rule.
 
 A comma-delimited list of RuleSets can be added to a Rule when you create it (using the `--rulesets` flag), as part of a `modify` command, or using new `ruleset` subcommands to add or remove individual rules from a RuleSet.
 
@@ -188,10 +207,6 @@ Rules can be added to or removed from RuleSets using the `add` and `remove` subc
 
 Future enhancements related to packaging and publishing rules suitable for larger enterprise environments will use this functionality more extensively.  For now it is a convenient way to maintain a single repository of Config Rules that may need to have subsets of them deployed to different environments.  For example your development environment may contain some of the Rules that you run in Production but not all of them; RuleSets gives you a way to identify and selectively deploy the appropriate Rules to each environment.
 
-Running the tests
-=================
-
-The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environemnts (currently Ubuntu linux running python2.7, Ubuntu linux running python 3.6, and Windows Server running python2.7).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
 
 Contributing
 ============
