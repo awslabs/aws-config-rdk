@@ -325,12 +325,15 @@ class rdk():
         parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         parser.add_argument('-f','--functions-only', action='store_true', required=False, help="Only deploy Lambda functions.  Useful for cross-account deployments.")
-        parser.add_argument('--stack-name', default="RDK-Config-Rule-Functions", required=False, help="Optional Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
+        parser.add_argument('--stack-name', required=False, help="Optional Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
         self.args = parser.parse_args(self.args.command_args, self.args)
 
         if self.args.stack_name and not self.args.functions_only:
             print("--stack-name can only be specified when using the --functions-only feature.")
             sys.exit(1)
+
+        if self.args.functions_only and not self.args.stack_name:
+            self.args.stack_name = "RDK-Config-Rule-Functions"
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
