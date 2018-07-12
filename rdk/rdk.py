@@ -39,7 +39,7 @@ tests_dir = ''
 util_filename = 'rule_util'
 rule_handler = 'rule_code'
 rule_template = 'rdk-rule.template'
-config_bucket_prefix = 'config-bucket-'
+config_bucket_prefix = 'config-bucket'
 config_role_name = 'config-role'
 assume_role_policy_file = 'configRuleAssumeRolePolicyDoc.json'
 delivery_permission_policy_file = 'deliveryPermissionsPolicy.json'
@@ -760,53 +760,94 @@ class rdk():
 
         #Create Config Role
         resources["ConfigRole"] = {}
-        resources["ConfigRole"]["RoleName"] = config_role_name
-        resources["ConfigRole"]["Path"] = "/rdk/"
-        resources["ConfigRole"]["ManagedPolicyArns"] = ["arn:aws:iam::aws:policy/service-role/AWSConfigRole", "arn:aws:iam::aws:policy/ReadOnlyAccess"]
-        resources["ConfigRole"]["AssumeRolePolicyDocument"] = {
-            "Version": "2012-10-17",
-            "Statement": [
+        resources["ConfigRole"]["Type"] = "AWS::IAM::Role"
+        resources["ConfigRole"]["DependsOn"] = "ConfigBucket"
+        resources["ConfigRole"]["Properties"] = {
+            "RoleName": config_role_name,
+            "Path": "/rdk/",
+            "ManagedPolicyArns": [
+                "arn:aws:iam::aws:policy/service-role/AWSConfigRole",
+                "arn:aws:iam::aws:policy/ReadOnlyAccess"
+            ],
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Sid": "LOCAL",
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": [
+                                "config.amazonaws.com"
+                            ]
+                        },
+                        "Action": "sts:AssumeRole"
+                    },
+                    {
+                        "Sid": "REMOTE",
+                        "Effect": "Allow",
+                        "Principal": {
+                            "AWS": {"Fn::Sub": "arn:aws:iam::${LambdaAccountId}:root"}
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
+            },
+            "Policies": [
                 {
-                    "Sid": "LOCAL",
-                    "Effect": "Allow",
-                    "Principal": {
-                        "Service": [
-                            "config.amazonaws.com"
+                    "PolicyName": "DeliveryPermission",
+                    "PolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Action": "s3:PutObject*",
+                                "Resource": { "Fn::Sub": "arn:aws:s3:::${ConfigBucket}/AWSLogs/${AWS::AccountId}/*" },
+                                "Condition": {
+                                    "StringLike": {
+                                        "s3:x-amz-acl": "bucket-owner-full-control"
+                                    }
+                                }
+                            },
+                            {
+                                "Effect": "Allow",
+                                "Action": "s3:GetBucketAcl",
+                                "Resource": {"Fn::Sub": "arn:aws:s3:::${ConfigBucket}"}
+                            }
                         ]
-                    },
-                    "Action": "sts:AssumeRole"
-                },
-                {
-                    "Sid": "REMOTE",
-                    "Effect": "Allow",
-                    "Principal": {
-                        "AWS": {"Fn::Sub": "arn:aws:iam:${LambdaAccountId}:root"}
-                    },
-                    "Action": "sts:AssumeRole"
+                    }
                 }
             ]
         }
 
         #Create Bucket for Config Data
         resources["ConfigBucket"] = {
-            "BucketName" : {"Fn::Sub": config_bucket_prefix+"-${AWS::AccountId}-${AWS::RegionId}" }
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName" : {"Fn::Sub": config_bucket_prefix+"-${AWS::AccountId}-${AWS::Region}" }
+            }
         }
 
         #Create ConfigurationRecorder and DeliveryChannel
         resources["ConfigurationRecorder"] = {
-            "Name": "default",
-            "RoleARN": {"Fn::GetAtt": ["ConfigRole", "Arn"]},
-            "RecordingGroup": {
-                "AllSupported":True,
-                "IncludeGlobalResourceTypes": True
+            "Type": "AWS::Config::ConfigurationRecorder",
+            "Properties": {
+                "Name": "default",
+                "RoleARN": {"Fn::GetAtt": ["ConfigRole", "Arn"]},
+                "RecordingGroup": {
+                    "AllSupported":True,
+                    "IncludeGlobalResourceTypes": True
+                }
             }
         }
 
         resources["DeliveryChannel"] = {
-            "Name": "default",
-            "S3BucketName": {"Ref": "ConfigBucket"},
-            "ConfigSnapshotDeliveryProperties": {
-                "DeliveryFrequency":"One_Hour"
+            "Type": "AWS::Config::DeliveryChannel",
+            "Properties": {
+                "Name": "default",
+                "S3BucketName": {"Ref": "ConfigBucket"},
+                "ConfigSnapshotDeliveryProperties": {
+                    "DeliveryFrequency":"One_Hour"
+                }
             }
         }
 
@@ -817,6 +858,7 @@ class rdk():
 
             config_rule = {}
             config_rule["Type"] = "AWS::Config::ConfigRule"
+            config_rule["DependsOn"] = "DeliveryChannel"
 
             properties = {}
             source = {}
