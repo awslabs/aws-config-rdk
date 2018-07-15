@@ -1128,6 +1128,16 @@ class rdk():
         return my_json['Parameters']
 
     def __parse_rule_args(self, is_required):
+
+        #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
+        accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution', 'AWS::CloudWatch::Alarm', ',AWS::DynamoDB::Table', 'AWS::SSM::ManagedInstanceInventory', 'AWS::EC2::Host', 'AWS::EC2::EIP', 'AWS::EC2::Instance',
+                                'AWS::EC2::NetworkInterface', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Volume', 'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup', 'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup', 
+                                'AWS::Redshift::EventSubscription', 'AWS::RDS::DBInstance', 'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup', 'AWS::RDS::EventSubscription', 'AWS::S3::Bucket', 'AWS::EC2::CustomerGateway', 'AWS::EC2::InternetGateway', 'AWS::EC2::NetworkAcl',
+                                'AWS::EC2::RouteTable', 'AWS::EC2::Subnet', 'AWS::EC2::VPC', 'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::AutoScaling::AutoScalingGroup', 'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction', 'AWS::ACM::Certificate',
+                                'AWS::CloudFormation::Stack', 'AWS::CloudTrail::Trail', 'AWS::CodeBuild::Project', 'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::IAM::User', 'AWS::IAM::Group', 'AWS::IAM::Role', 'AWS::IAM::Policy', 'AWS::Lambda::Function',
+                                'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::WebACL', 'AWS::WAF::RuleGroup', 'AWS::WAFRegional::RateBasedRule', 'AWS::WAFRegional::Rule', 'AWS::WAFRegional::WebACL', 'AWS::WAFRegional::RuleGroup', 'AWS::XRay::EncryptionConfig', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::ElasticLoadBalancing::LoadBalancer',
+                                'AWS::ElasticLoadBalancingV2::LoadBalancer']
+
         usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--rulesets <RuleSet tags>]"
 
         if is_required:
@@ -1140,7 +1150,7 @@ class rdk():
         parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
         parser.add_argument('-R','--runtime', required=is_required, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0','dotnetcore2.0'])
         group = parser.add_mutually_exclusive_group(required=is_required)
-        group.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
+        group.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation', choices=accepted_resource_types)
         group.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
         parser.add_argument('-i','--input-parameters', help="[optional] JSON for Config parameters for testing.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
