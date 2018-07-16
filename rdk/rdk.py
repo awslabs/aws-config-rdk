@@ -739,7 +739,7 @@ class rdk():
         parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be included in the generated CloudFormation template.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names to be included in the generated template.')
         parser.add_argument('-o','--output-file', required=True, default="RDK-Config-Rules", help="filename of generated CloudFormation template")
-        parser.add_argument('-r','--rules-only', action="store_true", help="Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel."
+        parser.add_argument('--rules-only', action="store_true", help="Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
         self.args = parser.parse_args(self.args.command_args, self.args)
 
         if self.args.rulesets:
@@ -762,7 +762,7 @@ class rdk():
 
         resources = {}
 
-        if self.args.rules_only:
+        if not self.args.rules_only:
             #Create Config Role
             resources["ConfigRole"] = {}
             resources["ConfigRole"]["Type"] = "AWS::IAM::Role"
