@@ -863,7 +863,8 @@ class rdk():
 
             config_rule = {}
             config_rule["Type"] = "AWS::Config::ConfigRule"
-            config_rule["DependsOn"] = "DeliveryChannel"
+            if not self.args.rules_only:
+                config_rule["DependsOn"] = "DeliveryChannel"
 
             properties = {}
             source = {}
