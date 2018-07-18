@@ -337,7 +337,9 @@ class rdk():
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
-
+       
+        #get the rule names
+        rule_names = self.__get_rule_list_for_command()
 
         #run the deploy code
         print ("Running deploy!")
@@ -375,7 +377,6 @@ class rdk():
 
             #Package code and push to S3
             s3_code_objects = {}
-            rule_names = self.__get_rule_list_for_command()
             for rule_name in rule_names:
                 rule_params = self.__get_rule_parameters(rule_name)
                 s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
@@ -445,7 +446,6 @@ class rdk():
             sys.exit(0)
 
         #If we're deploying both the functions and the Config rules, run the following process:
-        rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             my_rule_params = self.__get_rule_parameters(rule_name)
             s3_src = ""
@@ -1109,11 +1109,14 @@ class rdk():
                         s_params = set(my_params['Parameters']['RuleSets'])
                         if s_input.intersection(s_params):
                             rule_names.append(obj_name)
-        else:
+        elif self.args.rulename:
             cleaned_rule_name = self.__clean_rule_name(self.args.rulename[0])
             if os.path.isdir(cleaned_rule_name):
                 rule_names.append(cleaned_rule_name)
-
+        else:
+            print ('Invalid Option: Specify Rule Name or RuleSet. Run "rdk deploy -h" for more info.')
+            sys.exit(1)
+            
         if len(rule_names) == 0:
             print("No matching rule directories found.")
             sys.exit(1)
