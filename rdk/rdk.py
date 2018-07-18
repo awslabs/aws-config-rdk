@@ -49,6 +49,15 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
+#this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
+accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution', 'AWS::CloudWatch::Alarm', ',AWS::DynamoDB::Table', 'AWS::SSM::ManagedInstanceInventory', 'AWS::EC2::Host', 'AWS::EC2::EIP', 'AWS::EC2::Instance',
+                        'AWS::EC2::NetworkInterface', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Volume', 'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup', 'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
+                        'AWS::Redshift::EventSubscription', 'AWS::RDS::DBInstance', 'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup', 'AWS::RDS::EventSubscription', 'AWS::S3::Bucket', 'AWS::EC2::CustomerGateway', 'AWS::EC2::InternetGateway', 'AWS::EC2::NetworkAcl',
+                        'AWS::EC2::RouteTable', 'AWS::EC2::Subnet', 'AWS::EC2::VPC', 'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::AutoScaling::AutoScalingGroup', 'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction', 'AWS::ACM::Certificate',
+                        'AWS::CloudFormation::Stack', 'AWS::CloudTrail::Trail', 'AWS::CodeBuild::Project', 'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::IAM::User', 'AWS::IAM::Group', 'AWS::IAM::Role', 'AWS::IAM::Policy', 'AWS::Lambda::Function',
+                        'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::WebACL', 'AWS::WAF::RuleGroup', 'AWS::WAFRegional::RateBasedRule', 'AWS::WAFRegional::Rule', 'AWS::WAFRegional::WebACL', 'AWS::WAFRegional::RuleGroup', 'AWS::XRay::EncryptionConfig', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::ElasticLoadBalancing::LoadBalancer',
+                        'AWS::ElasticLoadBalancingV2::LoadBalancer']
+
 class rdk():
     def __init__(self, args):
         self.args = args
@@ -338,6 +347,8 @@ class rdk():
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
 
+        #get the rule names
+        rule_names = self.__get_rule_list_for_command()
 
         #run the deploy code
         print ("Running deploy!")
@@ -375,7 +386,6 @@ class rdk():
 
             #Package code and push to S3
             s3_code_objects = {}
-            rule_names = self.__get_rule_list_for_command()
             for rule_name in rule_names:
                 rule_params = self.__get_rule_parameters(rule_name)
                 s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
@@ -445,7 +455,6 @@ class rdk():
             sys.exit(0)
 
         #If we're deploying both the functions and the Config rules, run the following process:
-        rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             my_rule_params = self.__get_rule_parameters(rule_name)
             s3_src = ""
@@ -637,7 +646,7 @@ class rdk():
 
     def sample_ci(self):
         parser = argparse.ArgumentParser(prog='rdk '+self.args.command)
-        parser.add_argument('ci_type', metavar='<resource type>', help='Resource name (e.g. "AWS::EC2::Instance") to display a sample CI JSON document for.')
+        parser.add_argument('ci_type', metavar='<resource type>', help='Resource name (e.g. "AWS::EC2::Instance") to display a sample CI JSON document for.', choices=accepted_resource_types)
         self.args = parser.parse_args(self.args.command_args, self.args)
 
         my_test_ci = TestCI(self.args.ci_type)
@@ -1112,10 +1121,13 @@ class rdk():
                         s_params = set(my_params['Parameters']['RuleSets'])
                         if s_input.intersection(s_params):
                             rule_names.append(obj_name)
-        else:
+        elif self.args.rulename:
             cleaned_rule_name = self.__clean_rule_name(self.args.rulename[0])
             if os.path.isdir(cleaned_rule_name):
                 rule_names.append(cleaned_rule_name)
+        else:
+            print ('Invalid Option: Specify Rule Name or RuleSet. Run "rdk deploy -h" for more info.')
+            sys.exit(1)
 
         if len(rule_names) == 0:
             print("No matching rule directories found.")
@@ -1132,6 +1144,7 @@ class rdk():
 
     def __parse_rule_args(self, is_required):
 
+<<<<<<< HEAD
         #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
         accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution', 'AWS::CloudWatch::Alarm', ',AWS::DynamoDB::Table', 'AWS::SSM::ManagedInstanceInventory', 'AWS::EC2::Host', 'AWS::EC2::EIP', 'AWS::EC2::Instance',
                                 'AWS::EC2::NetworkInterface', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Volume', 'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup', 'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
@@ -1141,6 +1154,8 @@ class rdk():
                                 'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::WebACL', 'AWS::WAF::RuleGroup', 'AWS::WAFRegional::RateBasedRule', 'AWS::WAFRegional::Rule', 'AWS::WAFRegional::WebACL', 'AWS::WAFRegional::RuleGroup', 'AWS::XRay::EncryptionConfig', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::ElasticLoadBalancing::LoadBalancer',
                                 'AWS::ElasticLoadBalancingV2::LoadBalancer']
 
+=======
+>>>>>>> 9d932d10abd3c4779a07f4127f1ebc8aafa5cf0a
         usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--rulesets <RuleSet tags>]"
 
         if is_required:
@@ -1493,7 +1508,11 @@ class TestCI():
     def __init__(self, ci_type):
         #convert ci_type string to filename format
         ci_file = ci_type.replace('::','_') + '.json'
-        self.ci_json = json.load(open(os.path.join(path.dirname(__file__), 'template',  example_ci_dir, ci_file), 'r'))
-
+        try:
+            self.ci_json = json.load(open(os.path.join(path.dirname(__file__), 'template',  example_ci_dir, ci_file), 'r'))
+        except FileNotFoundError:
+            print("No sample CI found for " + ci_type + ", even though it appears to be a supported CI.  Please log an issue at https://github.com/awslabs/aws-config-rdk.")
+            exit(1)
+            
     def get_json(self):
         return self.ci_json
