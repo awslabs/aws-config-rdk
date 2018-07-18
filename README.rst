@@ -63,6 +63,10 @@ In your working directory, use the ``create`` command to start creating a new cu
   Running create!
   Local Rule files created.
 
+On Windows it is necessary to escape the double-quotes when specifying input parameters, so the `--input-parameters` argument would instead look something like this::
+
+  '{\"desiredInstanceType\":\"t2.micro\"}'
+
 Note that you can create rules that use EITHER resource-types OR maximum-frequency, but not both.  We have found that rules that try to be both event-triggered as well as periodic wind up being very complicated and so we do not recommend it as a best practice.
 
 Edit Rules Locally
@@ -119,6 +123,10 @@ If you need to change the parameters of a Config rule in your working directory 
   $ rdk modify MyRule --runtime python2.7 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
   Running modify!
   Modified Rule 'MyRule'.  Use the `deploy` command to push your changes to AWS.
+
+Again, on Windows the input parameters would look like::
+
+  '{\"desiredInstanceType\":\"t2.micro\"}'
 
 It is worth noting that until you actually call the ``deploy`` command your rule only exists in your working directory, none of the Rule commands discussed thus far actually makes changes to your account.
 
