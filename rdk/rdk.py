@@ -761,15 +761,25 @@ class rdk():
         template["AWSTemplateFormatVersion"] = "2010-09-09"
         template["Description"] = "AWS CloudFormation template to create custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template."
 
+        optional_parameter_group = {
+            "Label": { "default": "Optional" },
+            "Parameters": []
+        }
+
+        required_parameter_group = {
+            "Label": { "default": "Required" },
+            "Parameters": []
+        }
+
         parameters = {}
         parameters["LambdaAccountId"] = {}
         parameters["LambdaAccountId"]["Description"] = "Account ID that contains Lambda functions for Config Rules."
         parameters["LambdaAccountId"]["Type"] = "String"
         parameters["LambdaAccountId"]["MinLength"] = "12"
         parameters["LambdaAccountId"]["MaxLength"] = "12"
-        template["Parameters"] = parameters
 
         resources = {}
+        conditions = {}
 
         if not self.args.rules_only:
             #Create Config Role
@@ -869,6 +879,42 @@ class rdk():
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             params = self.__get_rule_parameters(rule_name)
+            input_params = json.loads(params["InputParameters"])
+            for input_param in input_params:
+                cfn_param = {}
+                cfn_param["Description"] = "Pass-through to required Input Parameter " + input_param + " for Config Rule " + rule_name
+                cfn_param["Default"] = input_params[input_param]
+                cfn_param["Type"] = "String"
+                cfn_param["MinLength"] = 1
+                cfn_param["ConstraintDescription"] = "This parameter is required."
+
+                param_name = self.__get_alphanumeric_rule_name(rule_name)+"-"+input_param
+                parameters[param_name] = cfn_param
+                required_parameter_group["Parameters"].append(param_name)
+
+            if "OptionalParameters" in params:
+                optional_params = json.loads(params["OptionalParameters"])
+                for optional_param in optional_params:
+                    cfn_param = {}
+                    cfn_param["Description"] = "Pass-through to optional Input Parameter " + optional_param + " for Config Rule " + rule_name
+                    cfn_param["Default"] = optional_params[optional_param]
+                    cfn_param["Type"] = "String"
+
+                    param_name = self.__get_alphanumeric_rule_name(rule_name)+"-"+optional_param
+
+                    parameters[param_name] = cfn_param
+                    optional_parameter_group["Parameters"].append(param_name)
+
+                    conditions[param_name] = {
+                        "Fn::Not": {
+                            "Fn::Equals": [
+                                "",
+                                {
+                                    "Ref": param_name
+                                }
+                            ]
+                        }
+                    }
 
             config_rule = {}
             config_rule["Type"] = "AWS::Config::ConfigRule"
@@ -910,6 +956,16 @@ class rdk():
             resources[self.__get_alphanumeric_rule_name(rule_name)+"ConfigRule"] = config_rule
 
         template["Resources"] = resources
+        template["Conditions"] = conditions
+        template["Parameters"] = parameters
+        template["Metadata"] = {
+            "AWS::CloudFormation::Interface": {
+                "ParameterGroups": [
+                    required_parameter_group,
+                    optional_parameter_group
+                ]
+            }
+        }
 
         output_file = open(self.args.output_file, 'w')
         output_file.write(json.dumps(template, indent=2))
