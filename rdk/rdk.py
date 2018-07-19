@@ -1239,6 +1239,20 @@ class rdk():
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
 
+        if self.args.input_parameters:
+            try:
+                input_params_dict = json.loads(self.args.input_parameters, strict=False)
+            except Exception as e:
+                print("Failed to parse input parameters.")
+                sys.exit(1)
+
+        if self.args.optional_parameters:
+            try:
+                optional_params_dict = json.loads(self.args.optional_parameters, strict=False)
+            except Exception as e:
+                print("Failed to parse optional parameters.")
+                sys.exit(1)
+
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
 
