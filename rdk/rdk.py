@@ -761,15 +761,25 @@ class rdk():
         template["AWSTemplateFormatVersion"] = "2010-09-09"
         template["Description"] = "AWS CloudFormation template to create custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template."
 
+        optional_parameter_group = {
+            "Label": { "default": "Optional" },
+            "Parameters": []
+        }
+
+        required_parameter_group = {
+            "Label": { "default": "Required" },
+            "Parameters": []
+        }
+
         parameters = {}
         parameters["LambdaAccountId"] = {}
         parameters["LambdaAccountId"]["Description"] = "Account ID that contains Lambda functions for Config Rules."
         parameters["LambdaAccountId"]["Type"] = "String"
         parameters["LambdaAccountId"]["MinLength"] = "12"
         parameters["LambdaAccountId"]["MaxLength"] = "12"
-        template["Parameters"] = parameters
 
         resources = {}
+        conditions = {}
 
         if not self.args.rules_only:
             #Create Config Role
@@ -869,6 +879,44 @@ class rdk():
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             params = self.__get_rule_parameters(rule_name)
+            input_params = json.loads(params["InputParameters"])
+            for input_param in input_params:
+                cfn_param = {}
+                cfn_param["Description"] = "Pass-through to required Input Parameter " + input_param + " for Config Rule " + rule_name
+                cfn_param["Default"] = input_params[input_param]
+                cfn_param["Type"] = "String"
+                cfn_param["MinLength"] = 1
+                cfn_param["ConstraintDescription"] = "This parameter is required."
+
+                param_name = self.__get_alphanumeric_rule_name(rule_name)+input_param
+                parameters[param_name] = cfn_param
+                required_parameter_group["Parameters"].append(param_name)
+
+            if "OptionalParameters" in params:
+                optional_params = json.loads(params["OptionalParameters"])
+                for optional_param in optional_params:
+                    cfn_param = {}
+                    cfn_param["Description"] = "Pass-through to optional Input Parameter " + optional_param + " for Config Rule " + rule_name
+                    cfn_param["Default"] = optional_params[optional_param]
+                    cfn_param["Type"] = "String"
+
+                    param_name = self.__get_alphanumeric_rule_name(rule_name)+optional_param
+
+                    parameters[param_name] = cfn_param
+                    optional_parameter_group["Parameters"].append(param_name)
+
+                    conditions[param_name] = {
+                        "Fn::Not": [
+                            {
+                                "Fn::Equals": [
+                                    "",
+                                    {
+                                        "Ref": param_name
+                                    }
+                                ]
+                            }
+                        ]
+                    }
 
             config_rule = {}
             config_rule["Type"] = "AWS::Config::ConfigRule"
@@ -902,14 +950,43 @@ class rdk():
 
             properties["Source"] = source
 
-            if 'SourceInputParameters' in params:
-                properties["InputParameters"] = params['SourceInputParameters']
+            properties["InputParameters"] = {}
+
+            if "InputParameters" in params:
+                for required_param in json.loads(params["InputParameters"]):
+                    cfn_param_name = self.__get_alphanumeric_rule_name(rule_name)+required_param
+                    properties["InputParameters"][required_param] = { "Ref": cfn_param_name }
+
+            if "OptionalParameters" in params:
+                for optional_param in json.loads(params["OptionalParameters"]):
+                    cfn_param_name = self.__get_alphanumeric_rule_name(rule_name)+optional_param
+                    properties["InputParameters"][optional_param] = {
+                        "Fn::If": [
+                            cfn_param_name,
+                            {
+                                "Ref": cfn_param_name
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    }
 
             config_rule["Properties"] = properties
 
             resources[self.__get_alphanumeric_rule_name(rule_name)+"ConfigRule"] = config_rule
 
         template["Resources"] = resources
+        template["Conditions"] = conditions
+        template["Parameters"] = parameters
+        template["Metadata"] = {
+            "AWS::CloudFormation::Interface": {
+                "ParameterGroups": [
+                    required_parameter_group,
+                    optional_parameter_group
+                ]
+            }
+        }
 
         output_file = open(self.args.output_file, 'w')
         output_file.write(json.dumps(template, indent=2))
@@ -1157,9 +1234,24 @@ class rdk():
         group = parser.add_mutually_exclusive_group(required=is_required)
         group.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation', choices=accepted_resource_types)
         group.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
-        parser.add_argument('-i','--input-parameters', help="[optional] JSON for Config parameters for testing.")
+        parser.add_argument('-i','--input-parameters', help="[optional] JSON for required Config parameters.")
+        parser.add_argument('--optional-parameters', help="[optional] JSON for optional Config parameters.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
+
+        if self.args.input_parameters:
+            try:
+                input_params_dict = json.loads(self.args.input_parameters, strict=False)
+            except Exception as e:
+                print("Failed to parse input parameters.")
+                sys.exit(1)
+
+        if self.args.optional_parameters:
+            try:
+                optional_params_dict = json.loads(self.args.optional_parameters, strict=False)
+            except Exception as e:
+                print("Failed to parse optional parameters.")
+                sys.exit(1)
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
@@ -1197,8 +1289,17 @@ class rdk():
             try:
                 my_input_params = json.loads(self.args.input_parameters, strict=False)
             except Exception as e:
-                print("Error parsing input parameter JSON.  Make sure your JSON keys and values are enclosed in double quotes and your input-parameters string is enclosed in single quotes.")
+                print("Error parsing input parameter JSON.  Make sure your JSON keys and values are enclosed in properly-escaped double quotes and your input-parameters string is enclosed in single quotes.")
                 raise e
+
+        my_optional_params = {}
+
+        if self.args.optional_parameters:
+            #As above, but with the optional input parameters.
+            try:
+                my_optional_params = json.loads(self.args.optional_parameters, strict=False)
+            except Exception as e:
+                print("Error parsing optional input parameter JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and your optional-parameters string is enclosed in single quotes.")
 
         #create config file and place in rule directory
         parameters = {
@@ -1206,7 +1307,8 @@ class rdk():
             'SourceRuntime': self.args.runtime,
             #'CodeBucket': code_bucket_prefix + account_id,
             'CodeKey': self.args.rulename+'.zip',
-            'InputParameters': json.dumps(my_input_params)
+            'InputParameters': json.dumps(my_input_params),
+            'OptionalParameters': json.dumps(my_optional_params)
         }
 
         if self.args.resource_types:
@@ -1221,7 +1323,10 @@ class rdk():
         self.__write_params_file(self.args.rulename, parameters)
 
     def __write_params_file(self, rulename, parameters):
-        my_params = {"Parameters": parameters}
+        my_params = {
+            "Version": "1.0",
+            "Parameters": parameters
+        }
         params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
         parameters_file = open(params_file_path, 'w')
         json.dump(my_params, parameters_file, indent=2)
