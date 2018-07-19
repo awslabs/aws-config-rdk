@@ -1157,7 +1157,8 @@ class rdk():
         group = parser.add_mutually_exclusive_group(required=is_required)
         group.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation', choices=accepted_resource_types)
         group.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
-        parser.add_argument('-i','--input-parameters', help="[optional] JSON for Config parameters for testing.")
+        parser.add_argument('-i','--input-parameters', help="[optional] JSON for required Config parameters.")
+        parser.add_argument('--optional-parameters', help="[optional] JSON for optional Config parameters.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
 
@@ -1197,8 +1198,17 @@ class rdk():
             try:
                 my_input_params = json.loads(self.args.input_parameters, strict=False)
             except Exception as e:
-                print("Error parsing input parameter JSON.  Make sure your JSON keys and values are enclosed in double quotes and your input-parameters string is enclosed in single quotes.")
+                print("Error parsing input parameter JSON.  Make sure your JSON keys and values are enclosed in properly-escaped double quotes and your input-parameters string is enclosed in single quotes.")
                 raise e
+
+        my_optional_params = {}
+
+        if self.args.optional_parameters:
+            #As above, but with the optional input parameters.
+            try:
+                my_optional_params = json.loads(self.args.optional_parameters, strict=False)
+            except Exception as e:
+                print("Error parsing optional input parameter JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and your optional-parameters string is enclosed in single quotes.")
 
         #create config file and place in rule directory
         parameters = {
@@ -1206,7 +1216,8 @@ class rdk():
             'SourceRuntime': self.args.runtime,
             #'CodeBucket': code_bucket_prefix + account_id,
             'CodeKey': self.args.rulename+'.zip',
-            'InputParameters': json.dumps(my_input_params)
+            'InputParameters': json.dumps(my_input_params),
+            'OptionalParameters': json.dumps(my_optional_params)
         }
 
         if self.args.resource_types:
@@ -1221,7 +1232,10 @@ class rdk():
         self.__write_params_file(self.args.rulename, parameters)
 
     def __write_params_file(self, rulename, parameters):
-        my_params = {"Parameters": parameters}
+        my_params = {
+            "Version": "1.0",
+            "Parameters": parameters
+        }
         params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
         parameters_file = open(params_file_path, 'w')
         json.dump(my_params, parameters_file, indent=2)
