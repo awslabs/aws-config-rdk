@@ -888,7 +888,7 @@ class rdk():
                 cfn_param["MinLength"] = 1
                 cfn_param["ConstraintDescription"] = "This parameter is required."
 
-                param_name = self.__get_alphanumeric_rule_name(rule_name)+"-"+input_param
+                param_name = self.__get_alphanumeric_rule_name(rule_name)+input_param
                 parameters[param_name] = cfn_param
                 required_parameter_group["Parameters"].append(param_name)
 
@@ -900,20 +900,22 @@ class rdk():
                     cfn_param["Default"] = optional_params[optional_param]
                     cfn_param["Type"] = "String"
 
-                    param_name = self.__get_alphanumeric_rule_name(rule_name)+"-"+optional_param
+                    param_name = self.__get_alphanumeric_rule_name(rule_name)+optional_param
 
                     parameters[param_name] = cfn_param
                     optional_parameter_group["Parameters"].append(param_name)
 
                     conditions[param_name] = {
-                        "Fn::Not": {
-                            "Fn::Equals": [
-                                "",
-                                {
-                                    "Ref": param_name
-                                }
-                            ]
-                        }
+                        "Fn::Not": [
+                            {
+                                "Fn::Equals": [
+                                    "",
+                                    {
+                                        "Ref": param_name
+                                    }
+                                ]
+                            }
+                        ]
                     }
 
             config_rule = {}
@@ -948,8 +950,27 @@ class rdk():
 
             properties["Source"] = source
 
-            if 'SourceInputParameters' in params:
-                properties["InputParameters"] = params['SourceInputParameters']
+            properties["InputParameters"] = {}
+
+            if "InputParameters" in params:
+                for required_param in json.loads(params["InputParameters"]):
+                    cfn_param_name = self.__get_alphanumeric_rule_name(rule_name)+required_param
+                    properties["InputParameters"][required_param] = { "Ref": cfn_param_name }
+
+            if "OptionalParameters" in params:
+                for optional_param in json.loads(params["OptionalParameters"]):
+                    cfn_param_name = self.__get_alphanumeric_rule_name(rule_name)+optional_param
+                    properties["InputParameters"][optional_param] = {
+                        "Fn::If": [
+                            cfn_param_name,
+                            {
+                                "Ref": cfn_param_name
+                            },
+                            {
+                                "Ref": "AWS::NoValue"
+                            }
+                        ]
+                    }
 
             config_rule["Properties"] = properties
 
