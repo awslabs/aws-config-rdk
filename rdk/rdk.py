@@ -101,7 +101,7 @@ class rdk():
         config_role_arn = ""
         delivery_channel_exists = False
         config_bucket_exists = False
-        config_bucket_name = config_bucket_prefix + account_id
+        config_bucket_name = config_bucket_prefix + "-" + account_id
 
         #Check to see if the ConfigRecorder has been created.
         recorders = my_config.describe_configuration_recorders()
@@ -183,6 +183,7 @@ class rdk():
 
         if not delivery_channel_exists:
             #create delivery channel
+            print("Creating delivery channel to bucket " + config_bucket_name)
             my_config.put_delivery_channel(DeliveryChannel={'name':'default', 's3BucketName':config_bucket_name, 'configSnapshotDeliveryProperties':{'deliveryFrequency':'Six_Hours'}})
 
         #start config recorder
