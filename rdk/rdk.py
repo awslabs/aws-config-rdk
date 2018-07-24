@@ -320,7 +320,7 @@ class rdk():
         if not self.args.input_parameters and old_params['Parameters']['InputParameters']:
             self.args.input_parameters = old_params['Parameters']['InputParameters']
 
-        if not self.args.source_identifier and old_params['Parameters']['SourceIdentifier']:
+        if not self.args.source_identifier and 'SourceIdentifier' in old_params['Parameters']:
             self.args.source_identifier = old_params['Parameters']['SourceIdentifier']
 
         if 'RuleSets' in old_params['Parameters']:
