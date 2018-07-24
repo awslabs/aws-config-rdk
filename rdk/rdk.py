@@ -227,13 +227,14 @@ class rdk():
 
         print ("Running create!")
 
-        if not self.args.runtime:
-            print("Runtime is required for 'create' command.")
-            return 1
+        if not self.args.source_identifier:
+            if not self.args.runtime:
+                print("Runtime is required for 'create' command.")
+                return 1
 
-        extension_mapping = {'java8':'.java', 'python2.7':'.py', 'python3.6':'.py','nodejs4.3':'.js', 'dotnetcore1.0':'cs', 'dotnetcore2.0':'cs', 'python3.6-managed':'.py'}
-        if self.args.runtime not in extension_mapping:
-            print ("rdk does nto support that runtime yet.")
+            extension_mapping = {'java8':'.java', 'python2.7':'.py', 'python3.6':'.py','nodejs4.3':'.js', 'dotnetcore1.0':'cs', 'dotnetcore2.0':'cs', 'python3.6-managed':'.py'}
+            if self.args.runtime not in extension_mapping:
+                print ("rdk does not support that runtime yet.")
 
         #if not self.args.maximum_frequency:
         #    self.args.maximum_frequency = "TwentyFour_Hours"
@@ -248,30 +249,31 @@ class rdk():
         try:
             os.makedirs(os.path.join(os.getcwd(), rules_dir, self.args.rulename))
 
-            #copy rule template into rule directory
-            if self.args.runtime == 'java8':
-                self.__create_java_rule()
-            elif self.args.runtime in ['dotnetcore1.0', 'dotnetcore2.0']:
-                self.__create_dotnet_rule()
-            else:
-                src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, rule_handler + extension_mapping[self.args.runtime])
-                dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename + extension_mapping[self.args.runtime])
-                shutil.copyfile(src, dst)
-
-                src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, 'rule_test' + extension_mapping[self.args.runtime])
-                if os.path.exists(src):
-                    dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename+"_test"+extension_mapping[self.args.runtime])
+            if not self.args.source_identifier:
+                #copy rule template into rule directory
+                if self.args.runtime == 'java8':
+                    self.__create_java_rule()
+                elif self.args.runtime in ['dotnetcore1.0', 'dotnetcore2.0']:
+                    self.__create_dotnet_rule()
+                else:
+                    src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, rule_handler + extension_mapping[self.args.runtime])
+                    dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename + extension_mapping[self.args.runtime])
                     shutil.copyfile(src, dst)
-                    #with fileinput.FileInput(dst, inplace=True) as file:
-                    f = fileinput.input(files=dst, inplace=True)
-                    for line in f:
-                        print(line.replace('<%RuleName%>', self.args.rulename), end='')
-                    f.close()
 
-                src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, util_filename + extension_mapping[self.args.runtime])
-                if os.path.exists(src):
-                    dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, util_filename + extension_mapping[self.args.runtime])
-                    shutil.copyfile(src, dst)
+                    src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, 'rule_test' + extension_mapping[self.args.runtime])
+                    if os.path.exists(src):
+                        dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename+"_test"+extension_mapping[self.args.runtime])
+                        shutil.copyfile(src, dst)
+                        #with fileinput.FileInput(dst, inplace=True) as file:
+                        f = fileinput.input(files=dst, inplace=True)
+                        for line in f:
+                            print(line.replace('<%RuleName%>', self.args.rulename), end='')
+                        f.close()
+
+                    src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, util_filename + extension_mapping[self.args.runtime])
+                    if os.path.exists(src):
+                        dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, util_filename + extension_mapping[self.args.runtime])
+                        shutil.copyfile(src, dst)
 
             #Write the parameters to a file in the rule directory.
             self.__populate_params()
@@ -312,13 +314,14 @@ class rdk():
             if not self.args.maximum_frequency and old_params['Parameters']['SourcePeriodic']:
                 self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
 
-
         if not self.args.runtime and old_params['Parameters']['SourceRuntime']:
             self.args.runtime = old_params['Parameters']['SourceRuntime']
 
-
         if not self.args.input_parameters and old_params['Parameters']['InputParameters']:
             self.args.input_parameters = old_params['Parameters']['InputParameters']
+
+        if not self.args.source_identifier and old_params['Parameters']['SourceIdentifier']:
+            self.args.source_identifier = old_params['Parameters']['SourceIdentifier']
 
         if 'RuleSets' in old_params['Parameters']:
             if not self.args.rulesets:
@@ -389,8 +392,11 @@ class rdk():
             s3_code_objects = {}
             for rule_name in rule_names:
                 rule_params = self.__get_rule_parameters(rule_name)
-                s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
-                s3_code_objects[rule_name] = s3_dst
+                if 'SourceIdentifier' in rule_params:
+                    print("Skipping code packaging for Managed Rule.")
+                else:
+                    s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
+                    s3_code_objects[rule_name] = s3_dst
 
             #Check if stack exists.  If it does, update it.  If it doesn't, create it.
             my_cfn = my_session.client('cloudformation')
@@ -426,6 +432,10 @@ class rdk():
                 #Push lambda code to functions.
                 for rule_name in rule_names:
                     my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name, my_session.region_name, account_id)
+                    rule_params = self.__get_rule_parameters(rule_name)
+                    if 'SourceIdentifier' in rule_params:
+                        print("Skipping Lambda upload for Managed Rule.")
+                        continue
 
                     print("Publishing Lambda code...")
                     my_lambda_client = my_session.client('lambda')
@@ -944,10 +954,15 @@ class rdk():
                 source["SourceDetails"][0]["MaximumExecutionFrequency"] = params['SourcePeriodic']
                 message_type = "ScheduledNotification"
 
-            source["Owner"] = "CUSTOM_LAMBDA"
-            source["SourceIdentifier"] = { "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_alphanumeric_rule_name(rule_name) }
-            source["SourceDetails"][0]["EventSource"] = "aws.config"
-            source["SourceDetails"][0]["MessageType"] = message_type
+            if 'SourceIdentifier' in params:
+                source["Owner"] = "AWS"
+                source["SourceIdentifier"] = params['SourceIdentifier']
+                del source["SourceDetails"]
+            else:
+                source["Owner"] = "CUSTOM_LAMBDA"
+                source["SourceIdentifier"] = { "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_alphanumeric_rule_name(rule_name) }
+                source["SourceDetails"][0]["EventSource"] = "aws.config"
+                source["SourceDetails"][0]["MessageType"] = message_type
 
             properties["Source"] = source
 
@@ -1181,12 +1196,15 @@ class rdk():
                 if os.path.isdir(obj_path) and not obj_name == 'rdk':
                     for file_name in os.listdir(obj_path):
                         if obj_name not in rule_names:
-                            if file_name.split('.')[0] == obj_name:
+                            if os.path.exists(os.path.join(obj_path, 'parameters.json')):
                                 rule_names.append(obj_name)
-                            if os.path.exists(os.path.join(obj_path, 'src', 'main', 'java', 'com', 'rdk', 'RuleCode.java')):
-                                rule_names.append(obj_name)
-                            if os.path.exists(os.path.join(obj_path, 'RuleCode.cs')):
-                                rule_names.append(obj_name)
+                            else:
+                                if file_name.split('.')[0] == obj_name:
+                                    rule_names.append(obj_name)
+                                if os.path.exists(os.path.join(obj_path, 'src', 'main', 'java', 'com', 'rdk', 'RuleCode.java')):
+                                    rule_names.append(obj_name)
+                                if os.path.exists(os.path.join(obj_path, 'RuleCode.cs')):
+                                    rule_names.append(obj_name)
         elif self.args.rulesets:
             for obj_name in os.listdir('.'):
                 params_file_path = os.path.join('.', obj_name, parameter_file_name)
@@ -1231,7 +1249,9 @@ class rdk():
             usage="rdk "+self.args.command + " <rulename> " + usage_string
         )
         parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
-        parser.add_argument('-R','--runtime', required=is_required, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0','dotnetcore2.0'])
+        runtime_group = parser.add_mutually_exclusive_group(required=is_required)
+        runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0','dotnetcore2.0'])
+        runtime_group.add_argument('--source-identifier', required=False, help="")
         group = parser.add_mutually_exclusive_group(required=is_required)
         group.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation', choices=accepted_resource_types)
         group.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
@@ -1279,9 +1299,9 @@ class rdk():
         my_session = self.__get_boto_session()
 
         #get accountID
-        my_sts = my_session.client('sts')
-        response = my_sts.get_caller_identity()
-        account_id = response['Account']
+        #my_sts = my_session.client('sts')
+        #response = my_sts.get_caller_identity()
+        #account_id = response['Account']
 
         my_input_params = {}
 
@@ -1320,6 +1340,11 @@ class rdk():
 
         if self.args.rulesets:
             parameters['RuleSets'] = self.args.rulesets
+
+        if self.args.source_identifier:
+            parameters['SourceIdentifier'] = self.args.source_identifier
+            parameters['CodeKey'] = None
+            parameters['SourceRuntime'] = None
 
         self.__write_params_file(self.args.rulename, parameters)
 
@@ -1567,6 +1592,10 @@ class rdk():
         for rule_name in rule_names:
             alphanum_rule_name = self.__get_alphanumeric_rule_name(rule_name)
             params = self.__get_rule_parameters(rule_name)
+
+            if 'SourceIdentifier' in params:
+                print("Skipping Managed Rule.")
+                continue
 
             lambda_function = {}
             lambda_function["Type"] = "AWS::Lambda::Function"
