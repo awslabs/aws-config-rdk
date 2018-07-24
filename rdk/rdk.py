@@ -298,21 +298,11 @@ class rdk():
 
         #Get existing parameters
         old_params = self.__read_params_file(self.args.rulename)
-        if 'SourceEvents' in old_params['Parameters']:
-            if self.args.maximum_frequency and old_params['Parameters']['SourceEvents']:
-                    print("Removing Source Events and changing to Periodic Rule.")
-                    self.args.resource_types = ""
-                    old_params['Parameters']['SourceEvents'] = ""
-            if not self.args.resource_types and old_params['Parameters']['SourceEvents']:
-                self.args.resource_types = old_params['Parameters']['SourceEvents']
+        if not self.args.source_events and 'SourceEvents' in old_params['Parameters']:
+            self.args.source_events = old_params['Parameters']['SourceEvents']
 
-        if 'SourcePeriodic' in old_params['Parameters']:
-            if self.args.resource_types and old_params['Parameters']['SourcePeriodic']:
-                print("Removing Max Frequency and changing to Event-based Rule.")
-                self.args.maximum_frequency = ""
-                old_params['Parameters']['SourcePeriodic'] = ""
-            if not self.args.maximum_frequency and old_params['Parameters']['SourcePeriodic']:
-                self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
+        if not self.args.maximum_frequency and old_params['Parameters']['SourcePeriodic']:
+            self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
 
         if not self.args.runtime and old_params['Parameters']['SourceRuntime']:
             self.args.runtime = old_params['Parameters']['SourceRuntime']
@@ -1262,7 +1252,7 @@ class rdk():
         if not self.args.resource_types and not self.args.maximum_frequency:
             print("You must specify either a resource type trigger or a maximum frequency.")
             sys.exit(1)
-            
+
         if self.args.input_parameters:
             try:
                 input_params_dict = json.loads(self.args.input_parameters, strict=False)
