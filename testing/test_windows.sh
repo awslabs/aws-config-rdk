@@ -59,12 +59,10 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
 
   #Terminate build instance
   aws ec2 describe-instances --query 'Reservations[*].Instances[*].[InstanceId]' --filters 'Name=tag-value,Values=WindowsRDKTest' --output text |
-  grep stopped |
-  awk '{print $2}' |
   while read line;
   do aws ec2 terminate-instances --instance-ids $line
   done
-  
+
   #return success or failure.
   cat ./output.txt
 fi
