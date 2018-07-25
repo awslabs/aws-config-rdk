@@ -103,18 +103,18 @@ def build_expected_response(compliance_type, compliance_resource_id, compliance_
 
 def assert_successful_evaluation(testClass, response, resp_expected, evaluations_count=1):
     if isinstance(response, dict):
-        testClass.assertEquals(resp_expected['ComplianceType'], response['ComplianceType'])
         testClass.assertEquals(resp_expected['ComplianceResourceType'], response['ComplianceResourceType'])
         testClass.assertEquals(resp_expected['ComplianceResourceId'], response['ComplianceResourceId'])
+        testClass.assertEquals(resp_expected['ComplianceType'], response['ComplianceType'])
         testClass.assertTrue(response['OrderingTimestamp'])
         if 'Annotation' in resp_expected or 'Annotation' in response:
             testClass.assertEquals(resp_expected['Annotation'], response['Annotation'])
     elif isinstance(response, list):
         testClass.assertEquals(evaluations_count, len(response))
         for i, response_expected in enumerate(resp_expected):
-            testClass.assertEquals(response_expected['ComplianceType'], response[i]['ComplianceType'])
             testClass.assertEquals(response_expected['ComplianceResourceType'], response[i]['ComplianceResourceType'])
             testClass.assertEquals(response_expected['ComplianceResourceId'], response[i]['ComplianceResourceId'])
+            testClass.assertEquals(response_expected['ComplianceType'], response[i]['ComplianceType'])
             testClass.assertTrue(response[i]['OrderingTimestamp'])
             if 'Annotation' in response_expected or 'Annotation' in response[i]:
                 testClass.assertEquals(response_expected['Annotation'], response[i]['Annotation'])
