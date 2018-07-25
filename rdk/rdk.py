@@ -950,7 +950,6 @@ class rdk():
 
             #If there is a MaximumExecutionFrequency specified for the Rule, Generate the MEF clause.
             if 'SourcePeriodic' in params:
-                properties["MaximumExecutionFrequency"] = params['SourcePeriodic']
                 source["SourceDetails"][1]["MaximumExecutionFrequency"] = params['SourcePeriodic']
 
             #If it's a Managed Rule it will have a SourceIdentifier string in the params and we need to set the source appropriately.  Otherwise, set the source to our custom lambda function.
