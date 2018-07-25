@@ -300,7 +300,7 @@ def lambda_handler(event, context):
         evaluations = clean_up_old_evaluations(latest_evaluations, event)
     elif isinstance(compliance_result, str):
         if DEFAULT_RESOURCE_TYPE == 'AWS::::Account':
-            evaluations.append(build_evaluation(event['accountId'], compliance_result, event)
+            evaluations.append(build_evaluation(event['accountId'], compliance_result, event))
         else:
             evaluations.append(build_evaluation_from_config_item(configuration_item, compliance_result))
     elif isinstance(compliance_result, list):
