@@ -110,15 +110,15 @@
             },
             {
               "EventSource": "aws.config",
-              "MessageType": "ScheduledNotification"
-            }],
-            "MaximumExecutionFrequency": {
-              "Fn::If": [ "PeriodicTriggered",
-                { "Ref": "SourcePeriodic" } ,
-                { "Ref": "AWS::NoValue" }
-              ]
+              "MessageType": "ScheduledNotification",
+              "MaximumExecutionFrequency": {
+                "Fn::If": [ "PeriodicTriggered",
+                  { "Ref": "SourcePeriodic" } ,
+                  { "Ref": "AWS::NoValue" }
+                ]
+              }
             }
-          }]
+          ]
         },
         "InputParameters": { "Ref": "SourceInputParameters" }
       }

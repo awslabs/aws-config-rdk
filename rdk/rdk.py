@@ -925,9 +925,7 @@ class rdk():
                 config_rule["DependsOn"] = "DeliveryChannel"
 
             properties = {}
-            source = {}
-            source["SourceDetails"] = []
-            source["SourceDetails"].append({})
+
 
             properties["ConfigRuleName"] = rule_name
             properties["Description"] = rule_name
@@ -937,13 +935,25 @@ class rdk():
                 source_events = params['SourceEvents'].split(",")
                 properties["Scope"] = {"ComplianceResourceTypes": source_events}
 
+            #Create the SourceDetail.
+            source = {}
+            source["SourceDetails"] = [
+                {
+                  "EventSource": "aws.config",
+                  "MessageType": "ConfigurationItemChangeNotification"
+                },
+                {
+                  "EventSource": "aws.config",
+                  "MessageType": "ScheduledNotification"
+                }
+            ]
+
             #If there is a MaximumExecutionFrequency specified for the Rule, Generate the MEF clause.
-            message_type = "ConfigurationItemChangeNotification"
             if 'SourcePeriodic' in params:
                 properties["MaximumExecutionFrequency"] = params['SourcePeriodic']
-                source["SourceDetails"][0]["MaximumExecutionFrequency"] = params['SourcePeriodic']
-                message_type = "ScheduledNotification"
+                source["SourceDetails"][1]["MaximumExecutionFrequency"] = params['SourcePeriodic']
 
+            #If it's a Managed Rule it will have a SourceIdentifier string in the params and we need to set the source appropriately.  Otherwise, set the source to our custom lambda function.
             if 'SourceIdentifier' in params:
                 source["Owner"] = "AWS"
                 source["SourceIdentifier"] = params['SourceIdentifier']
@@ -951,8 +961,6 @@ class rdk():
             else:
                 source["Owner"] = "CUSTOM_LAMBDA"
                 source["SourceIdentifier"] = { "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_alphanumeric_rule_name(rule_name) }
-                source["SourceDetails"][0]["EventSource"] = "aws.config"
-                source["SourceDetails"][0]["MessageType"] = message_type
 
             properties["Source"] = source
 
