@@ -37,7 +37,7 @@
       "Type": "String",
       "MinLength": "1",
       "MaxLength": "255",
-      "Default": "TwentyFour_Hours"
+      "Default": "NONE"
     },
     "SourceInputParameters": {
       "Description": "Input Parameters",
@@ -51,7 +51,7 @@
   },
   "Conditions": {
     "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
-    "PeriodicTriggered" : { "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}
+    "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourcePeriodic" }]}, "NONE"]}]}
   },
   "Resources": {
     "rdkRuleCodeLambda": {
@@ -103,14 +103,15 @@
         "Source": {
           "Owner": "CUSTOM_LAMBDA",
           "SourceIdentifier": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
-          "SourceDetails": [{
-            "EventSource": "aws.config",
-            "MessageType": {
-              "Fn::If": [ "EventTriggered",
-                "ConfigurationItemChangeNotification",
-                "ScheduledNotification"
-              ]
+          "SourceDetails": [
+            {
+              "EventSource": "aws.config",
+              "MessageType": "ConfigurationItemChangeNotification"
             },
+            {
+              "EventSource": "aws.config",
+              "MessageType": "ScheduledNotification"
+            }],
             "MaximumExecutionFrequency": {
               "Fn::If": [ "PeriodicTriggered",
                 { "Ref": "SourcePeriodic" } ,
