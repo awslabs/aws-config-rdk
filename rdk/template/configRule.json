@@ -51,7 +51,7 @@
   },
   "Conditions": {
     "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
-    "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourcePeriodic" }]}, "NONE"]}]}
+    "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]}
   },
   "Resources": {
     "rdkRuleCodeLambda": {
@@ -91,12 +91,6 @@
         "Scope": {
           "Fn::If": [ "EventTriggered",
             { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },
-            { "Ref": "AWS::NoValue" }
-          ]
-        },
-        "MaximumExecutionFrequency": {
-          "Fn::If": ["PeriodicTriggered",
-            { "Ref": "SourcePeriodic" },
             { "Ref": "AWS::NoValue" }
           ]
         },
