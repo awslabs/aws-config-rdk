@@ -25,7 +25,7 @@ if __name__ == "__main__":
     #Removed for now from command choices: 'test-remote', 'status'
     parser.add_argument('command', metavar='<command>', help='Command to run.  Choose one of init, create, modify, deploy, sample-ci, logs, rulesets.', choices=['init', 'create', 'modify', 'deploy', 'test-local', 'sample-ci', 'logs', 'rulesets', 'create-rule-template'])
     parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
-    parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version=__version__)
+    parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+__version__)
     args = parser.parse_args()
 
     my_rdk = rdk.rdk(args)
