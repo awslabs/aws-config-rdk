@@ -1369,10 +1369,24 @@ class rdk():
     def __wait_for_cfn_stack(self, cfn_client, stackname):
         in_progress = True
         while in_progress:
-            my_stack = cfn_client.describe_stacks(StackName=stackname)
-
-            if 'IN_PROGRESS' not in my_stack['Stacks'][0]['StackStatus']:
+            my_stack = cfn_client.describe_stack_events(StackName=stackname)
+            current_status = my_stack['StackEvents'][0]['ResourceStatus']
+            if 'FAILED' in current_status or 'DELETE' in current_status or 'ROLLBACK' in current_status:
+                print ("[ERROR] CloudFormation Stack failed: Fetching failre Reasons")
+                time.sleep(5)
+                my_stack = cfn_client.describe_stack_events(StackName=stackname)
+                event_count = 0
+                for each_event in my_stack['StackEvents']:
+                    if 'ResourceStatusReason' in each_event:
+                        print (each_event['ResourceStatus'], ":", each_event['ResourceStatusReason'])
+                        event_count += 1
+                        if event_count > 1:
+                            break
                 in_progress = False
+            elif 'CREATE_COMPLETE' in current_status or 'UPDATE_COMPLETE' in current_status:
+                if my_stack['StackEvents'][0]['ResourceType'] == 'AWS::CloudFormation::Stack':
+                    print("successStatus")
+                    in_progress = False
             else:
                 print("Waiting for CloudFormation stack operation to complete...")
                 time.sleep(5)
