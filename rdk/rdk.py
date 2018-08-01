@@ -1256,7 +1256,7 @@ class rdk():
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
 
-        if not self.args.resource_types and not self.args.maximum_frequency:
+        if is_required and not self.args.resource_types and not self.args.maximum_frequency:
             print("You must specify either a resource type trigger or a maximum frequency.")
             sys.exit(1)
 
