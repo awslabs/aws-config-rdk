@@ -301,13 +301,13 @@ class rdk():
         if not self.args.resource_types and 'SourceEvents' in old_params['Parameters']:
             self.args.resource_types = old_params['Parameters']['SourceEvents']
 
-        if not self.args.maximum_frequency and old_params['Parameters']['SourcePeriodic']:
+        if not self.args.maximum_frequency and 'SourcePeriodic' in old_params['Parameters']:
             self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
 
         if not self.args.runtime and old_params['Parameters']['SourceRuntime']:
             self.args.runtime = old_params['Parameters']['SourceRuntime']
 
-        if not self.args.input_parameters and old_params['Parameters']['InputParameters']:
+        if not self.args.input_parameters and 'InputParameters' in old_params['Parameters']:
             self.args.input_parameters = old_params['Parameters']['InputParameters']
 
         if not self.args.source_identifier and 'SourceIdentifier' in old_params['Parameters']:
