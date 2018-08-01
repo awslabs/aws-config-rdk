@@ -220,6 +220,107 @@ class rdk():
                 )
 
         return 0
+    def clean(self):
+        print ("Running clean!")
+
+        #create custom session based on whatever credentials are available to us
+        my_session = self.__get_boto_session()
+
+        #Create our ConfigService client
+        my_config = my_session.client('config')
+
+        #Create an S3 client for various things.
+        s3_client = my_session.client('s3')
+
+        #Create an IAM client!  Create all the clients!
+        iam_client = my_session.client('iam')
+        cfn_client = my_session.client('cloudformation')
+
+        #get accountID
+        my_sts = my_session.client('sts')
+        response = my_sts.get_caller_identity()
+        account_id = response['Account']
+
+        config_recorder_name = ""
+        config_role_arn = ""
+        delivery_channel_exists = False
+        config_bucket_name = ""
+
+        recorders = my_config.describe_configuration_recorders()
+        if len(recorders['ConfigurationRecorders']) > 0:
+            config_role_arn = recorders['ConfigurationRecorders'][0]['roleARN']
+            try:
+                #First delete the Config Recorder itself.  Do we need to stop it first?  Let's stop it just to be safe.
+                my_config.stop_configuration_recorder(recorders['ConfigurationRecorders'][0]["name"])
+                my_config.delete_configuration_recorder(recorders['ConfigurationRecorders'][0]["name"])
+
+                #Once the config recorder has been deleted there should be no dependencies on the Config Role anymore.
+                role_policy_results = my_iam.list_role_policies(RoleName=config_role_name)
+                for policy_name in role_policy_results['PolicyNames']:
+                    policy_arn = "arn:aws:iam::"+account_id+":policy/"+policy_name
+                    my_iam.detach_role_policy(
+                        RoleName=config_role_name,
+                        PolicyArn=policy_arn
+                    )
+                    if policy_name == "ConfigDeliveryPermissions":
+                        my_iam.delete_policy(policy_arn)
+
+                #Once all policies are detached we should be able to delete the Role.
+                my_iam.delete_role()
+            except Exception as e:
+                print("Error encountered removing Config Role: " + str(e))
+
+        config_bucket_names = []
+        delivery_channels = my_config.describe_delivery_channels()
+        if len(delivery_channels['DeliveryChannels']) > 0:
+            for delivery_channel in delivery_channels['DeliveryChannels']:
+                config_bucket_names.append(delivery_channels['DeliveryChannels'][0]['s3BucketName'])
+                try:
+                    my_config.delete_delivery_channel(
+                        DeliveryChannelName=delivery_channel['name']
+                    )
+                except Exception as e:
+                    print("Error encountered trying to delete Delivery Channel: " + str(e))
+
+        if config_bucket_names:
+            #empty and then delete the config bucket.
+            for config_bucket_name in config_bucket_names:
+                try:
+                    config_bucket = my_session.resource("s3").Bucket(config_bucket_name)
+                    config_bucket.objects.all().delete()
+                    config_bucket.delete()
+                except Exception as e:
+                    print("Error encountered trying to delete code bucket: " + str(e))
+
+        #Delete any of the Rules deployed the traditional way.
+        self.args.all = True
+        rule_names = self.__get_rule_list_for_command()
+        for rule_name in rule_names:
+            my_stack_name = self.__get_alphanumeric_rule_name(rule_name)
+            try:
+                cfn_client.delete_stack(StackName=my_stack_name)
+            except Exception as e:
+                print("Error encountered deleting Rule stack: " + str(e))
+
+        #Delete the Functions stack, if one exists.
+        try:
+            response = cfn_client.describe_stacks(StackName="RDK-Config-Rule-Functions")
+            if response["Stacks"]:
+                cfn_client.delete_stack(StackName="RDK-Config-Rule-Functions")
+        except Exception as e:
+            print("Error encountered deleting Functions stack: " + str(e))
+
+        #Delete the code bucket, if one exists.
+        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
+        try:
+            code_bucket = my_session.resource("s3").Bucket(code_bucket_name)
+            code_bucket.objects.all().delete()
+            code_bucket.delete()
+        except Exception as e:
+            print("Error encountered trying to delete code bucket: " + str(e))
+
+        #Done!
+        print("Config has been removed.")
 
     def create(self):
         #Parse the command-line arguments relevant for creating a Config Rule.
