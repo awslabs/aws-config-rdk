@@ -193,7 +193,7 @@ class rdk():
         print('Config setup complete.')
 
         #create code bucket
-        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
+        code_bucket_name = code_bucket_prefix + "-" + account_id + "-" + my_session.region_name
         response = my_s3.list_buckets()
         bucket_exists = False
         for bucket in response['Buckets']:
@@ -221,6 +221,22 @@ class rdk():
 
         return 0
     def clean(self):
+        parser = argparse.ArgumentParser(
+            prog='rdk '+self.args.command,
+            description = 'Removes AWS Config from the account.  This is a big deal!')
+        parser.add_argument("--force", required=False, action='store_true', help='Clean account with prompting for confirmation.')
+        self.args = parser.parse_args(self.args.command_args, self.args)
+
+
+        if not self.args.force:
+            confirmation = False
+            while not confirmation:
+                my_input = input("Delete all Rules and remove Config setup?! (y/N): ")
+                if my_input.lower() == "y":
+                    confirmation = True
+                if my_input.lower() == "n" or my_input == "":
+                    sys.exit(0)
+
         print ("Running clean!")
 
         #create custom session based on whatever credentials are available to us
@@ -251,19 +267,19 @@ class rdk():
             config_role_arn = recorders['ConfigurationRecorders'][0]['roleARN']
             try:
                 #First delete the Config Recorder itself.  Do we need to stop it first?  Let's stop it just to be safe.
-                my_config.stop_configuration_recorder(recorders['ConfigurationRecorders'][0]["name"])
-                my_config.delete_configuration_recorder(recorders['ConfigurationRecorders'][0]["name"])
+                my_config.stop_configuration_recorder(ConfigurationRecorderName=recorders['ConfigurationRecorders'][0]["name"])
+                my_config.delete_configuration_recorder(ConfigurationRecorderName=recorders['ConfigurationRecorders'][0]["name"])
 
                 #Once the config recorder has been deleted there should be no dependencies on the Config Role anymore.
-                role_policy_results = my_iam.list_role_policies(RoleName=config_role_name)
+                role_policy_results = iam_client.list_role_policies(RoleName=config_role_name)
                 for policy_name in role_policy_results['PolicyNames']:
                     policy_arn = "arn:aws:iam::"+account_id+":policy/"+policy_name
-                    my_iam.detach_role_policy(
+                    iam_client.detach_role_policy(
                         RoleName=config_role_name,
                         PolicyArn=policy_arn
                     )
                     if policy_name == "ConfigDeliveryPermissions":
-                        my_iam.delete_policy(policy_arn)
+                        iam_client.delete_policy(policy_arn)
 
                 #Once all policies are detached we should be able to delete the Role.
                 my_iam.delete_role()
@@ -290,7 +306,7 @@ class rdk():
                     config_bucket.objects.all().delete()
                     config_bucket.delete()
                 except Exception as e:
-                    print("Error encountered trying to delete code bucket: " + str(e))
+                    print("Error encountered trying to delete config bucket: " + str(e))
 
         #Delete any of the Rules deployed the traditional way.
         self.args.all = True
@@ -307,15 +323,21 @@ class rdk():
             response = cfn_client.describe_stacks(StackName="RDK-Config-Rule-Functions")
             if response["Stacks"]:
                 cfn_client.delete_stack(StackName="RDK-Config-Rule-Functions")
+        except ClientError as ce:
+            if ce.response['Error']['Code'] == "ValidationError":
+                print("No Functions stack found.")
         except Exception as e:
             print("Error encountered deleting Functions stack: " + str(e))
 
         #Delete the code bucket, if one exists.
-        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
+        code_bucket_name = code_bucket_prefix + "-" + account_id + "-" + my_session.region_name
         try:
             code_bucket = my_session.resource("s3").Bucket(code_bucket_name)
             code_bucket.objects.all().delete()
             code_bucket.delete()
+        except ClientError as ce:
+            if ce.response['Error']['Code'] == "NoSuchBucket":
+                print("No code bucket found.")
         except Exception as e:
             print("Error encountered trying to delete code bucket: " + str(e))
 
@@ -456,7 +478,7 @@ class rdk():
         response = my_sts.get_caller_identity()
         account_id = response['Account']
 
-        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
+        code_bucket_name = code_bucket_prefix + "-" + account_id + "-" + my_session.region_name
 
         #If we're only deploying the Lambda functions (and role + permissions), branch here.  Someday the "main" execution path should use the same generated CFN templates for single-account deployment.
         if self.args.functions_only:
