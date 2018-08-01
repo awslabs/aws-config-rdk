@@ -38,7 +38,7 @@ rule = __import__('<%RuleName%>')
 class SampleTest(unittest.TestCase):
 
     rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
-    
+
     invoking_event_iam_role_sample = '{"configurationItem":{"relatedEvents":[],"relationships":[],"configuration":{},"tags":{},"configurationItemCaptureTime":"2018-07-02T03:37:52.418Z","awsAccountId":"123456789012","configurationItemStatus":"ResourceDiscovered","resourceType":"AWS::IAM::Role","resourceId":"some-resource-id","resourceName":"some-resource-name","ARN":"some-arn"},"notificationCreationTime":"2018-07-02T23:05:34.445Z","messageType":"ConfigurationItemChangeNotification"}'
 
     def setUp(self):
@@ -47,12 +47,12 @@ class SampleTest(unittest.TestCase):
     def test_sample(self):
         self.assertTrue(True)
 
-    def test_sample_2(self):
-        rule.ASSUME_ROLE_MODE = False
-        response = rule.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
-        resp_expected = []
-        resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-        assert_successful_evaluation(self, response, resp_expected)
+    #def test_sample_2(self):
+    #    rule.ASSUME_ROLE_MODE = False
+    #    response = rule.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
+    #    resp_expected = []
+    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
+    #    assert_successful_evaluation(self, response, resp_expected)
 
 ####################
 # Helper Functions #
@@ -103,18 +103,18 @@ def build_expected_response(compliance_type, compliance_resource_id, compliance_
 
 def assert_successful_evaluation(testClass, response, resp_expected, evaluations_count=1):
     if isinstance(response, dict):
-        testClass.assertEquals(resp_expected['ComplianceType'], response['ComplianceType'])
         testClass.assertEquals(resp_expected['ComplianceResourceType'], response['ComplianceResourceType'])
         testClass.assertEquals(resp_expected['ComplianceResourceId'], response['ComplianceResourceId'])
+        testClass.assertEquals(resp_expected['ComplianceType'], response['ComplianceType'])
         testClass.assertTrue(response['OrderingTimestamp'])
         if 'Annotation' in resp_expected or 'Annotation' in response:
             testClass.assertEquals(resp_expected['Annotation'], response['Annotation'])
     elif isinstance(response, list):
         testClass.assertEquals(evaluations_count, len(response))
         for i, response_expected in enumerate(resp_expected):
-            testClass.assertEquals(response_expected['ComplianceType'], response[i]['ComplianceType'])
             testClass.assertEquals(response_expected['ComplianceResourceType'], response[i]['ComplianceResourceType'])
             testClass.assertEquals(response_expected['ComplianceResourceId'], response[i]['ComplianceResourceId'])
+            testClass.assertEquals(response_expected['ComplianceType'], response[i]['ComplianceType'])
             testClass.assertTrue(response[i]['OrderingTimestamp'])
             if 'Annotation' in response_expected or 'Annotation' in response[i]:
                 testClass.assertEquals(response_expected['Annotation'], response[i]['Annotation'])

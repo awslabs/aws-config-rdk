@@ -37,7 +37,7 @@
       "Type": "String",
       "MinLength": "1",
       "MaxLength": "255",
-      "Default": "TwentyFour_Hours"
+      "Default": "NONE"
     },
     "SourceInputParameters": {
       "Description": "Input Parameters",
@@ -51,7 +51,7 @@
   },
   "Conditions": {
     "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
-    "PeriodicTriggered" : { "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}
+    "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]}
   },
   "Resources": {
     "rdkRuleCodeLambda": {
@@ -94,30 +94,25 @@
             { "Ref": "AWS::NoValue" }
           ]
         },
-        "MaximumExecutionFrequency": {
-          "Fn::If": ["PeriodicTriggered",
-            { "Ref": "SourcePeriodic" },
-            { "Ref": "AWS::NoValue" }
-          ]
-        },
         "Source": {
           "Owner": "CUSTOM_LAMBDA",
           "SourceIdentifier": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
-          "SourceDetails": [{
-            "EventSource": "aws.config",
-            "MessageType": {
-              "Fn::If": [ "EventTriggered",
-                "ConfigurationItemChangeNotification",
-                "ScheduledNotification"
-              ]
+          "SourceDetails": [
+            {
+              "EventSource": "aws.config",
+              "MessageType": "ConfigurationItemChangeNotification"
             },
-            "MaximumExecutionFrequency": {
-              "Fn::If": [ "PeriodicTriggered",
-                { "Ref": "SourcePeriodic" } ,
-                { "Ref": "AWS::NoValue" }
-              ]
+            {
+              "EventSource": "aws.config",
+              "MessageType": "ScheduledNotification",
+              "MaximumExecutionFrequency": {
+                "Fn::If": [ "PeriodicTriggered",
+                  { "Ref": "SourcePeriodic" } ,
+                  { "Ref": "AWS::NoValue" }
+                ]
+              }
             }
-          }]
+          ]
         },
         "InputParameters": { "Ref": "SourceInputParameters" }
       }
