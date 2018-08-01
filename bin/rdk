@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser.add_argument('-r','--region',help='Select the region to run against.')
     #parser.add_argument('--verbose','-v', action='count')
     #Removed for now from command choices: 'test-remote', 'status'
-    parser.add_argument('command', metavar='<command>', help='Command to run.  Choose one of init, create, modify, deploy, sample-ci, logs, rulesets.', choices=['init', 'create', 'modify', 'deploy', 'test-local', 'sample-ci', 'logs', 'rulesets', 'create-rule-template'])
+    parser.add_argument('command', metavar='<command>', help='Command to run.  Choose one of init, create, modify, deploy, sample-ci, logs, rulesets.', choices=['init', 'create', 'modify', 'deploy', 'test-local', 'sample-ci', 'logs', 'rulesets', 'create-rule-template', 'clean'])
     parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
 
     args = parser.parse_args()
