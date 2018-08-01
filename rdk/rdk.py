@@ -298,21 +298,11 @@ class rdk():
 
         #Get existing parameters
         old_params = self.__read_params_file(self.args.rulename)
-        if 'SourceEvents' in old_params['Parameters']:
-            if self.args.maximum_frequency and old_params['Parameters']['SourceEvents']:
-                    print("Removing Source Events and changing to Periodic Rule.")
-                    self.args.resource_types = ""
-                    old_params['Parameters']['SourceEvents'] = ""
-            if not self.args.resource_types and old_params['Parameters']['SourceEvents']:
-                self.args.resource_types = old_params['Parameters']['SourceEvents']
+        if not self.args.resource_types and 'SourceEvents' in old_params['Parameters']:
+            self.args.resource_types = old_params['Parameters']['SourceEvents']
 
-        if 'SourcePeriodic' in old_params['Parameters']:
-            if self.args.resource_types and old_params['Parameters']['SourcePeriodic']:
-                print("Removing Max Frequency and changing to Event-based Rule.")
-                self.args.maximum_frequency = ""
-                old_params['Parameters']['SourcePeriodic'] = ""
-            if not self.args.maximum_frequency and old_params['Parameters']['SourcePeriodic']:
-                self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
+        if not self.args.maximum_frequency and old_params['Parameters']['SourcePeriodic']:
+            self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
 
         if not self.args.runtime and old_params['Parameters']['SourceRuntime']:
             self.args.runtime = old_params['Parameters']['SourceRuntime']
@@ -935,9 +925,7 @@ class rdk():
                 config_rule["DependsOn"] = "DeliveryChannel"
 
             properties = {}
-            source = {}
-            source["SourceDetails"] = []
-            source["SourceDetails"].append({})
+
 
             properties["ConfigRuleName"] = rule_name
             properties["Description"] = rule_name
@@ -947,13 +935,24 @@ class rdk():
                 source_events = params['SourceEvents'].split(",")
                 properties["Scope"] = {"ComplianceResourceTypes": source_events}
 
-            #If there is a MaximumExecutionFrequency specified for the Rule, Generate the MEF clause.
-            message_type = "ConfigurationItemChangeNotification"
-            if 'SourcePeriodic' in params:
-                properties["MaximumExecutionFrequency"] = params['SourcePeriodic']
-                source["SourceDetails"][0]["MaximumExecutionFrequency"] = params['SourcePeriodic']
-                message_type = "ScheduledNotification"
+            #Create the SourceDetail.
+            source = {}
+            source["SourceDetails"] = [
+                {
+                  "EventSource": "aws.config",
+                  "MessageType": "ConfigurationItemChangeNotification"
+                },
+                {
+                  "EventSource": "aws.config",
+                  "MessageType": "ScheduledNotification"
+                }
+            ]
 
+            #If there is a MaximumExecutionFrequency specified for the Rule, Generate the MEF clause.
+            if 'SourcePeriodic' in params:
+                source["SourceDetails"][1]["MaximumExecutionFrequency"] = params['SourcePeriodic']
+
+            #If it's a Managed Rule it will have a SourceIdentifier string in the params and we need to set the source appropriately.  Otherwise, set the source to our custom lambda function.
             if 'SourceIdentifier' in params:
                 source["Owner"] = "AWS"
                 source["SourceIdentifier"] = params['SourceIdentifier']
@@ -961,8 +960,6 @@ class rdk():
             else:
                 source["Owner"] = "CUSTOM_LAMBDA"
                 source["SourceIdentifier"] = { "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_alphanumeric_rule_name(rule_name) }
-                source["SourceDetails"][0]["EventSource"] = "aws.config"
-                source["SourceDetails"][0]["MessageType"] = message_type
 
             properties["Source"] = source
 
@@ -1252,13 +1249,16 @@ class rdk():
         runtime_group = parser.add_mutually_exclusive_group(required=is_required)
         runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0','dotnetcore2.0'])
         runtime_group.add_argument('--source-identifier', required=False, help="")
-        group = parser.add_mutually_exclusive_group(required=is_required)
-        group.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation', choices=accepted_resource_types)
-        group.add_argument('-m','--maximum-frequency', help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
+        parser.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation', choices=accepted_resource_types)
+        parser.add_argument('-m','--maximum-frequency', required=False, help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
         parser.add_argument('-i','--input-parameters', help="[optional] JSON for required Config parameters.")
         parser.add_argument('--optional-parameters', help="[optional] JSON for optional Config parameters.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
+
+        if not self.args.resource_types and not self.args.maximum_frequency:
+            print("You must specify either a resource type trigger or a maximum frequency.")
+            sys.exit(1)
 
         if self.args.input_parameters:
             try:
