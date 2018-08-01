@@ -193,7 +193,7 @@ class rdk():
         print('Config setup complete.')
 
         #create code bucket
-        code_bucket_name = code_bucket_prefix + "-" + account_id + "-" + my_session.region_name
+        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
         response = my_s3.list_buckets()
         bucket_exists = False
         for bucket in response['Buckets']:
@@ -269,22 +269,36 @@ class rdk():
                 #First delete the Config Recorder itself.  Do we need to stop it first?  Let's stop it just to be safe.
                 my_config.stop_configuration_recorder(ConfigurationRecorderName=recorders['ConfigurationRecorders'][0]["name"])
                 my_config.delete_configuration_recorder(ConfigurationRecorderName=recorders['ConfigurationRecorders'][0]["name"])
+            except Exception as e:
+                print("Error encountered removing Configuration Recorder: " + str(e))
 
-                #Once the config recorder has been deleted there should be no dependencies on the Config Role anymore.
+        #Once the config recorder has been deleted there should be no dependencies on the Config Role anymore.
+
+        try:
+            response = iam_client.get_role(RoleName=config_role_name)
+            try:
                 role_policy_results = iam_client.list_role_policies(RoleName=config_role_name)
                 for policy_name in role_policy_results['PolicyNames']:
-                    policy_arn = "arn:aws:iam::"+account_id+":policy/"+policy_name
+                    iam_client.delete_role_policy(
+                        RoleName=config_role_name,
+                        PolicyName=policy_name
+                    )
+
+                role_policy_results = iam_client.list_attached_role_policies(RoleName=config_role_name)
+                for policy in role_policy_results["AttachedPolicies"]:
                     iam_client.detach_role_policy(
                         RoleName=config_role_name,
-                        PolicyArn=policy_arn
+                        PolicyArn=policy["PolicyArn"]
                     )
-                    if policy_name == "ConfigDeliveryPermissions":
-                        iam_client.delete_policy(policy_arn)
 
                 #Once all policies are detached we should be able to delete the Role.
-                my_iam.delete_role()
+                iam_client.delete_role(
+                    RoleName=config_role_name
+                )
             except Exception as e:
                 print("Error encountered removing Config Role: " + str(e))
+        except Exception as e2:
+            print("Error encountered finding Config Role to remove: " + str(e))
 
         config_bucket_names = []
         delivery_channels = my_config.describe_delivery_channels()
@@ -330,7 +344,7 @@ class rdk():
             print("Error encountered deleting Functions stack: " + str(e))
 
         #Delete the code bucket, if one exists.
-        code_bucket_name = code_bucket_prefix + "-" + account_id + "-" + my_session.region_name
+        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
         try:
             code_bucket = my_session.resource("s3").Bucket(code_bucket_name)
             code_bucket.objects.all().delete()
@@ -478,7 +492,7 @@ class rdk():
         response = my_sts.get_caller_identity()
         account_id = response['Account']
 
-        code_bucket_name = code_bucket_prefix + "-" + account_id + "-" + my_session.region_name
+        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
 
         #If we're only deploying the Lambda functions (and role + permissions), branch here.  Someday the "main" execution path should use the same generated CFN templates for single-account deployment.
         if self.args.functions_only:
