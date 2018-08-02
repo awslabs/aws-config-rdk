@@ -459,24 +459,61 @@ class rdk():
 
         print ("Modified Rule '"+self.args.rulename+"'.  Use the `deploy` command to push your changes to AWS.")
 
+    def undeploy(self):
+        self.__parse_deploy_args(ForceArgument=True)
+
+        if not self.args.force:
+            confirmation = False
+            while not confirmation:
+                my_input = input("Delete specified Rules and Lamdba Functions from your AWS Account? (y/N): ")
+                if my_input.lower() == "y":
+                    confirmation = True
+                if my_input.lower() == "n" or my_input == "":
+                    sys.exit(0)
+
+        #get the rule names
+        rule_names = self.__get_rule_list_for_command()
+
+        print("Running un-deploy!")
+
+        #create custom session based on whatever credentials are available to us.
+        my_session = self.__get_boto_session()
+
+        #Collect a list of all of the CloudFormation templates that we delete.  We'll need it at the end to make sure everything worked.
+        deleted_stacks = []
+
+        cfn_client = my_session.client('cloudformation')
+
+        if self.args.functions_only:
+            try:
+                cfn_client.delete_stack(StackName=self.args.stack_name)
+                deleted_stacks.append(self.args.stack_name)
+            except ClientError as ce:
+                print("Client Error encountered attempting to delete CloudFormation stack for Lambda Functions: " + str(ce))
+            except Exception as e:
+                print("Exception encountered attempting to delete CloudFormation stack for Lambda Functions: " + str(e))
+
+            return
+
+        for rule_name in rule_names:
+            try:
+                cfn_client.delete_stack(StackName=self.__get_alphanumeric_rule_name(rule_name))
+                deleted_stacks.append(self.__get_alphanumeric_rule_name(rule_name))
+            except ClientError as ce:
+                print("Client Error encountered attempting to delete CloudFormation stack for Rule: " + str(ce))
+            except Exception as e:
+                print("Exception encountered attempting to delete CloudFormation stack for Rule: " + str(e))
+
+        print("Rule removal initiated. Waiting for Stack Deletion to complete.")
+
+        for stack_name in deleted_stacks:
+            self.__wait_for_cfn_stack(cfn_client, stack_name)
+
+        print("Rule removal complete, but local files have been preserved.")
+        print("To re-deploy, use the 'deploy' command.")
+
     def deploy(self):
-        parser = argparse.ArgumentParser(prog='rdk deploy')
-        parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to deploy.  Rule(s) will be pushed to AWS.')
-        parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
-        parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
-        parser.add_argument('-f','--functions-only', action='store_true', required=False, help="Only deploy Lambda functions.  Useful for cross-account deployments.")
-        parser.add_argument('--stack-name', required=False, help="Optional Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
-        self.args = parser.parse_args(self.args.command_args, self.args)
-
-        if self.args.stack_name and not self.args.functions_only:
-            print("--stack-name can only be specified when using the --functions-only feature.")
-            sys.exit(1)
-
-        if self.args.functions_only and not self.args.stack_name:
-            self.args.stack_name = "RDK-Config-Rule-Functions"
-
-        if self.args.rulesets:
-            self.args.rulesets = self.args.rulesets.split(',')
+        self.__parse_deploy_args()
 
         #get the rule names
         rule_names = self.__get_rule_list_for_command()
@@ -587,7 +624,6 @@ class rdk():
 
                 #wait for changes to propagate.
                 self.__wait_for_cfn_stack(my_cfn, self.args.stack_name)
-                print("CloudFormation stack deployment complete.")
 
             #We're done!  Return with great success.
             sys.exit(0)
@@ -1431,6 +1467,27 @@ class rdk():
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
 
+    def __parse_deploy_args(self, ForceArgument=False):
+        parser = argparse.ArgumentParser(prog='rdk deploy')
+        parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to deploy.  Rule(s) will be pushed to AWS.')
+        parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
+        parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
+        parser.add_argument('-f','--functions-only', action='store_true', required=False, help="Only deploy Lambda functions.  Useful for cross-account deployments.")
+        parser.add_argument('--stack-name', required=False, help="Optional Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
+        if ForceArgument:
+            parser.add_argument("--force", required=False, action='store_true', help='Remove selected Rules from account with prompting for confirmation.')
+        self.args = parser.parse_args(self.args.command_args, self.args)
+
+        if self.args.stack_name and not self.args.functions_only:
+            print("--stack-name can only be specified when using the --functions-only feature.")
+            sys.exit(1)
+
+        if self.args.functions_only and not self.args.stack_name:
+            self.args.stack_name = "RDK-Config-Rule-Functions"
+
+        if self.args.rulesets:
+            self.args.rulesets = self.args.rulesets.split(',')
+
     def __populate_params(self):
         #create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
@@ -1506,13 +1563,43 @@ class rdk():
     def __wait_for_cfn_stack(self, cfn_client, stackname):
         in_progress = True
         while in_progress:
-            my_stack = cfn_client.describe_stacks(StackName=stackname)
+            my_stacks = []
+            response = cfn_client.list_stacks()
 
-            if 'IN_PROGRESS' not in my_stack['Stacks'][0]['StackStatus']:
+            for stack in response["StackSummaries"]:
+                if stack['StackName'] == stackname:
+                    my_stacks.append(stack)
+
+            #Find the stack (if any) that hasn't already been deleted.
+            all_deleted = True
+            active_stack = None
+            for stack in my_stacks:
+                if stack['StackStatus'] != 'DELETE_COMPLETE':
+                    active_stack = stack
+                    all_deleted = False
+
+            #If all stacks have been deleted, clearly we're done!
+            if all_deleted:
                 in_progress = False
+                print("CloudFormation stack operation complete.")
+                continue
             else:
-                print("Waiting for CloudFormation stack operation to complete...")
-                time.sleep(5)
+                if 'FAILED' in active_stack['StackStatus']:
+                    in_progress = False
+                    print("CloudFormation stack operation Failed for " + stackname +".")
+                    if 'StackStatusReason' in active_stack:
+                        print("Reason: " + active_stack['StackStatusReason'])
+                elif active_stack['StackStatus'] == 'ROLLBACK_COMPLETE':
+                    in_progress = False
+                    print("CloudFormation stack operation Rolled Back for " + stackname +".")
+                    if 'StackStatusReason' in active_stack:
+                        print("Reason: " + active_stack['StackStatusReason'])
+                elif 'COMPLETE' in active_stack['StackStatus']:
+                    in_progress = False
+                    print("CloudFormation stack operation complete.")
+                else:
+                    print("Waiting for CloudFormation stack operation to complete...")
+                    time.sleep(5)
 
     def __get_handler(self, rule_name, params):
         if params['SourceRuntime'] in ['python2.7','python3.6','nodejs4.3','nodejs6.10']:
