@@ -1227,7 +1227,8 @@ class rdk():
 
         if self.args.ruleset:
             rules.sort()
-            print("Rules in", self.args.ruleset, ": ", *rules)
+            print("Rules in", self.args.ruleset, ": ")
+            print(*rules, sep="\n")
         else:
             deduped = list(set(rulesets))
             deduped.sort()
