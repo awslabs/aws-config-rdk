@@ -509,7 +509,8 @@ class rdk():
         for stack_name in deleted_stacks:
             self.__wait_for_cfn_stack(cfn_client, stack_name)
 
-        print("Rule removal complete, but local files have been preserved.  To re-deploy, use the 'deploy' command.")
+        print("Rule removal complete, but local files have been preserved.")
+        print("To re-deploy, use the 'deploy' command.")
 
     def deploy(self):
         self.__parse_deploy_args()
@@ -623,7 +624,6 @@ class rdk():
 
                 #wait for changes to propagate.
                 self.__wait_for_cfn_stack(my_cfn, self.args.stack_name)
-                print("CloudFormation stack deployment complete.")
 
             #We're done!  Return with great success.
             sys.exit(0)
@@ -1586,7 +1586,14 @@ class rdk():
             else:
                 if 'FAILED' in active_stack['StackStatus']:
                     in_progress = False
-                    print("CloudFormation stack operation Failed for " + stackname +".  Reason: " + active_stack['StackStatusReason'])
+                    print("CloudFormation stack operation Failed for " + stackname +".")
+                    if 'StackStatusReason' in active_stack:
+                        print("Reason: " + active_stack['StackStatusReason'])
+                elif active_stack['StackStatus'] == 'ROLLBACK_COMPLETE':
+                    in_progress = False
+                    print("CloudFormation stack operation Rolled Back for " + stackname +".")
+                    if 'StackStatusReason' in active_stack:
+                        print("Reason: " + active_stack['StackStatusReason'])
                 elif 'COMPLETE' in active_stack['StackStatus']:
                     in_progress = False
                     print("CloudFormation stack operation complete.")
