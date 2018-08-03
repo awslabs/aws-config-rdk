@@ -231,7 +231,7 @@ class rdk():
         if not self.args.force:
             confirmation = False
             while not confirmation:
-                my_input = input("Delete all Rules and remove Config setup?! (y/N): ")
+                my_input = raw_input("Delete all Rules and remove Config setup?! (y/N): ")
                 if my_input.lower() == "y":
                     confirmation = True
                 if my_input.lower() == "n" or my_input == "":
@@ -465,7 +465,7 @@ class rdk():
         if not self.args.force:
             confirmation = False
             while not confirmation:
-                my_input = input("Delete specified Rules and Lamdba Functions from your AWS Account? (y/N): ")
+                my_input = raw_input("Delete specified Rules and Lamdba Functions from your AWS Account? (y/N): ")
                 if my_input.lower() == "y":
                     confirmation = True
                 if my_input.lower() == "n" or my_input == "":
