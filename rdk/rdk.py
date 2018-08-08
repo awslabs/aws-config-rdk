@@ -643,7 +643,7 @@ class rdk():
             source_periodic = "NONE"
             if 'SourcePeriodic' in my_rule_params:
                 source_periodic = my_rule_params['SourcePeriodic']
-
+                
             my_params = [
                 {
                     'ParameterKey': 'RuleName',

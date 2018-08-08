@@ -98,20 +98,21 @@
           "Owner": "CUSTOM_LAMBDA",
           "SourceIdentifier": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
           "SourceDetails": [
+            {"Fn::If": [
+            "EventTriggered",
             {
               "EventSource": "aws.config",
               "MessageType": "ConfigurationItemChangeNotification"
             },
+            { "Ref": "AWS::NoValue"}]},
+            {"Fn::If": [
+            "PeriodicTriggered",
             {
               "EventSource": "aws.config",
               "MessageType": "ScheduledNotification",
-              "MaximumExecutionFrequency": {
-                "Fn::If": [ "PeriodicTriggered",
-                  { "Ref": "SourcePeriodic" } ,
-                  { "Ref": "AWS::NoValue" }
-                ]
-              }
-            }
+              "MaximumExecutionFrequency": { "Ref": "SourcePeriodic" }
+            },
+            { "Ref": "AWS::NoValue"}]}
           ]
         },
         "InputParameters": { "Ref": "SourceInputParameters" }
