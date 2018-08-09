@@ -1834,7 +1834,7 @@ class rdk():
             properties["MemorySize"] = "256"
             properties["Role"] = {"Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]}
             properties["Runtime"] = params["SourceRuntime"]
-            properties["Timeout"] = 60
+            properties["Timeout"] = 300
             lambda_function["Properties"] = properties
             resources[alphanum_rule_name+"LambdaFunction"] = lambda_function
 
