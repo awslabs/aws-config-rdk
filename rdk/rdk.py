@@ -614,9 +614,14 @@ class rdk():
             except ClientError as e:
                 #If we're in the exception, the stack does not exist and we should create it.
                 print ("Creating CloudFormation Stack for Lambda Functions.")
+
+                my_template_url_prefix = "https://s3-"
+                if my_session.region_name == "us-east-1":
+                    my_template_url_prefix = "https://s3."
+                    
                 response = my_cfn.create_stack(
                     StackName=self.args.stack_name,
-                    TemplateURL="https://s3-" + my_session.region_name + ".amazonaws.com/"+code_bucket_name+"/" + self.args.stack_name + ".json",
+                    TemplateURL=my_template_url_prefix + my_session.region_name + ".amazonaws.com/"+code_bucket_name+"/" + self.args.stack_name + ".json",
                     Parameters=cfn_params,
                     Capabilities=[
                         'CAPABILITY_IAM',
@@ -643,7 +648,7 @@ class rdk():
             source_periodic = "NONE"
             if 'SourcePeriodic' in my_rule_params:
                 source_periodic = my_rule_params['SourcePeriodic']
-                
+
             my_params = [
                 {
                     'ParameterKey': 'RuleName',
