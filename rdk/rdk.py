@@ -1116,20 +1116,23 @@ class rdk():
 
             #Create the SourceDetail.
             source = {}
-            source["SourceDetails"] = [
-                {
-                  "EventSource": "aws.config",
-                  "MessageType": "ConfigurationItemChangeNotification"
-                },
-                {
-                  "EventSource": "aws.config",
-                  "MessageType": "ScheduledNotification"
-                }
-            ]
+            source_details = []
+            if 'SourceEvents' in params:
+                source_details.append(
+                    {
+                        "EventSource": "aws.config",
+                        "MessageType": "ConfigurationItemChangeNotification"
+                    })
 
             #If there is a MaximumExecutionFrequency specified for the Rule, Generate the MEF clause.
             if 'SourcePeriodic' in params:
-                source["SourceDetails"][1]["MaximumExecutionFrequency"] = params['SourcePeriodic']
+                source_details.append(
+                    {
+                        "EventSource": "aws.config",
+                        "MessageType": "ScheduledNotification",
+                        "MaximumExecutionFrequency": params['SourcePeriodic']
+                    })
+            source["SourceDetails"] = source_details
 
             #If it's a Managed Rule it will have a SourceIdentifier string in the params and we need to set the source appropriately.  Otherwise, set the source to our custom lambda function.
             if 'SourceIdentifier' in params:
