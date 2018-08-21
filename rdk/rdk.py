@@ -1104,32 +1104,32 @@ class rdk():
                 config_rule["DependsOn"] = "DeliveryChannel"
 
             properties = {}
-
+            source = {}
+            source["SourceDetails"] = []
 
             properties["ConfigRuleName"] = rule_name
             properties["Description"] = rule_name
 
-            #If there are SourceEvents specified for the Rule, generate the Scope clause.
+            #Create the SourceDetails stanza.
             if 'SourceEvents' in params:
+                #If there are SourceEvents specified for the Rule, generate the Scope clause.
                 source_events = params['SourceEvents'].split(",")
                 properties["Scope"] = {"ComplianceResourceTypes": source_events}
 
-            #Create the SourceDetail.
-            source = {}
-            source["SourceDetails"] = [
+                #Also add the appropriate event source.
+                source["SourceDetails"].append(
                 {
                   "EventSource": "aws.config",
                   "MessageType": "ConfigurationItemChangeNotification"
-                },
-                {
-                  "EventSource": "aws.config",
-                  "MessageType": "ScheduledNotification"
-                }
-            ]
-
-            #If there is a MaximumExecutionFrequency specified for the Rule, Generate the MEF clause.
+                })
             if 'SourcePeriodic' in params:
-                source["SourceDetails"][1]["MaximumExecutionFrequency"] = params['SourcePeriodic']
+                source["SourceDetails"].append(
+                    {
+                      "EventSource": "aws.config",
+                      "MessageType": "ScheduledNotification",
+                      "MaximumExecutionFrequency": params["SourcePeriodic"]
+                    }
+                )
 
             #If it's a Managed Rule it will have a SourceIdentifier string in the params and we need to set the source appropriately.  Otherwise, set the source to our custom lambda function.
             if 'SourceIdentifier' in params:
