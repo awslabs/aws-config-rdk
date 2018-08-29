@@ -1429,12 +1429,21 @@ class rdk():
         runtime_group = parser.add_mutually_exclusive_group(required=is_required)
         runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0','dotnetcore2.0'])
         runtime_group.add_argument('--source-identifier', required=False, help="")
-        parser.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation', choices=accepted_resource_types)
+        parser.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
         parser.add_argument('-m','--maximum-frequency', required=False, help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
         parser.add_argument('-i','--input-parameters', help="[optional] JSON for required Config parameters.")
         parser.add_argument('--optional-parameters', help="[optional] JSON for optional Config parameters.")
         parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
         self.args = parser.parse_args(self.args.command_args, self.args)
+
+        resource_type_error = ""
+        if self.args.resource_types:
+            for resource_type in self.args.resource_types.split(','):
+                if resource_type not in accepted_resource_types:
+                    resource_type_error = resource_type_error + resource_type + " not found in list of accepted resource types.\n"
+            if resource_type_error:
+                print(resource_type_error)
+                sys.exit(1)
 
         if is_required and not self.args.resource_types and not self.args.maximum_frequency:
             print("You must specify either a resource type trigger or a maximum frequency.")
