@@ -1440,7 +1440,7 @@ class rdk():
         if self.args.resource_types:
             for resource_type in self.args.resource_types.split(','):
                 if resource_type not in accepted_resource_types:
-                    resource_type_error = resource_type_error + resource_type + " not found in list of accepted resource types.\n"
+                    resource_type_error = resource_type_error + ' "' + resource_type + '" not found in list of accepted resource types.\n'
             if resource_type_error:
                 print(resource_type_error)
                 sys.exit(1)
