@@ -25,6 +25,7 @@ setup(name='rdk',
           'boto3',
           'mock',
           'future',
+          'sphinxarg'
       ],
       scripts=['bin/rdk'],
       zip_safe=False,
