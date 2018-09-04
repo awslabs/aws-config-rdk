@@ -13,21 +13,8 @@ from rdk import rdk, __version__
 
 if __name__ == "__main__":
     #Set up command-line argument parser.
-    parser = argparse.ArgumentParser(
-        #formatter_class=argparse.RawDescriptionHelpFormatter,
-        description='CLI for authoring, deploying, and testing custom AWS Config rules.'
-        )
-    parser.add_argument('-p','--profile', help="[optional] indicate which Profile to use.")
-    parser.add_argument('-k','--access-key-id', help="[optional] Access Key ID to use.")
-    parser.add_argument('-s','--secret-access-key', help="[optional] Secret Access Key to use.")
-    parser.add_argument('-r','--region',help='Select the region to run against.')
-    #parser.add_argument('--verbose','-v', action='count')
-    #Removed for now from command choices: 'test-remote', 'status'
-    parser.add_argument('command', metavar='<command>', help='Command to run.  Choose one of init, create, modify, deploy, sample-ci, logs, rulesets.', choices=['init', 'create', 'modify', 'deploy', 'test-local', 'sample-ci', 'logs', 'rulesets', 'create-rule-template', 'clean', 'undeploy'])
-    parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
-    parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+__version__)
-    
-    args = parser.parse_args()
+
+    args = rdk.get_command_parser().parse_args()
 
     my_rdk = rdk.rdk(args)
     return_val = my_rdk.process_command()
