@@ -1,5 +1,5 @@
 /* override table width restrictions */
-@media screen and (min-width: 767px) {
+/*@media screen and (min-width: 767px) {
   .wy-table-responsive table td {
       white-space: normal !important;
   }
@@ -10,4 +10,4 @@
 
 .highlight {
   overflow: visible !important
-}
+}*/
