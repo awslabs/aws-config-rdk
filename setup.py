@@ -24,8 +24,7 @@ setup(name='rdk',
       install_requires=[
           'boto3',
           'mock',
-          'future',
-          'sphinxarg'
+          'future'
       ],
       scripts=['bin/rdk'],
       zip_safe=False,
