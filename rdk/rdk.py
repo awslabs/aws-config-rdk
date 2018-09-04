@@ -27,6 +27,7 @@ import subprocess
 from subprocess import call
 import fnmatch
 import unittest
+from rdk import MY_VERSION
 
 try:
     from unittest.mock import MagicMock, patch, ANY
@@ -59,40 +60,39 @@ accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::St
                         'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::WebACL', 'AWS::WAF::RuleGroup', 'AWS::WAFRegional::RateBasedRule', 'AWS::WAFRegional::Rule', 'AWS::WAFRegional::WebACL', 'AWS::WAFRegional::RuleGroup', 'AWS::XRay::EncryptionConfig', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::ElasticLoadBalancing::LoadBalancer',
                         'AWS::ElasticLoadBalancingV2::LoadBalancer']
 
-
 def get_command_parser():
     #This is needed to get sphinx to auto-generate the CLI documentation correctly.
-    if '__version__' not in globals():
-        __version__ = "<version>"
+    #if '__version__' not in globals() and '__version__' not in locals():
+    #    __version__ = "<version>"
 
     parser = argparse.ArgumentParser(
         #formatter_class=argparse.RawDescriptionHelpFormatter,
-        description='CLI for authoring, deploying, and testing custom AWS Config rules.'
+        description='The RDK is a command-line utility for authoring, deploying, and testing custom AWS Config rules.'
         )
     parser.add_argument('-p','--profile', help="[optional] indicate which Profile to use.")
     parser.add_argument('-k','--access-key-id', help="[optional] Access Key ID to use.")
     parser.add_argument('-s','--secret-access-key', help="[optional] Secret Access Key to use.")
-    parser.add_argument('-r','--region',help='Select the region to run against.')
+    parser.add_argument('-r','--region',help='Select the region to run the command in.')
     #parser.add_argument('--verbose','-v', action='count')
     #Removed for now from command choices: 'test-remote', 'status'
-    parser.add_argument('command', metavar='<command>', help='Command to run.  Choose one of init, create, modify, deploy, sample-ci, logs, rulesets.', choices=['init', 'create', 'modify', 'deploy', 'test-local', 'sample-ci', 'logs', 'rulesets', 'create-rule-template', 'clean', 'undeploy'])
+    parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy'])
     parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
-    parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+__version__)
+    parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
 
     return parser
 
 def get_init_parser():
     parser = argparse.ArgumentParser(
         prog='rdk init',
-        description = 'Sets up AWS Config and turn current directory into a rdk working directory.  This will enable configuration recording in AWS.')
+        description = 'Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.')
 
     return parser
 
 def get_clean_parser():
     parser = argparse.ArgumentParser(
         prog='rdk clean',
-        description = 'Removes AWS Config from the account.  This is a big deal!')
-    parser.add_argument("--force", required=False, action='store_true', help='Clean account with prompting for confirmation.')
+        description = 'Removes AWS Config from the account.  This will disable all Config rules and no configuration changes will be recorded!')
+    parser.add_argument("--force", required=False, action='store_true', help='[optional] Clean account without prompting for confirmation.')
 
     return parser
 
@@ -110,17 +110,18 @@ def get_rule_parser(is_required, command):
 
     parser = argparse.ArgumentParser(
         prog='rdk '+command,
-        usage="rdk "+command + " <rulename> " + usage_string
+        usage="rdk "+command + " <rulename> " + usage_string,
+        description="Rules are stored in their own directory along with their metadata.  This command is used to " + command + " the Rule and metadata."
     )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
     runtime_group = parser.add_mutually_exclusive_group(required=is_required)
     runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6','dotnetcore1.0','dotnetcore2.0'])
-    runtime_group.add_argument('--source-identifier', required=False, help="")
-    parser.add_argument('-r','--resource-types', required=False, help='Resource types that trigger event-based rule evaluation')
-    parser.add_argument('-m','--maximum-frequency', required=False, help='Maximum execution frequency', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
+    runtime_group.add_argument('--source-identifier', required=False, help="[optional] Used only for creating Managed Rules.")
+    parser.add_argument('-r','--resource-types', required=False, help='[optional] Resource types that will trigger event-based Rule evaluation')
+    parser.add_argument('-m','--maximum-frequency', required=False, help='[optional] Maximum execution frequency for scheduled Rules', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
     parser.add_argument('-i','--input-parameters', help="[optional] JSON for required Config parameters.")
     parser.add_argument('--optional-parameters', help="[optional] JSON for optional Config parameters.")
-    parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
+    parser.add_argument('-s','--rulesets', required=False, help='[optional] comma-delimited list of RuleSet names to add this Rule to')
     return parser
 
 def get_undeploy_parser():
@@ -130,57 +131,79 @@ def get_deploy_parser():
     return get_deployment_parser()
 
 def get_deployment_parser(ForceArgument=False, Command="deploy"):
-    parser = argparse.ArgumentParser(prog='rdk '+Command)
+    direction = "to"
+    if Command=="undeploy":
+        direction = "from"
+
+    parser = argparse.ArgumentParser(
+        prog='rdk '+Command,
+        description="Used to " + Command + " the Config Rule " + direction + " the target account."
+    )
     parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to deploy.  Rule(s) will be pushed to AWS.')
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
-    parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
-    parser.add_argument('-f','--functions-only', action='store_true', required=False, help="Only deploy Lambda functions.  Useful for cross-account deployments.")
-    parser.add_argument('--stack-name', required=False, help="Optional Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
+    parser.add_argument('-s','--rulesets', required=False, help='comma-delimited list of RuleSet names')
+    parser.add_argument('-f','--functions-only', action='store_true', required=False, help="[optional] Only deploy Lambda functions.  Useful for cross-account deployments.")
+    parser.add_argument('--stack-name', required=False, help="[optional] CloudFormation Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
     if ForceArgument:
-        parser.add_argument("--force", required=False, action='store_true', help='Remove selected Rules from account with prompting for confirmation.')
+        parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
     return parser
 
 def get_test_parser(command):
-    parser = argparse.ArgumentParser(prog='rdk '+command)
+    parser = argparse.ArgumentParser(
+        prog='rdk '+command,
+        description="Used to run tests on your Config Rule code."
+    )
     parser.add_argument('rulename', metavar='<rulename>[,<rulename>,...]', nargs='*', help='Rule name(s) to test')
     parser.add_argument('--all','-a', action='store_true', help="Test will be run against all rules in the working directory.")
     parser.add_argument('--test-ci-json', '-j', help="[optional] JSON for test CI for testing.")
     parser.add_argument('--test-ci-types', '-t', help="[optional] CI type to use for testing.")
-    parser.add_argument('--verbose', '-v', action='store_true', help='Enable full log output')
-    parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names')
+    parser.add_argument('--verbose', '-v', action='store_true', help='[optional] Enable full log output')
+    parser.add_argument('-s','--rulesets', required=False, help='[p[tional] comma-delimited list of RuleSet names')
     return parser
 
 def get_test_local_parser():
     return get_test_parser("test-local")
 
 def get_sample_ci_parser():
-    parser = argparse.ArgumentParser(prog='rdk sample-ci')
+    parser = argparse.ArgumentParser(
+        prog='rdk sample-ci',
+        description="Provides a way to see sample configuration items for most supported resource types."
+    )
     parser.add_argument('ci_type', metavar='<resource type>', help='Resource name (e.g. "AWS::EC2::Instance") to display a sample CI JSON document for.', choices=accepted_resource_types)
     return parser
 
 def get_logs_parser():
     parser = argparse.ArgumentParser(
-        prog='rdk logs', usage="rdk logs <rulename> [-n/--number NUMBER] [-f/--follow]")
+        prog='rdk logs',
+        usage="rdk logs <rulename> [-n/--number NUMBER] [-f/--follow]",
+        description="Displays CloudWatch logs for the Lambda Function for the specified Rule."
+    )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule whose logs will be displayed')
-    parser.add_argument('-f','--follow',  action='store_true', help='Continuously poll Lambda logs and write to stdout.')
-    parser.add_argument('-n','--number',  default=3, help='Number of previous logged events to display.')
+    parser.add_argument('-f','--follow',  action='store_true', help='[optional] Continuously poll Lambda logs and write to stdout.')
+    parser.add_argument('-n','--number',  default=3, help='[optional] Number of previous logged events to display.')
     return parser
 
 def get_rulesets_parser():
     parser = argparse.ArgumentParser(
-        prog='rdk rulesets', usage="rdk rulesets [list | [ [ add | remove ] <ruleset> <rulename> ]")
+        prog='rdk rulesets',
+        usage="rdk rulesets [list | [ [ add | remove ] <ruleset> <rulename> ]",
+        description="Used to describe and manipulate RuleSet tags on Rules."
+    )
     parser.add_argument('subcommand', help="One of list, add, or remove")
-    parser.add_argument('ruleset', nargs='?')
-    parser.add_argument('rulename', nargs='?')
+    parser.add_argument('ruleset', nargs='?', help="Name of RuleSet")
+    parser.add_argument('rulename', nargs='?', help="Name of Rule to be added or removed")
     return parser
 
 def get_create_rule_template_parser():
-    parser = argparse.ArgumentParser(prog='rdk create-rule-template')
+    parser = argparse.ArgumentParser(
+        prog='rdk create-rule-template',
+        description="Outputs a CloudFormation template that can be used to deploy Config Rules in other AWS Accounts."
+    )
     parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to include in template.  A CloudFormation template will be created, but Rule(s) will not be pushed to AWS.')
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be included in the generated CloudFormation template.")
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names to be included in the generated template.')
     parser.add_argument('-o','--output-file', required=True, default="RDK-Config-Rules", help="filename of generated CloudFormation template")
-    parser.add_argument('--rules-only', action="store_true", help="Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
+    parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
     return parser
 
 class rdk:
