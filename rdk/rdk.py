@@ -27,7 +27,12 @@ import subprocess
 from subprocess import call
 import fnmatch
 import unittest
-from rdk import MY_VERSION
+
+#sphinx-argparse is a delight.
+try:
+    from rdk import MY_VERSION
+except ImportError:
+    print("This is fine.")
 
 try:
     from unittest.mock import MagicMock, patch, ANY
@@ -62,8 +67,8 @@ accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::St
 
 def get_command_parser():
     #This is needed to get sphinx to auto-generate the CLI documentation correctly.
-    #if '__version__' not in globals() and '__version__' not in locals():
-    #    __version__ = "<version>"
+    if '__version__' not in globals() and '__version__' not in locals():
+        __version__ = "<version>"
 
     parser = argparse.ArgumentParser(
         #formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -77,7 +82,7 @@ def get_command_parser():
     #Removed for now from command choices: 'test-remote', 'status'
     parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy'])
     parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
-    parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
+    #parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
 
     return parser
 
