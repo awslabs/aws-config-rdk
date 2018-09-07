@@ -685,7 +685,7 @@ class rdk:
             #Write template to S3
             my_s3_client = my_session.client('s3')
             my_s3_client.put_object(
-                Body=bytes(function_template, 'utf-8'),
+                Body=bytes(function_template).encode('utf-8'),
                 Bucket=code_bucket_name,
                 Key=self.args.stack_name + ".json"
             )
