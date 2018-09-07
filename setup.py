@@ -6,6 +6,7 @@
 #
 #    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 import rdk
+from rdk import MY_VERSION
 from setuptools import setup
 
 def readme():
@@ -13,7 +14,7 @@ def readme():
         return f.read()
 
 setup(name='rdk',
-      version=rdk.__version__,
+      version=MY_VERSION,
       description='Rule Development Kit CLI for AWS Config',
       long_description=readme(),
       url='https://github.com/awslabs/aws-config-rdk/',
@@ -24,7 +25,7 @@ setup(name='rdk',
       install_requires=[
           'boto3',
           'mock',
-          'future',
+          'future'
       ],
       scripts=['bin/rdk'],
       zip_safe=False,
