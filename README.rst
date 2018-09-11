@@ -6,6 +6,7 @@ This tool should be considered in "Open Beta".  I would greatly appreciate feedb
 The RDK is designed to support a "Compliance-as-Code" workflow that is intuitive and productive.  It abstracts away much of the undifferentiated heavy lifting associated with deploying AWS Config rules backed by custom lambda functions, and provides a streamlined develop-deploy-monitor iterative process.
 
 For complete documentation, including command reference, check out the `ReadTheDocs documentation <https://rdk.readthedocs.io/en/latest/>`_.
+
 Getting Started
 ===============
 Uses python 2.7/3.6 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
