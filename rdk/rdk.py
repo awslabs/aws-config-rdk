@@ -32,7 +32,7 @@ import unittest
 try:
     from rdk import MY_VERSION
 except ImportError:
-    print("This is fine.")
+    pass
 
 try:
     from unittest.mock import MagicMock, patch, ANY
