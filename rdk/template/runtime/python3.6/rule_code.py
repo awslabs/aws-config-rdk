@@ -331,8 +331,13 @@ def lambda_handler(event, context):
     if resultToken == 'TESTMODE':
         # Used solely for RDK test to skip actual put_evaluation API call
         testMode = True
+
     # Invoke the Config API to report the result of the evaluation
-    AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluations, ResultToken=resultToken, TestMode=testMode)
+    c = 0
+    while c < len(evaluations):
+        AWS_CONFIG_CLIENT.put_evaluations(Evaluations=evaluations[c, c+100], ResultToken=resultToken, TestMode=testMode)
+        c += 100
+
     # Used solely for RDK test to be able to test Lambda function
     return evaluations
 
