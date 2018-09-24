@@ -1308,6 +1308,14 @@ class rdk:
         template["Metadata"] = {
             "AWS::CloudFormation::Interface": {
                 "ParameterGroups": [
+                    {
+                        "Label": {
+                            "default": "Lambda Account ID"
+                        },
+                        "Parameters": [
+                            "LambdaAccountId"
+                        ]
+                    },
                     required_parameter_group,
                     optional_parameter_group
                 ]
