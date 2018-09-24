@@ -1,0 +1,30 @@
+{
+  "version": "1.3",
+  "accountId": "212591712841",
+  "configurationItemCaptureTime": "2018-09-18T17:42:35.043Z",
+  "configurationItemStatus": "OK",
+  "configurationStateId": "1519183538560",
+  "configurationItemMD5Hash": "",
+  "arn": "arn:aws:cloudtrail:ap-southeast-1:123456789012:trail/APJCCloudTrail",
+  "resourceType": "AWS::CloudTrail::Trail",
+  "resourceId": "APJCCloudTrail",
+  "awsRegion": "ap-southeast-1",
+  "availabilityZone": "Regional",
+  "tags": {},
+  "relatedEvents": [],
+  "relationships": [],
+  "configuration": {
+    "name": "APJCCloudTrail",
+    "s3BucketName": "mborch-apjc-cloudtrail-bucket",
+    "s3KeyPrefix": "CloudTrail",
+    "includeGlobalServiceEvents": true,
+    "isMultiRegionTrail": true,
+    "homeRegion": "ap-southeast-1",
+    "trailARN": "arn:aws:cloudtrail:ap-southeast-1:123456789012:trail/APJCCloudTrail",
+    "logFileValidationEnabled": true,
+    "hasCustomEventSelectors": true
+  },
+  "supplementaryConfiguration": {
+    "Tags": []
+  }
+}
