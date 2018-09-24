@@ -215,6 +215,10 @@ class rdk:
     def __init__(self, args):
         self.args = args
 
+    @staticmethod
+    def get_command_parser(self):
+        return get_commmand_parser()
+
     def process_command(self):
         method_to_call = getattr(self, self.args.command.replace('-','_'))
         exit_code = method_to_call()
@@ -585,6 +589,9 @@ class rdk:
         if not self.args.input_parameters and 'InputParameters' in old_params['Parameters']:
             self.args.input_parameters = old_params['Parameters']['InputParameters']
 
+        if not self.args.optional_parameters and 'OptionalParameters' in old_params['Parameters']:
+            self.args.optional_parameters = old_params['Parameters']['OptionalParameters']
+
         if not self.args.source_identifier and 'SourceIdentifier' in old_params['Parameters']:
             self.args.source_identifier = old_params['Parameters']['SourceIdentifier']
 
@@ -685,7 +692,7 @@ class rdk:
             #Write template to S3
             my_s3_client = my_session.client('s3')
             my_s3_client.put_object(
-                Body=bytes(function_template).encode('utf-8'),
+                Body=bytes(function_template.encode('utf-8')),
                 Bucket=code_bucket_name,
                 Key=self.args.stack_name + ".json"
             )
@@ -777,6 +784,13 @@ class rdk:
             s3_src = ""
             s3_dst = self.__upload_function_code(rule_name, my_rule_params, account_id, my_session, code_bucket_name)
 
+            combined_input_parameters = {}
+            if 'InputParameters' in my_rule_params:
+                combined_input_parameters.update(json.loads(my_rule_params['InputParameters']))
+
+            if 'OptionalParameters' in my_rule_params:
+                combined_input_parameters.update(json.loads(my_rule_params['OptionalParameters']))
+
             #create CFN Parameters
             source_events = "NONE"
             if 'SourceEvents' in my_rule_params:
@@ -813,7 +827,7 @@ class rdk:
                 },
                 {
                     'ParameterKey': 'SourceInputParameters',
-                    'ParameterValue': my_rule_params['InputParameters'],
+                    'ParameterValue': json.dumps(combined_input_parameters),
                 },
                 {
                     'ParameterKey': 'SourceHandler',
@@ -1179,7 +1193,11 @@ class rdk:
             for input_param in input_params:
                 cfn_param = {}
                 cfn_param["Description"] = "Pass-through to required Input Parameter " + input_param + " for Config Rule " + rule_name
-                cfn_param["Default"] = input_params[input_param]
+                if len(input_params[input_param].strip()) == 0:
+                    default = "<REQUIRED>"
+                else:
+                    default = input_params[input_param]
+                cfn_param["Default"] = default
                 cfn_param["Type"] = "String"
                 cfn_param["MinLength"] = 1
                 cfn_param["ConstraintDescription"] = "This parameter is required."
@@ -1290,6 +1308,14 @@ class rdk:
         template["Metadata"] = {
             "AWS::CloudFormation::Interface": {
                 "ParameterGroups": [
+                    {
+                        "Label": {
+                            "default": "Lambda Account ID"
+                        },
+                        "Parameters": [
+                            "LambdaAccountId"
+                        ]
+                    },
                     required_parameter_group,
                     optional_parameter_group
                 ]
