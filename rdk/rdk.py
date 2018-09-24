@@ -464,7 +464,7 @@ class rdk:
         self.args.all = True
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
-            my_stack_name = self.__get_alphanumeric_rule_name(rule_name)
+            my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
             try:
                 cfn_client.delete_stack(StackName=my_stack_name)
             except Exception as e:
@@ -638,8 +638,8 @@ class rdk:
 
         for rule_name in rule_names:
             try:
-                cfn_client.delete_stack(StackName=self.__get_alphanumeric_rule_name(rule_name))
-                deleted_stacks.append(self.__get_alphanumeric_rule_name(rule_name))
+                cfn_client.delete_stack(StackName=self.__get_stack_name_from_rule_name(rule_name))
+                deleted_stacks.append(self.__get_stack_name_from_rule_name(rule_name))
             except ClientError as ce:
                 print("Client Error encountered attempting to delete CloudFormation stack for Rule: " + str(ce))
             except Exception as e:
@@ -668,6 +668,7 @@ class rdk:
         #get accountID
         identity_details = self.__get_caller_identity_details(my_session)
         account_id = identity_details['account_id']
+        partition = identity_details['partition']
 
         code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
 
@@ -687,7 +688,7 @@ class rdk:
             #Write template to S3
             my_s3_client = my_session.client('s3')
             my_s3_client.put_object(
-                Body=bytes(function_template).encode('utf-8'),
+                Body=bytes(function_template, 'utf-8'),
                 Bucket=code_bucket_name,
                 Key=self.args.stack_name + ".json"
             )
@@ -744,7 +745,7 @@ class rdk:
 
                 #Push lambda code to functions.
                 for rule_name in rule_names:
-                    my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name, my_session.region_name, account_id)
+                    my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name, partition, my_session.region_name, account_id)
                     rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
                     if 'SourceIdentifier' in rule_params:
                         print("Skipping Lambda upload for Managed Rule.")
@@ -835,7 +836,7 @@ class rdk:
             cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRule.json")
             my_cfn = my_session.client('cloudformation')
             try:
-                my_stack_name = self.__get_alphanumeric_rule_name(rule_name)
+                my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
                 my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
                 #If we've gotten here, stack exists and we should update it.
                 print ("Updating CloudFormation Stack for " + rule_name)
@@ -954,8 +955,8 @@ class rdk:
                 test_event['ruleParameters'] = json.dumps(my_parameters)
 
                 #Get the Lambda function associated with the Rule
-                my_stack_name = self.__get_alphanumeric_rule_name(rule_name)
-                my_lambda_arn = self.__get_lambda_arn_for_stack(my_stack_name)
+                my_lambda_name = self.__get_stack_name_from_rule_name(rule_name)
+                my_lambda_arn = self.__get_lambda_arn_for_stack(my_lambda_name)
 
                 #Call Lambda function with test event.
                 result = my_lambda_client.invoke(
@@ -1271,7 +1272,7 @@ class rdk:
                 del source["SourceDetails"]
             else:
                 source["Owner"] = "CUSTOM_LAMBDA"
-                source["SourceIdentifier"] = { "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_alphanumeric_rule_name(rule_name) }
+                source["SourceIdentifier"] = { "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_stack_name_from_rule_name(rule_name) }
 
             properties["Source"] = source
 
@@ -1504,7 +1505,7 @@ class rdk:
         return output
 
     def __get_alphanumeric_rule_name(self, rule_name):
-        output = rule_name.replace("_","")
+        output = rule_name.replace("_","").replace("-","")
 
         return output
 
@@ -1800,8 +1801,8 @@ class rdk:
 
         return my_lambda_arn
 
-    def __get_lambda_arn_for_rule(self, rule_name, region, account):
-        return "arn:${AWS::Partition}:lambda:{}:{}:function:RDK-Rule-Function-{}".format(region, account, self.__get_alphanumeric_rule_name(rule_name))
+    def __get_lambda_arn_for_rule(self, rule_name, partition, region, account):
+        return "arn:{}:lambda:{}:{}:function:RDK-Rule-Function-{}".format(partition, region, account, self.__get_stack_name_from_rule_name(rule_name))
 
     def __delete_package_file(self, file):
         try:
@@ -1953,13 +1954,14 @@ class rdk:
             ]
           }
         } ]
-        lambda_role["Properties"]["ManagedPolicyArns"] = ["arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"]
+        lambda_role["Properties"]["ManagedPolicyArns"] = [{"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}]
         resources["rdkLambdaRole"] = lambda_role
 
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             alphanum_rule_name = self.__get_alphanumeric_rule_name(rule_name)
-            params = self.__get_rule_parameters(rule_name)
+            stack_name = self.__get_stack_name_from_rule_name(rule_name)
+            params, tags = self.__get_rule_parameters(rule_name)
 
             if 'SourceIdentifier' in params:
                 print("Skipping Managed Rule.")
@@ -1969,7 +1971,7 @@ class rdk:
             lambda_function["Type"] = "AWS::Lambda::Function"
             lambda_function["DependsOn"] = "rdkLambdaRole"
             properties = {}
-            properties["FunctionName"] = "RDK-Rule-Function-" + alphanum_rule_name
+            properties["FunctionName"] = "RDK-Rule-Function-" + stack_name
             properties["Code"] = {"S3Bucket": { "Ref": "SourceBucket"}, "S3Key": rule_name+"/"+rule_name+".zip"}
             properties["Description"] = "Function for AWS Config Rule " + rule_name
             properties["Handler"] = self.__get_handler(rule_name, params)
