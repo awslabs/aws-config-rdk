@@ -865,7 +865,6 @@ class rdk:
                     }
 
                     # If no tags key is specified, or if the tags dict is empty
-                    print(cfn_tags)
                     if cfn_tags is not None:
                         cfn_args['Tags'] = cfn_tags
 
