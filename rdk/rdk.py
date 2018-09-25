@@ -32,6 +32,7 @@ import unittest
 try:
     from rdk import MY_VERSION
 except ImportError:
+    MY_VERSION = "<version>"
     pass
 
 try:
@@ -82,7 +83,7 @@ def get_command_parser():
     #Removed for now from command choices: 'test-remote', 'status'
     parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy'])
     parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
-    #parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
+    parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
 
     return parser
 
@@ -325,7 +326,7 @@ class rdk:
 
         #create or update config recorder
         if not config_role_arn:
-            config_role_arn = "arn:' + partition + ':iam::" + account_id + ":role/rdk/config-role"
+            config_role_arn = "arn:" + partition + ":iam::" + account_id + ":role/rdk/config-role"
 
         my_config.put_configuration_recorder(ConfigurationRecorder={'name':config_recorder_name, 'roleARN':config_role_arn, 'recordingGroup':{'allSupported':True, 'includeGlobalResourceTypes': True}})
 
@@ -797,11 +798,11 @@ class rdk:
             s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
 
             combined_input_parameters = {}
-            if 'InputParameters' in my_rule_params:
-                combined_input_parameters.update(json.loads(my_rule_params['InputParameters']))
+            if 'InputParameters' in rule_params:
+                combined_input_parameters.update(json.loads(rule_params['InputParameters']))
 
-            if 'OptionalParameters' in my_rule_params:
-                combined_input_parameters.update(json.loads(my_rule_params['OptionalParameters']))
+            if 'OptionalParameters' in rule_params:
+                combined_input_parameters.update(json.loads(rule_params['OptionalParameters']))
 
             #create CFN Parameters
             source_events = "NONE"
@@ -844,7 +845,7 @@ class rdk:
                 {
                     'ParameterKey': 'SourceHandler',
                     'ParameterValue': self.__get_handler(rule_name, rule_params)
-                    
+
                 }]
 
             #deploy config rule
