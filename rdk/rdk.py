@@ -32,6 +32,7 @@ import unittest
 try:
     from rdk import MY_VERSION
 except ImportError:
+    MY_VERSION = "<version>"
     pass
 
 try:
@@ -82,7 +83,7 @@ def get_command_parser():
     #Removed for now from command choices: 'test-remote', 'status'
     parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy'])
     parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
-    #parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
+    parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
 
     return parser
 
@@ -108,7 +109,7 @@ def get_modify_parser():
     return get_rule_parser(False, "modify")
 
 def get_rule_parser(is_required, command):
-    usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--rulesets <RuleSet tags>]"
+    usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--tags <tags JSON>] [--rulesets <RuleSet tags>]"
 
     if is_required:
         usage_string = "--runtime <runtime> [ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--rulesets <RuleSet tags>]"
@@ -126,6 +127,7 @@ def get_rule_parser(is_required, command):
     parser.add_argument('-m','--maximum-frequency', required=False, help='[optional] Maximum execution frequency for scheduled Rules', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
     parser.add_argument('-i','--input-parameters', help="[optional] JSON for required Config parameters.")
     parser.add_argument('--optional-parameters', help="[optional] JSON for optional Config parameters.")
+    parser.add_argument('--tags', help="[optional] JSON for tags to be applied to all CFN created resources.")
     parser.add_argument('-s','--rulesets', required=False, help='[optional] comma-delimited list of RuleSet names to add this Rule to')
     return parser
 
@@ -238,10 +240,10 @@ class rdk:
         #Create our ConfigService client
         my_config = my_session.client('config')
 
-        #get accountID
-        my_sts = my_session.client('sts')
-        response = my_sts.get_caller_identity()
-        account_id = response['Account']
+        #get accountID, AWS partition (e.g. aws or aws-us-gov), region (us-east-1, us-gov-west-1)
+        identity_details = self.__get_caller_identity_details(my_session)
+        account_id = identity_details['account_id']
+        partition = identity_details['partition']
 
         config_recorder_exists = False
         config_recorder_name = "default"
@@ -312,8 +314,8 @@ class rdk:
                 my_iam.create_role(RoleName=config_role_name, AssumeRolePolicyDocument=json.dumps(assume_role_policy), Path="/rdk/")
 
             #attach role policy
-            my_iam.attach_role_policy(RoleName=config_role_name, PolicyArn='arn:aws:iam::aws:policy/service-role/AWSConfigRole')
-            my_iam.attach_role_policy(RoleName=config_role_name, PolicyArn='arn:aws:iam::aws:policy/ReadOnlyAccess')
+            my_iam.attach_role_policy(RoleName=config_role_name, PolicyArn='arn:' + partition + ':iam::aws:policy/service-role/AWSConfigRole')
+            my_iam.attach_role_policy(RoleName=config_role_name, PolicyArn='arn:' + partition + ':iam::aws:policy/ReadOnlyAccess')
             policy_template = open(os.path.join(path.dirname(__file__), 'template', delivery_permission_policy_file), 'r').read()
             delivery_permissions_policy = policy_template.replace('ACCOUNTID', account_id)
             my_iam.put_role_policy(RoleName=config_role_name, PolicyName='ConfigDeliveryPermissions', PolicyDocument=delivery_permissions_policy)
@@ -324,7 +326,7 @@ class rdk:
 
         #create or update config recorder
         if not config_role_arn:
-            config_role_arn = "arn:aws:iam::"+account_id+":role/rdk/config-role"
+            config_role_arn = "arn:" + partition + ":iam::" + account_id + ":role/rdk/config-role"
 
         my_config.put_configuration_recorder(ConfigurationRecorder={'name':config_recorder_name, 'roleARN':config_role_arn, 'recordingGroup':{'allSupported':True, 'includeGlobalResourceTypes': True}})
 
@@ -395,9 +397,8 @@ class rdk:
         cfn_client = my_session.client('cloudformation')
 
         #get accountID
-        my_sts = my_session.client('sts')
-        response = my_sts.get_caller_identity()
-        account_id = response['Account']
+        identity_details = self.__get_caller_identity_details(my_session)
+        account_id = identity_details['account_id']
 
         config_recorder_name = ""
         config_role_arn = ""
@@ -468,7 +469,7 @@ class rdk:
         self.args.all = True
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
-            my_stack_name = self.__get_alphanumeric_rule_name(rule_name)
+            my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
             try:
                 cfn_client.delete_stack(StackName=my_stack_name)
             except Exception as e:
@@ -595,6 +596,9 @@ class rdk:
         if not self.args.source_identifier and 'SourceIdentifier' in old_params['Parameters']:
             self.args.source_identifier = old_params['Parameters']['SourceIdentifier']
 
+        if not self.args.tags and old_params['Tags']:
+            self.args.tags = old_params['Tags']
+
         if 'RuleSets' in old_params['Parameters']:
             if not self.args.rulesets:
                 self.args.rulesets = old_params['Parameters']['RuleSets']
@@ -642,8 +646,8 @@ class rdk:
 
         for rule_name in rule_names:
             try:
-                cfn_client.delete_stack(StackName=self.__get_alphanumeric_rule_name(rule_name))
-                deleted_stacks.append(self.__get_alphanumeric_rule_name(rule_name))
+                cfn_client.delete_stack(StackName=self.__get_stack_name_from_rule_name(rule_name))
+                deleted_stacks.append(self.__get_stack_name_from_rule_name(rule_name))
             except ClientError as ce:
                 print("Client Error encountered attempting to delete CloudFormation stack for Rule: " + str(ce))
             except Exception as e:
@@ -670,9 +674,9 @@ class rdk:
         my_session = self.__get_boto_session()
 
         #get accountID
-        my_sts = my_session.client('sts')
-        response = my_sts.get_caller_identity()
-        account_id = response['Account']
+        identity_details = self.__get_caller_identity_details(my_session)
+        account_id = identity_details['account_id']
+        partition = identity_details['partition']
 
         code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
 
@@ -700,7 +704,7 @@ class rdk:
             #Package code and push to S3
             s3_code_objects = {}
             for rule_name in rule_names:
-                rule_params = self.__get_rule_parameters(rule_name)
+                rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
                 if 'SourceIdentifier' in rule_params:
                     print("Skipping code packaging for Managed Rule.")
                 else:
@@ -719,14 +723,19 @@ class rdk:
                 #If we've gotten here, stack exists and we should update it.
                 print ("Updating CloudFormation Stack for Lambda functions.")
                 try:
-                    response = my_cfn.update_stack(
-                        StackName=self.args.stack_name,
-                        TemplateURL=my_template_url_prefix + my_session.region_name + ".amazonaws.com/"+code_bucket_name+"/" + self.args.stack_name + ".json",
-                        Parameters=cfn_params,
-                        Capabilities=[
-                            'CAPABILITY_IAM',
-                        ],
-                    )
+
+                    cfn_args = {
+                        'StackName': self.args.stack_name,
+                        'TemplateURL': my_template_url_prefix + my_session.region_name + ".amazonaws.com/" + code_bucket_name + "/" + self.args.stack_name + ".json",
+                        'Parameters': cfn_params,
+                        'Capabilities': [ 'CAPABILITY_IAM' ]
+                    }
+
+                    # If no tags key is specified, or if the tags dict is empty
+                    if cfn_tags is not None:
+                        cfn_args['Tags'] = cfn_tags
+
+                    response = my_cfn.update_stack(**cfn_args)
 
                     #wait for changes to propagate.
                     self.__wait_for_cfn_stack(my_cfn, self.args.stack_name)
@@ -744,8 +753,8 @@ class rdk:
 
                 #Push lambda code to functions.
                 for rule_name in rule_names:
-                    my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name, my_session.region_name, account_id)
-                    rule_params = self.__get_rule_parameters(rule_name)
+                    my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name, partition, my_session.region_name, account_id)
+                    rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
                     if 'SourceIdentifier' in rule_params:
                         print("Skipping Lambda upload for Managed Rule.")
                         continue
@@ -763,14 +772,18 @@ class rdk:
                 #If we're in the exception, the stack does not exist and we should create it.
                 print ("Creating CloudFormation Stack for Lambda Functions.")
 
-                response = my_cfn.create_stack(
-                    StackName=self.args.stack_name,
-                    TemplateURL=my_template_url_prefix + my_session.region_name + ".amazonaws.com/"+code_bucket_name+"/" + self.args.stack_name + ".json",
-                    Parameters=cfn_params,
-                    Capabilities=[
-                        'CAPABILITY_IAM',
-                    ],
-                )
+                cfn_args = {
+                    'StackName': self.args.stack_name,
+                    'TemplateURL': my_template_url_prefix + my_session.region_name + ".amazonaws.com/" + code_bucket_name + "/" + self.args.stack_name + ".json",
+                    'Parameters': cfn_params,
+                    'Capabilities': ['CAPABILITY_IAM']
+                }
+
+                # If no tags key is specified, or if the tags dict is empty
+                if cfn_tags is not None:
+                    cfn_args['Tags'] = cfn_tags
+
+                response = my_cfn.create_stack(**cfn_args)
 
                 #wait for changes to propagate.
                 self.__wait_for_cfn_stack(my_cfn, self.args.stack_name)
@@ -780,25 +793,25 @@ class rdk:
 
         #If we're deploying both the functions and the Config rules, run the following process:
         for rule_name in rule_names:
-            my_rule_params = self.__get_rule_parameters(rule_name)
+            rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
             s3_src = ""
-            s3_dst = self.__upload_function_code(rule_name, my_rule_params, account_id, my_session, code_bucket_name)
+            s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
 
             combined_input_parameters = {}
-            if 'InputParameters' in my_rule_params:
-                combined_input_parameters.update(json.loads(my_rule_params['InputParameters']))
+            if 'InputParameters' in rule_params:
+                combined_input_parameters.update(json.loads(rule_params['InputParameters']))
 
-            if 'OptionalParameters' in my_rule_params:
-                combined_input_parameters.update(json.loads(my_rule_params['OptionalParameters']))
+            if 'OptionalParameters' in rule_params:
+                combined_input_parameters.update(json.loads(rule_params['OptionalParameters']))
 
             #create CFN Parameters
             source_events = "NONE"
-            if 'SourceEvents' in my_rule_params:
-                source_events = my_rule_params['SourceEvents']
+            if 'SourceEvents' in rule_params:
+                source_events = rule_params['SourceEvents']
 
             source_periodic = "NONE"
-            if 'SourcePeriodic' in my_rule_params:
-                source_periodic = my_rule_params['SourcePeriodic']
+            if 'SourcePeriodic' in rule_params:
+                source_periodic = rule_params['SourcePeriodic']
 
             my_params = [
                 {
@@ -815,7 +828,7 @@ class rdk:
                 },
                 {
                     'ParameterKey': 'SourceRuntime',
-                    'ParameterValue': my_rule_params['SourceRuntime'],
+                    'ParameterValue': rule_params['SourceRuntime'],
                 },
                 {
                     'ParameterKey': 'SourceEvents',
@@ -831,27 +844,31 @@ class rdk:
                 },
                 {
                     'ParameterKey': 'SourceHandler',
-                    'ParameterValue': self.__get_handler(rule_name, my_rule_params)
+                    'ParameterValue': self.__get_handler(rule_name, rule_params)
+
                 }]
 
             #deploy config rule
             cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRule.json")
             my_cfn = my_session.client('cloudformation')
-
             try:
-                my_stack_name = self.__get_alphanumeric_rule_name(rule_name)
+                my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
                 my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
                 #If we've gotten here, stack exists and we should update it.
                 print ("Updating CloudFormation Stack for " + rule_name)
                 try:
-                    response = my_cfn.update_stack(
-                        StackName=my_stack_name,
-                        TemplateBody=open(cfn_body, "r").read(),
-                        Parameters=my_params,
-                        Capabilities=[
-                            'CAPABILITY_IAM',
-                        ],
-                    )
+                    cfn_args = {
+                        'StackName': my_stack_name,
+                        'TemplateBody': open(cfn_body, "r").read(),
+                        'Parameters': my_params,
+                        'Capabilities': ['CAPABILITY_IAM']
+                    }
+
+                    # If no tags key is specified, or if the tags dict is empty
+                    if cfn_tags is not None:
+                        cfn_args['Tags'] = cfn_tags
+
+                    response = my_cfn.update_stack(**cfn_args)
                 except ClientError as e:
                     if e.response['Error']['Code'] == 'ValidationError':
                         if 'No updates are to be performed.' in str(e):
@@ -878,14 +895,17 @@ class rdk:
             except ClientError as e:
                 #If we're in the exception, the stack does not exist and we should create it.
                 print ("Creating CloudFormation Stack for " + rule_name)
-                response = my_cfn.create_stack(
-                    StackName=my_stack_name,
-                    TemplateBody=open(cfn_body, "r").read(),
-                    Parameters=my_params,
-                    Capabilities=[
-                        'CAPABILITY_IAM',
-                    ],
-                )
+                cfn_args = {
+                    'StackName': my_stack_name,
+                    'TemplateBody': open(cfn_body, "r").read(),
+                    'Parameters': my_params,
+                    'Capabilities': ['CAPABILITY_IAM']
+                }
+
+                if cfn_tags is not None:
+                    cfn_args['Tags'] = cfn_tags
+
+                response = my_cfn.create_stack(**cfn_args)
 
             #wait for changes to propagate.
             self.__wait_for_cfn_stack(my_cfn, my_stack_name)
@@ -904,7 +924,7 @@ class rdk:
         rule_names = self.__get_rule_list_for_command()
 
         for rule_name in rule_names:
-            rule_params = self.__get_rule_parameters(rule_name)
+            rule_params, rule_tags = self.__get_rule_parameters(rule_name)
             if rule_params['SourceRuntime'] not in ('python2.7','python3.6'):
                 print ("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
@@ -951,8 +971,8 @@ class rdk:
                 test_event['ruleParameters'] = json.dumps(my_parameters)
 
                 #Get the Lambda function associated with the Rule
-                my_stack_name = self.__get_alphanumeric_rule_name(rule_name)
-                my_lambda_arn = self.__get_lambda_arn_for_stack(my_stack_name)
+                my_lambda_name = self.__get_stack_name_from_rule_name(rule_name)
+                my_lambda_arn = self.__get_lambda_arn_for_stack(my_lambda_name)
 
                 #Call Lambda function with test event.
                 result = my_lambda_client.invoke(
@@ -1100,8 +1120,8 @@ class rdk:
                 "RoleName": config_role_name,
                 "Path": "/rdk/",
                 "ManagedPolicyArns": [
-                    "arn:aws:iam::aws:policy/service-role/AWSConfigRole",
-                    "arn:aws:iam::aws:policy/ReadOnlyAccess"
+                    "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSConfigRole",
+                    "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"
                 ],
                 "AssumeRolePolicyDocument": {
                     "Version": "2012-10-17",
@@ -1120,7 +1140,7 @@ class rdk:
                             "Sid": "REMOTE",
                             "Effect": "Allow",
                             "Principal": {
-                                "AWS": {"Fn::Sub": "arn:aws:iam::${LambdaAccountId}:root"}
+                                "AWS": {"Fn::Sub": "arn:${AWS::Partition}:iam::${LambdaAccountId}:root"}
                             },
                             "Action": "sts:AssumeRole"
                         }
@@ -1135,7 +1155,7 @@ class rdk:
                                 {
                                     "Effect": "Allow",
                                     "Action": "s3:PutObject*",
-                                    "Resource": { "Fn::Sub": "arn:aws:s3:::${ConfigBucket}/AWSLogs/${AWS::AccountId}/*" },
+                                    "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${ConfigBucket}/AWSLogs/${AWS::AccountId}/*" },
                                     "Condition": {
                                         "StringLike": {
                                             "s3:x-amz-acl": "bucket-owner-full-control"
@@ -1145,7 +1165,7 @@ class rdk:
                                 {
                                     "Effect": "Allow",
                                     "Action": "s3:GetBucketAcl",
-                                    "Resource": {"Fn::Sub": "arn:aws:s3:::${ConfigBucket}"}
+                                    "Resource": {"Fn::Sub": "arn:${AWS::Partition}:s3:::${ConfigBucket}"}
                                 }
                             ]
                         }
@@ -1188,21 +1208,13 @@ class rdk:
         #Next, go through each rule in our rule list and add the CFN to deploy it.
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
-            params = self.__get_rule_parameters(rule_name)
+            params, tags = self.__get_rule_parameters(rule_name)
             input_params = json.loads(params["InputParameters"])
             for input_param in input_params:
                 cfn_param = {}
                 cfn_param["Description"] = "Pass-through to required Input Parameter " + input_param + " for Config Rule " + rule_name
-<<<<<<< HEAD
                 if len(input_params[input_param].strip()) > 0:
                     cfn_param["Default"] = default
-=======
-                if len(input_params[input_param].strip()) == 0:
-                    default = "<REQUIRED>"
-                else:
-                    default = input_params[input_param]
-                cfn_param["Default"] = default
->>>>>>> b8aa7158259c48df314fe410df38af1365f64bc1
                 cfn_param["Type"] = "String"
                 cfn_param["MinLength"] = 1
                 cfn_param["ConstraintDescription"] = "This parameter is required."
@@ -1277,7 +1289,7 @@ class rdk:
                 del source["SourceDetails"]
             else:
                 source["Owner"] = "CUSTOM_LAMBDA"
-                source["SourceIdentifier"] = { "Fn::Sub": "arn:aws:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_alphanumeric_rule_name(rule_name) }
+                source["SourceIdentifier"] = { "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_stack_name_from_rule_name(rule_name) }
 
             properties["Source"] = source
 
@@ -1344,7 +1356,7 @@ class rdk:
         else:
             print("Rule " + rulename + " is not in any RuleSets")
 
-        self.__write_params_file(rulename, params['Parameters'])
+        self.__write_params_file(rulename, params['Parameters'], params['Tags'])
 
         print(rulename + " removed from RuleSet " + ruleset)
 
@@ -1359,7 +1371,7 @@ class rdk:
             rulesets = [self.args.ruleset]
             params['Parameters']['RuleSets'] = rulesets
 
-        self.__write_params_file(rulename, params['Parameters'])
+        self.__write_params_file(rulename, params['Parameters'], params['Tags'])
 
         print(rulename + " added to RuleSet " + ruleset)
 
@@ -1390,7 +1402,7 @@ class rdk:
             deduped.sort()
             print("RuleSets: ", *deduped)
 
-    def __get_template_dir():
+    def __get_template_dir(self):
         return os.path.join(path.dirname(__file__), 'template')
 
     def __create_test_suite(self, test_dir):
@@ -1473,8 +1485,8 @@ class rdk:
                 logGroupName = self.__get_log_group_name(),
                 logStreamName = stream['logStreamName'],
                 limit = int(number_of_events)
-            )
 
+            )
             #Go through the logs and add events to my output array.
             for event in events['events']:
                 log_events.append(event)
@@ -1503,6 +1515,17 @@ class rdk:
             session_args['aws_secret_access_key']=self.args.secret_access_key
 
         return boto3.session.Session(**session_args)
+
+    def __get_caller_identity_details(self, session):
+        my_sts = session.client('sts')
+        response = my_sts.get_caller_identity()
+        arn_split = response['Arn'].split(':')
+
+        return {
+            'account_id': response['Account'],
+            'partition': arn_split[1],
+            'region': arn_split[3]
+        }
 
     def __get_stack_name_from_rule_name(self, rule_name):
         output = rule_name.replace("_","")
@@ -1563,7 +1586,11 @@ class rdk:
         parameters_file = open(params_file_path, 'r')
         my_json = json.load(parameters_file)
         parameters_file.close()
-        return my_json['Parameters']
+        my_tags = my_json.get('Tags', None)
+        if my_tags is not None:
+            #as my_tags is a list and thus returned as a string, convert it back to a list
+            my_tags = json.loads(my_tags)
+        return my_json['Parameters'], my_tags
 
     def __parse_rule_args(self, is_required):
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
@@ -1650,6 +1677,15 @@ class rdk:
             except Exception as e:
                 print("Error parsing optional input parameter JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and your optional-parameters string is enclosed in single quotes.")
 
+        my_tags = []
+
+        if self.args.tags:
+            #As above, but with the optional tag key value pairs.
+            try:
+                my_tags = json.loads(self.args.tags, strict=False)
+            except Exception as e:
+                print("Error parsing optional tags JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and tags string is enclosed in single quotes.")
+
         #create config file and place in rule directory
         parameters = {
             'RuleName': self.args.rulename,
@@ -1659,6 +1695,8 @@ class rdk:
             'InputParameters': json.dumps(my_input_params),
             'OptionalParameters': json.dumps(my_optional_params)
         }
+
+        tags = json.dumps(my_tags)
 
         if self.args.resource_types:
             parameters['SourceEvents'] = self.args.resource_types
@@ -1674,12 +1712,13 @@ class rdk:
             parameters['CodeKey'] = None
             parameters['SourceRuntime'] = None
 
-        self.__write_params_file(self.args.rulename, parameters)
+        self.__write_params_file(self.args.rulename, parameters, tags)
 
-    def __write_params_file(self, rulename, parameters):
+    def __write_params_file(self, rulename, parameters, tags):
         my_params = {
             "Version": "1.0",
-            "Parameters": parameters
+            "Parameters": parameters,
+            "Tags": tags
         }
         params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
         parameters_file = open(params_file_path, 'w')
@@ -1759,7 +1798,7 @@ class rdk:
             #    test_ci_list self._load_cis_from_file(tests_path)
             else:
                 print("\tTesting with generic CI for configured Resource Type(s)")
-                my_rule_params = self.__get_rule_parameters(rulename)
+                my_rule_params, my_rule_tags = self.__get_rule_parameters(rulename)
                 ci_types = str(my_rule_params['SourceEvents']).split(",")
                 for ci_type in ci_types:
                     my_test_ci = TestCI(ci_type)
@@ -1790,8 +1829,8 @@ class rdk:
 
         return my_lambda_arn
 
-    def __get_lambda_arn_for_rule(self, rule_name, region, account):
-        return "arn:aws:lambda:{}:{}:function:RDK-Rule-Function-{}".format(region, account, self.__get_alphanumeric_rule_name(rule_name))
+    def __get_lambda_arn_for_rule(self, rule_name, partition, region, account):
+        return "arn:{}:lambda:{}:{}:function:RDK-Rule-Function-{}".format(partition, region, account, self.__get_stack_name_from_rule_name(rule_name))
 
     def __delete_package_file(self, file):
         try:
@@ -1901,7 +1940,7 @@ class rdk:
                   "s3:GetObject"
                 ],
                 "Effect": "Allow",
-                "Resource": { "Fn::Join" : [ "/", [ "arn:aws:s3:::", { "Ref": "SourceBucket" }, "*" ] ] }
+                "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${SourceBucket}/*" }
               },
               {
                 "Sid": "2",
@@ -1943,13 +1982,14 @@ class rdk:
             ]
           }
         } ]
-        lambda_role["Properties"]["ManagedPolicyArns"] = ["arn:aws:iam::aws:policy/ReadOnlyAccess"]
+        lambda_role["Properties"]["ManagedPolicyArns"] = [{"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}]
         resources["rdkLambdaRole"] = lambda_role
 
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             alphanum_rule_name = self.__get_alphanumeric_rule_name(rule_name)
-            params = self.__get_rule_parameters(rule_name)
+            stack_name = self.__get_stack_name_from_rule_name(rule_name)
+            params, tags = self.__get_rule_parameters(rule_name)
 
             if 'SourceIdentifier' in params:
                 print("Skipping Managed Rule.")
@@ -1959,7 +1999,7 @@ class rdk:
             lambda_function["Type"] = "AWS::Lambda::Function"
             lambda_function["DependsOn"] = "rdkLambdaRole"
             properties = {}
-            properties["FunctionName"] = "RDK-Rule-Function-" + alphanum_rule_name
+            properties["FunctionName"] = "RDK-Rule-Function-" + stack_name
             properties["Code"] = {"S3Bucket": { "Ref": "SourceBucket"}, "S3Key": rule_name+"/"+rule_name+".zip"}
             properties["Description"] = "Function for AWS Config Rule " + rule_name
             properties["Handler"] = self.__get_handler(rule_name, params)
