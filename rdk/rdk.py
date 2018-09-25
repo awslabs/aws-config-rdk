@@ -839,15 +839,12 @@ class rdk:
                 },
                 {
                     'ParameterKey': 'SourceInputParameters',
-<<<<<<< HEAD
                     'ParameterValue': json.dumps(combined_input_parameters),
-=======
-                    'ParameterValue': rule_params['InputParameters'],
->>>>>>> govcloud_fix
                 },
                 {
                     'ParameterKey': 'SourceHandler',
                     'ParameterValue': self.__get_handler(rule_name, rule_params)
+                    
                 }]
 
             #deploy config rule
@@ -1215,16 +1212,8 @@ class rdk:
             for input_param in input_params:
                 cfn_param = {}
                 cfn_param["Description"] = "Pass-through to required Input Parameter " + input_param + " for Config Rule " + rule_name
-<<<<<<< HEAD
                 if len(input_params[input_param].strip()) > 0:
                     cfn_param["Default"] = default
-=======
-                if len(input_params[input_param].strip()) == 0:
-                    default = "<REQUIRED>"
-                else:
-                    default = input_params[input_param]
-                cfn_param["Default"] = default
->>>>>>> b8aa7158259c48df314fe410df38af1365f64bc1
                 cfn_param["Type"] = "String"
                 cfn_param["MinLength"] = 1
                 cfn_param["ConstraintDescription"] = "This parameter is required."
