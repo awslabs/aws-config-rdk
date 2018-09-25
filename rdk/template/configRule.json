@@ -142,7 +142,7 @@
                   "s3:GetObject"
                 ],
                 "Effect": "Allow",
-                "Resource": { "Fn::Join" : [ "/", [ "arn:aws:s3:::", { "Ref": "SourceBucket" }, { "Ref": "SourcePath" } ] ] }
+                "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${SourceBucket}/${SourcePath}" }
               },
               {
                 "Sid": "2",
@@ -185,7 +185,7 @@
           }
         } ],
         "ManagedPolicyArns": [
-          "arn:aws:iam::aws:policy/ReadOnlyAccess"
+          { "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess" }
         ]
       }
     }
