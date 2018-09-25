@@ -865,6 +865,7 @@ class rdk:
                     }
 
                     # If no tags key is specified, or if the tags dict is empty
+                    print(cfn_tags)
                     if cfn_tags is not None:
                         cfn_args['Tags'] = cfn_tags
 
@@ -1677,7 +1678,7 @@ class rdk:
             except Exception as e:
                 print("Error parsing optional input parameter JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and your optional-parameters string is enclosed in single quotes.")
 
-        my_tags = {}
+        my_tags = []
 
         if self.args.tags:
             #As above, but with the optional tag key value pairs.
