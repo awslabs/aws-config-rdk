@@ -173,7 +173,7 @@ Advanced Features
 -----------------
 Cross-Account Deployments
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-Features have been added to the RDK to facilitate the cross-account deployment pattern that enterprise customers have standardized on for custom Config Rules. A cross-account architecutre is one in which the Lambda functions are deployed to a single central "Compliance" account (which may be the same as a central "Security" account), and the Config Rules are deployed to any number of "Satellite" accounts that are used by other teams or departments.  This gives the compliance team confidence that their Rule logic cannot be tampered with and makes it much easier for them to modify rule logic without having to go through a complex deployment process to potentially hundreds of AWS accounts.  The cross-account pattern uses two advanced RDK features - functions-only deployments and the `create-rule-template` command.
+Features have been added to the RDK to facilitate the cross-account deployment pattern that enterprise customers have standardized on for custom Config Rules. A cross-account architecture is one in which the Lambda functions are deployed to a single central "Compliance" account (which may be the same as a central "Security" account), and the Config Rules are deployed to any number of "Satellite" accounts that are used by other teams or departments.  This gives the compliance team confidence that their Rule logic cannot be tampered with and makes it much easier for them to modify rule logic without having to go through a complex deployment process to potentially hundreds of AWS accounts.  The cross-account pattern uses two advanced RDK features - functions-only deployments and the `create-rule-template` command.
 
 **Function-Only Deployment**
 
