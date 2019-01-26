@@ -809,7 +809,15 @@ class rdk:
                 combined_input_parameters.update(json.loads(rule_params['InputParameters']))
 
             if 'OptionalParameters' in rule_params:
-                combined_input_parameters.update(json.loads(rule_params['OptionalParameters']))
+                #Remove empty parameters
+                keys_to_delete = []
+                optional_parameters_json = json.loads(rule_params['OptionalParameters'])
+                for key, value in optional_parameters_json.items():
+                    if not value:
+                        keys_to_delete.append(key)
+                for key in keys_to_delete:
+                    del optional_parameters_json[key]
+                combined_input_parameters.update(optional_parameters_json)
 
             if 'SourceIdentifier' in rule_params:
                 print("Found Managed Rule.")
