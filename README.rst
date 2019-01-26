@@ -227,6 +227,13 @@ Rules can be added to or removed from RuleSets using the `add` and `remove` subc
 
 RuleSets are a convenient way to maintain a single repository of Config Rules that may need to have subsets of them deployed to different environments.  For example your development environment may contain some of the Rules that you run in Production but not all of them; RuleSets gives you a way to identify and selectively deploy the appropriate Rules to each environment.
 
+Managed Rules
+-------------
+The RDK is able to deploy AWS Managed Rules. 
+
+To do so, create a rule using "rdk create". Delete all the files, except "parameters.json". In the parameters.json, add - in the "Parameters" array - the key "SourceIdentifier" with the value found in the AWS Config documentation (e.g. "GUARDDUTY_ENABLED_CENTRALIZED").
+
+You can use "rdk deploy" or "rdk create-rule-template". 
 
 Contributing
 ============
@@ -252,3 +259,9 @@ Acknowledgments
 ===============
 
 * the boto3 team makes all of this magic possible.
+
+
+Link
+====
+
+* to view example of rules built with the RDK: https://github.com/awslabs/aws-config-rules/tree/master/python
