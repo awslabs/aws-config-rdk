@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 #    Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
@@ -11,16 +9,11 @@
 import argparse
 from rdk import rdk
 
-if __name__ == "__main__":
+
+def main():
     #Set up command-line argument parser and parse the args.
     my_parser = rdk.get_command_parser()
     args = my_parser.parse_args()
-
     my_rdk = rdk.rdk(args)
     return_val = my_rdk.process_command()
     exit(return_val)
-
-#def print_usage():
-#    usage_string="""
-#"""
-#    print(usage_string)
