@@ -9,9 +9,11 @@ import rdk
 from rdk import MY_VERSION
 from setuptools import setup
 
+
 def readme():
     with open('README.rst') as f:
         return f.read()
+
 
 setup(name='rdk',
       version=MY_VERSION,
@@ -27,6 +29,10 @@ setup(name='rdk',
           'mock',
           'future'
       ],
-      scripts=['bin/rdk'],
+      entry_points={
+        'console_scripts': [
+            'rdk=rdk.cli:main',
+        ],
+      },
       zip_safe=False,
       include_package_data=True)
