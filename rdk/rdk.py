@@ -219,7 +219,7 @@ class rdk:
 
     @staticmethod
     def get_command_parser(self):
-        return get_commmand_parser()
+        return get_command_parser()
 
     def process_command(self):
         method_to_call = getattr(self, self.args.command.replace('-','_'))
