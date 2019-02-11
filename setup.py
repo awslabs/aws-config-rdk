@@ -27,6 +27,6 @@ setup(name='rdk',
           'mock',
           'future'
       ],
-      scripts=['bin/rdk'],
+      scripts=['bin/rdk','bin/rdk.cmd'],
       zip_safe=False,
       include_package_data=True)
