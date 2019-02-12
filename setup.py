@@ -29,14 +29,6 @@ setup(name='rdk',
           'mock',
           'future'
       ],
-<<<<<<< HEAD
-      entry_points={
-        'console_scripts': [
-            'rdk=rdk.cli:main',
-        ],
-      },
-=======
       scripts=['bin/rdk','bin/rdk.cmd'],
->>>>>>> 0e47d1eab5edeeecc9c484321a076e2f0f90f357
       zip_safe=False,
       include_package_data=True)
