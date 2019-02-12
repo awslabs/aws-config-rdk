@@ -9,9 +9,11 @@ import rdk
 from rdk import MY_VERSION
 from setuptools import setup
 
+
 def readme():
     with open('README.rst') as f:
         return f.read()
+
 
 setup(name='rdk',
       version=MY_VERSION,

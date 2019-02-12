@@ -1,0 +1,139 @@
+{
+  "relatedEvents": [],
+  "relationships": [],
+  "configuration": {
+    "activeTrustedSigners": {
+      "enabled": false,
+      "quantity": 0
+    },
+    "domainName": "d1012uk692aoh5.cloudfront.net",
+    "lastModifiedTime": "2019-02-12T02:27:31.988Z",
+    "distributionConfig": {
+      "viewerCertificate": {
+        "cloudFrontDefaultCertificate": true,
+        "minimumProtocolVersion": "TLSv1",
+        "certificateSource": "cloudfront"
+      },
+      "logging": {
+        "bucket": "",
+        "prefix": "",
+        "includeCookies": false,
+        "enabled": false
+      },
+      "callerReference": "1549938451674",
+      "defaultRootObject": "index.html",
+      "customErrorResponses": {
+        "quantity": 0
+      },
+      "priceClass": "PriceClass_100",
+      "httpVersion": "http2",
+      "originGroups": {
+        "quantity": 0
+      },
+      "cacheBehaviors": {
+        "quantity": 0
+      },
+      "defaultCacheBehavior": {
+        "minTTL": 0,
+        "forwardedValues": {
+          "queryString": false,
+          "headers": {
+            "quantity": 0
+          },
+          "cookies": {
+            "forward": "none"
+          },
+          "queryStringCacheKeys": {
+            "quantity": 0
+          }
+        },
+        "fieldLevelEncryptionId": "",
+        "viewerProtocolPolicy": "allow-all",
+        "trustedSigners": {
+          "enabled": false,
+          "quantity": 0
+        },
+        "maxTTL": 31536000,
+        "smoothStreaming": false,
+        "lambdaFunctionAssociations": {
+          "quantity": 0
+        },
+        "compress": false,
+        "defaultTTL": 86400,
+        "allowedMethods": {
+          "cachedMethods": {
+            "quantity": 2,
+            "items": [
+              "HEAD",
+              "GET"
+            ]
+          },
+          "items": [
+            "HEAD",
+            "GET"
+          ],
+          "quantity": 2
+        },
+        "targetOriginId": "ELB-test-load-balancer-160681750"
+      },
+      "aliases": {
+        "quantity": 0
+      },
+      "restrictions": {
+        "geoRestriction": {
+          "restrictionType": "none",
+          "quantity": 0
+        }
+      },
+      "origins": {
+        "items": [
+          {
+            "domainName": "test-load-balancer-160681750.us-east-1.elb.amazonaws.com",
+            "id": "ELB-test-load-balancer-160681750",
+            "customHeaders": {
+              "quantity": 0
+            },
+            "originPath": "",
+            "customOriginConfig": {
+              "httpPort": 80,
+              "originReadTimeout": 30,
+              "originSslProtocols": {
+                "items": [
+                  "TLSv1",
+                  "TLSv1.1",
+                  "TLSv1.2"
+                ],
+                "quantity": 3
+              },
+              "httpsPort": 443,
+              "originKeepaliveTimeout": 5,
+              "originProtocolPolicy": "http-only"
+            }
+          }
+        ],
+        "quantity": 1
+      },
+      "webACLId": "",
+      "comment": "",
+      "enabled": true,
+      "isIPV6Enabled": true
+    },
+    "arn": "arn:aws:cloudfront::12345678912:distribution/E31V0VAAPINP3I",
+    "id": "E31V0VAAPINP3I"
+  },
+  "supplementaryConfiguration": {},
+  "tags": {},
+  "configurationItemVersion": "1.3",
+  "configurationItemCaptureTime": "2019-02-12T02:27:33.663Z",
+  "configurationStateId": 1549938453663,
+  "awsAccountId": "12345678912",
+  "configurationItemStatus": "ResourceDiscovered",
+  "resourceType": "AWS::CloudFront::Distribution",
+  "resourceId": "E31V0VAAPINP3I",
+  "resourceName": null,
+  "ARN": "arn:aws:cloudfront::12345678912:distribution/E31V0VAAPINP3I",
+  "awsRegion": "global",
+  "availabilityZone": "Not Applicable",
+  "configurationStateMd5Hash": "",
+  "resourceCreationTime": "2019-02-12T02:27:31.988Z"
+}
