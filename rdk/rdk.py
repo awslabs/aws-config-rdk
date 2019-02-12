@@ -1,4 +1,4 @@
-#    Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#    Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
 #
@@ -794,17 +794,8 @@ class rdk:
         #If we're deploying both the functions and the Config rules, run the following process:
         for rule_name in rule_names:
             rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
-            s3_src = ""
-            s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
-
-            combined_input_parameters = {}
-            if 'InputParameters' in rule_params:
-                combined_input_parameters.update(json.loads(rule_params['InputParameters']))
-
-            if 'OptionalParameters' in rule_params:
-                combined_input_parameters.update(json.loads(rule_params['OptionalParameters']))
-
-            #create CFN Parameters
+            
+            #create CFN Parameters common for Managed and Custom            
             source_events = "NONE"
             if 'SourceEvents' in rule_params:
                 source_events = rule_params['SourceEvents']
@@ -812,6 +803,105 @@ class rdk:
             source_periodic = "NONE"
             if 'SourcePeriodic' in rule_params:
                 source_periodic = rule_params['SourcePeriodic']
+                        
+            combined_input_parameters = {}
+            if 'InputParameters' in rule_params:
+                combined_input_parameters.update(json.loads(rule_params['InputParameters']))
+
+            if 'OptionalParameters' in rule_params:
+                #Remove empty parameters
+                keys_to_delete = []
+                optional_parameters_json = json.loads(rule_params['OptionalParameters'])
+                for key, value in optional_parameters_json.items():
+                    if not value:
+                        keys_to_delete.append(key)
+                for key in keys_to_delete:
+                    del optional_parameters_json[key]
+                combined_input_parameters.update(optional_parameters_json)
+
+            if 'SourceIdentifier' in rule_params:
+                print("Found Managed Rule.")
+                #create CFN Parameters for Managed Rules
+                
+                my_params = [
+                    {
+                        'ParameterKey': 'RuleName',
+                        'ParameterValue': rule_name,
+                    },
+                    {
+                        'ParameterKey': 'SourceEvents',
+                        'ParameterValue': source_events,
+                    },
+                    {
+                        'ParameterKey': 'SourcePeriodic',
+                        'ParameterValue': source_periodic,
+                    },
+                    {
+                        'ParameterKey': 'SourceInputParameters',
+                        'ParameterValue': json.dumps(combined_input_parameters),
+                    },
+                    {
+                        'ParameterKey': 'SourceIdentifier',
+                        'ParameterValue': rule_params['SourceIdentifier']
+                    }]
+
+                #deploy config rule
+                cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRule.json")
+                my_cfn = my_session.client('cloudformation')
+
+                try:
+                    my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
+                    my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
+                    #If we've gotten here, stack exists and we should update it.
+                    print ("Updating CloudFormation Stack for " + rule_name)
+                    try:
+                        cfn_args = {
+                            'StackName': my_stack_name,
+                            'TemplateBody': open(cfn_body, "r").read(),
+                            'Parameters': my_params
+                        }
+
+                        # If no tags key is specified, or if the tags dict is empty
+                        if cfn_tags is not None:
+                            cfn_args['Tags'] = cfn_tags
+
+                        response = my_cfn.update_stack(**cfn_args)
+                    except ClientError as e:
+                        if e.response['Error']['Code'] == 'ValidationError':
+                            if 'No updates are to be performed.' in str(e):
+                                #No changes made to Config rule definition, so CloudFormation won't do anything.
+                                print("No changes to Config Rule.")
+                            else:
+                                #Something unexpected has gone wrong.  Emit an error and bail.
+                                print(e)
+                                return 1
+                        else:
+                            raise
+                except ClientError as e:
+                    #If we're in the exception, the stack does not exist and we should create it.
+                    print ("Creating CloudFormation Stack for " + rule_name)
+                    cfn_args = {
+                        'StackName': my_stack_name,
+                        'TemplateBody': open(cfn_body, "r").read(),
+                        'Parameters': my_params
+                    }
+
+                    if cfn_tags is not None:
+                        cfn_args['Tags'] = cfn_tags
+
+                    response = my_cfn.create_stack(**cfn_args)
+
+                #wait for changes to propagate.
+                self.__wait_for_cfn_stack(my_cfn, my_stack_name)
+                
+                continue
+            
+            print("Found Custom Rule.")
+            
+            s3_src = ""
+            s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
+
+            #create CFN Parameters for Custom Rules
 
             my_params = [
                 {
