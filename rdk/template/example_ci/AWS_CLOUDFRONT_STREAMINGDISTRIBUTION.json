@@ -1,0 +1,69 @@
+{
+  "relatedEvents": [],
+  "relationships": [
+    {
+    "resourceId": "access-log-123456789012us-standard",
+    "resourceName": "access-log-123456789012us-standard",
+    "resourceType": "AWS::S3::Bucket",
+    "name": "Is associated with "
+    }
+  ],
+  "configuration": {
+    "id": "E2KEY2W6AMVSOZ",
+    "arn": "arn:aws:cloudfront::123456789012:streaming-distribution/E2KEY2W6AMVSOZ",
+    "domainName": "s2l5fwedgp14l5.cloudfront.net",
+    "streamingDistributionConfig": {
+      "aliases": {
+        "quantity": 0
+      },
+      "enabled": true,
+      "priceClass": "PriceClass_100",
+      "callerReference": "1549939218400",
+      "comment": "",
+      "s3Origin": {
+        "originAccessIdentity": "",
+        "domainName": "access-log-123456789012us-standard.s3.amazonaws.com"
+      },
+      "logging": {
+        "enabled": false,
+        "prefix": "",
+        "bucket": ""
+      },
+      "trustedSigners": {
+        "items": [
+          "self"
+        ],
+        "enabled": true,
+        "quantity": 1
+      }
+    },
+    "activeTrustedSigners": {
+      "enabled": true,
+      "items": [
+        {
+          "keyPairIds": {
+            "quantity": 0
+          },
+          "awsAccountNumber": "self"
+        }
+      ],
+      "quantity": 1
+    },
+    "lastModifiedTime": "2019-02-12T02:40:18.754Z"
+  },
+  "supplementaryConfiguration": {},
+  "tags": {},
+  "configurationItemVersion": "1.3",
+  "configurationItemCaptureTime": "2019-02-12T02:40:24.328Z",
+  "configurationStateId": 1549952781028,
+  "awsAccountId": "123456789012",
+  "configurationItemStatus": "ResourceDiscovered",
+  "resourceType": "AWS::CloudFront::StreamingDistribution",
+  "resourceId": "E2KEY2W6AMVSOZ",
+  "resourceName": null,
+  "ARN": "arn:aws:cloudfront::123456789012:streaming-distribution/E2KEY2W6AMVSOZ",
+  "awsRegion": "global",
+  "availabilityZone": "Not Applicable",
+  "configurationStateMd5Hash": "",
+  "resourceCreationTime": "2019-02-12T02:40:18.754Z"
+}
