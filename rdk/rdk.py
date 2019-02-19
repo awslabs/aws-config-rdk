@@ -1303,8 +1303,11 @@ class rdk:
             for input_param in input_params:
                 cfn_param = {}
                 cfn_param["Description"] = "Pass-through to required Input Parameter " + input_param + " for Config Rule " + rule_name
-                if len(input_params[input_param].strip()) > 0:
-                    cfn_param["Default"] = default
+                if len(input_params[input_param].strip()) == 0:
+                    default = "<REQUIRED>"
+                else:
+                    default = input_params[input_param]
+                cfn_param["Default"] = default
                 cfn_param["Type"] = "String"
                 cfn_param["MinLength"] = 1
                 cfn_param["ConstraintDescription"] = "This parameter is required."
