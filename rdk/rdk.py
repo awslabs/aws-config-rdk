@@ -1824,7 +1824,7 @@ class rdk:
 
         #Needed for backwards compatibility with earlier versions of parameters file
         if "Tags" not in my_params:
-            my_params["Tags"] = "{}"
+            my_params["Tags"] = "[]"
 
         return my_params
 
