@@ -794,8 +794,8 @@ class rdk:
         #If we're deploying both the functions and the Config rules, run the following process:
         for rule_name in rule_names:
             rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
-            
-            #create CFN Parameters common for Managed and Custom            
+
+            #create CFN Parameters common for Managed and Custom
             source_events = "NONE"
             if 'SourceEvents' in rule_params:
                 source_events = rule_params['SourceEvents']
@@ -803,7 +803,7 @@ class rdk:
             source_periodic = "NONE"
             if 'SourcePeriodic' in rule_params:
                 source_periodic = rule_params['SourcePeriodic']
-                        
+
             combined_input_parameters = {}
             if 'InputParameters' in rule_params:
                 combined_input_parameters.update(json.loads(rule_params['InputParameters']))
@@ -822,7 +822,7 @@ class rdk:
             if 'SourceIdentifier' in rule_params:
                 print("Found Managed Rule.")
                 #create CFN Parameters for Managed Rules
-                
+
                 my_params = [
                     {
                         'ParameterKey': 'RuleName',
@@ -893,11 +893,11 @@ class rdk:
 
                 #wait for changes to propagate.
                 self.__wait_for_cfn_stack(my_cfn, my_stack_name)
-                
+
                 continue
-            
+
             print("Found Custom Rule.")
-            
+
             s3_src = ""
             s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
 
@@ -1821,6 +1821,11 @@ class rdk:
         parameters_file = open(params_file_path, 'r')
         my_params = json.load(parameters_file)
         parameters_file.close()
+
+        #Needed for backwards compatibility with earlier versions of parameters file
+        if "Tags" not in my_params:
+            my_params["Tags"] = "{}"
+
         return my_params
 
     def __wait_for_cfn_stack(self, cfn_client, stackname):
