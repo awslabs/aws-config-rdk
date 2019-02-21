@@ -1,6 +1,9 @@
 version: 0.1
 
 phases:
+  install:
+    commands:
+      - apt-get update -y
   build:
     commands:
       - echo Creating Windows build server and running tests
