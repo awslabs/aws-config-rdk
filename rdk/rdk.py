@@ -1683,12 +1683,33 @@ class rdk:
     def __get_rule_parameters(self, rule_name):
         params_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, parameter_file_name)
         parameters_file = open(params_file_path, 'r')
-        my_json = json.load(parameters_file)
+        my_json = {}
+
+        try:
+            my_json = json.load(parameters_file)
+        except ValueError as ve:  # includes simplejson.decoder.JSONDecodeError
+            print("Failed to decode JSON in parameters file for Rule {}".format(rule_name))
+            print(ve.message)
+            parameters_file.close()
+            sys.exit(1)
+        except Exception as e:
+            print("Error loading parameters file for Rule {}".format(rule_name))
+            print(e.message)
+            parameters_file.close()
+            sys.exit(1)
+
         parameters_file.close()
+
         my_tags = my_json.get('Tags', None)
-        if my_tags is not None:
-            #as my_tags is a list and thus returned as a string, convert it back to a list
-            my_tags = json.loads(my_tags)
+
+        #Needed for backwards compatibility with earlier versions of parameters file
+        if my_tags is None:
+            my_tags = "[]"
+            my_json['Parameters']['Tags'] = my_tags
+            
+        #as my_tags is a list and thus returned as a string, convert it back to a list
+        my_tags = json.loads(my_tags)
+
         return my_json['Parameters'], my_tags
 
     def __parse_rule_args(self, is_required):
@@ -1840,7 +1861,7 @@ class rdk:
         my_params = {}
         params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
         parameters_file = open(params_file_path, 'r')
-        
+
         try:
             my_params = json.load(parameters_file)
         except ValueError as ve:  # includes simplejson.decoder.JSONDecodeError
