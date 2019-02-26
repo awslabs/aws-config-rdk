@@ -35,6 +35,7 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 deploy WP${python_version}-TestRule-P3 >>C:\tmp\output.txt
     Start-Sleep -s 60
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 logs WP${python_version}-TestRule-P3 >>C:\tmp\output.txt
+    type C:\tmp\output.txt
     Write-S3Object -BucketName rdk-testing-windows-results -File C:\tmp\output.txt -Key ${build_id}/${version_string}Output.txt
     </powershell>
   "

@@ -1672,6 +1672,12 @@ class rdk:
             print("No matching rule directories found.")
             sys.exit(1)
 
+        #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
+        for name in rule_names:
+            if len(name) > 45:
+                print("Error: Found Rule with name over 45 characters: {} \n Recreate the Rule with a shorter name.".format(name))
+                sys.exit(1)
+
         return rule_names
 
     def __get_rule_parameters(self, rule_name):
@@ -1687,6 +1693,11 @@ class rdk:
 
     def __parse_rule_args(self, is_required):
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
+
+        if self.args.rulename:
+            if len(self.args.rulename) > 45:
+                print("Rule names must be 45 characters or fewer.")
+                sys.exit(1)
 
         resource_type_error = ""
         if self.args.resource_types:
@@ -1735,6 +1746,13 @@ class rdk:
         if self.args.stack_name and not self.args.functions_only:
             print("--stack-name can only be specified when using the --functions-only feature.")
             sys.exit(1)
+
+        #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
+        if self.args.rulename:
+            for name in self.args.rulename:
+                if len(name) > 45:
+                    print("Error: Found Rule with name over 45 characters: {} \n Recreate the Rule with a shorter name.".format(name))
+                    sys.exit(1)
 
         if self.args.functions_only and not self.args.stack_name:
             self.args.stack_name = "RDK-Config-Rule-Functions"
