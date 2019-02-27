@@ -577,7 +577,7 @@ class rdk:
         self.args.rulename = self.__clean_rule_name(self.args.rulename)
 
         #Get existing parameters
-        old_params = self.__get_rule_parameters(self.args.rulename)
+        old_params, tags = self.__get_rule_parameters(self.args.rulename)
         if not self.args.resource_types and 'SourceEvents' in old_params['Parameters']:
             self.args.resource_types = old_params['Parameters']['SourceEvents']
 
@@ -1440,7 +1440,7 @@ class rdk:
         print("CloudFormation template written to " + self.args.output_file)
 
     def __remove_ruleset_rule(self, ruleset, rulename):
-        params = self.__get_rule_parameters(rulename)
+        params, tags = self.__get_rule_parameters(rulename)
         if 'RuleSets' in params['Parameters']:
             if self.args.ruleset in params['Parameters']['RuleSets']:
                 params['Parameters']['RuleSets'].remove(self.args.ruleset)
@@ -1454,7 +1454,7 @@ class rdk:
         print(rulename + " removed from RuleSet " + ruleset)
 
     def __add_ruleset_rule(self, ruleset, rulename):
-        params = self.__get_rule_parameters(rulename)
+        params, tags = self.__get_rule_parameters(rulename)
         if 'RuleSets' in params['Parameters']:
             if self.args.ruleset in params['Parameters']['RuleSets']:
                 print("Rule is already in the specified RuleSet.")
