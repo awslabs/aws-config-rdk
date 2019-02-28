@@ -1867,28 +1867,6 @@ class rdk:
         json.dump(my_params, parameters_file, indent=2)
         parameters_file.close()
 
-    def __read_params_file(self, rulename):
-        my_params = {}
-        params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
-        parameters_file = open(params_file_path, 'r')
-
-        try:
-            my_params = json.load(parameters_file)
-        except ValueError as ve:  # includes simplejson.decoder.JSONDecodeError
-            print("Failed to decode JSON in parameters file for Rule {}".format(rulename))
-            print(ve.message)
-        except Exception as e:
-            print("Error loading parameters file for Rule {}".format(rulename))
-            print(e.message)
-        finally:
-            parameters_file.close()
-
-        #Needed for backwards compatibility with earlier versions of parameters file
-        if "Tags" not in my_params:
-            my_params["Tags"] = "[]"
-
-        return my_params
-
     def __wait_for_cfn_stack(self, cfn_client, stackname):
         in_progress = True
         while in_progress:
