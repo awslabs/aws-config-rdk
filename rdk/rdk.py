@@ -6,7 +6,7 @@
 #
 #    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 from __future__ import print_function
-from builtins import input
+from builtins import input, basestring
 import os
 from os import path
 import sys
@@ -578,30 +578,31 @@ class rdk:
 
         #Get existing parameters
         old_params, tags = self.__get_rule_parameters(self.args.rulename)
-        if not self.args.resource_types and 'SourceEvents' in old_params['Parameters']:
-            self.args.resource_types = old_params['Parameters']['SourceEvents']
+        print(json.dumps(old_params, indent=2))
+        if not self.args.resource_types and 'SourceEvents' in old_params:
+            self.args.resource_types = old_params['SourceEvents']
 
-        if not self.args.maximum_frequency and 'SourcePeriodic' in old_params['Parameters']:
-            self.args.maximum_frequency = old_params['Parameters']['SourcePeriodic']
+        if not self.args.maximum_frequency and 'SourcePeriodic' in old_params:
+            self.args.maximum_frequency = old_params['SourcePeriodic']
 
-        if not self.args.runtime and old_params['Parameters']['SourceRuntime']:
-            self.args.runtime = old_params['Parameters']['SourceRuntime']
+        if not self.args.runtime and old_params['SourceRuntime']:
+            self.args.runtime = old_params['SourceRuntime']
 
-        if not self.args.input_parameters and 'InputParameters' in old_params['Parameters']:
-            self.args.input_parameters = old_params['Parameters']['InputParameters']
+        if not self.args.input_parameters and 'InputParameters' in old_params:
+            self.args.input_parameters = old_params['InputParameters']
 
-        if not self.args.optional_parameters and 'OptionalParameters' in old_params['Parameters']:
-            self.args.optional_parameters = old_params['Parameters']['OptionalParameters']
+        if not self.args.optional_parameters and 'OptionalParameters' in old_params:
+            self.args.optional_parameters = old_params['OptionalParameters']
 
-        if not self.args.source_identifier and 'SourceIdentifier' in old_params['Parameters']:
-            self.args.source_identifier = old_params['Parameters']['SourceIdentifier']
+        if not self.args.source_identifier and 'SourceIdentifier' in old_params:
+            self.args.source_identifier = old_params['SourceIdentifier']
 
-        if not self.args.tags and old_params['Tags']:
-            self.args.tags = old_params['Tags']
+        if not self.args.tags and tags:
+            self.args.tags = tags
 
-        if 'RuleSets' in old_params['Parameters']:
+        if 'RuleSets' in old_params:
             if not self.args.rulesets:
-                self.args.rulesets = old_params['Parameters']['RuleSets']
+                self.args.rulesets = old_params['RuleSets']
 
         #Write the parameters to a file in the rule directory.
         self.__populate_params()
@@ -1441,30 +1442,30 @@ class rdk:
 
     def __remove_ruleset_rule(self, ruleset, rulename):
         params, tags = self.__get_rule_parameters(rulename)
-        if 'RuleSets' in params['Parameters']:
-            if self.args.ruleset in params['Parameters']['RuleSets']:
-                params['Parameters']['RuleSets'].remove(self.args.ruleset)
+        if 'RuleSets' in params:
+            if self.args.ruleset in params['RuleSets']:
+                params['RuleSets'].remove(self.args.ruleset)
             else :
                 print("Rule " + rulename + " is not in RuleSet " + ruleset)
         else:
             print("Rule " + rulename + " is not in any RuleSets")
 
-        self.__write_params_file(rulename, params['Parameters'], params['Tags'])
+        self.__write_params_file(rulename, params, tags)
 
         print(rulename + " removed from RuleSet " + ruleset)
 
     def __add_ruleset_rule(self, ruleset, rulename):
         params, tags = self.__get_rule_parameters(rulename)
-        if 'RuleSets' in params['Parameters']:
-            if self.args.ruleset in params['Parameters']['RuleSets']:
+        if 'RuleSets' in params:
+            if self.args.ruleset in params['RuleSets']:
                 print("Rule is already in the specified RuleSet.")
             else :
-                params['Parameters']['RuleSets'].append(self.args.ruleset)
+                params['RuleSets'].append(self.args.ruleset)
         else:
             rulesets = [self.args.ruleset]
-            params['Parameters']['RuleSets'] = rulesets
+            params['RuleSets'] = rulesets
 
-        self.__write_params_file(rulename, params['Parameters'], params['Tags'])
+        self.__write_params_file(rulename, params, tags)
 
         print(rulename + " added to RuleSet " + ruleset)
 
@@ -1682,7 +1683,14 @@ class rdk:
 
     def __get_rule_parameters(self, rule_name):
         params_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, parameter_file_name)
-        parameters_file = open(params_file_path, 'r')
+
+        try:
+            parameters_file = open(params_file_path, 'r')
+        except IOError as e:
+            print("Failed to open parameters file for rule '{}'".format(rule_name))
+            print(e.message)
+            sys.exit(1)
+
         my_json = {}
 
         try:
@@ -1707,8 +1715,9 @@ class rdk:
             my_tags = "[]"
             my_json['Parameters']['Tags'] = my_tags
 
-        #as my_tags is a list and thus returned as a string, convert it back to a list
-        my_tags = json.loads(my_tags)
+        #as my_tags was returned as a string in earlier versions, convert it back to a list
+        if isinstance(my_tags, basestring):
+            my_tags = json.loads(my_tags)
 
         return my_json['Parameters'], my_tags
 
