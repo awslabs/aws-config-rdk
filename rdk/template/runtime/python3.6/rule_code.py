@@ -14,6 +14,9 @@ import datetime
 import boto3
 import botocore
 
+# Do not uncomment in regular usage
+# import liblogging
+
 ##############
 # Parameters #
 ##############
@@ -23,6 +26,9 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 # Set to True to get the lambda to assume the Role attached on the Config Service (useful for cross-account).
 ASSUME_ROLE_MODE = False
+
+# Other parameters (no change needed)
+CONFIG_ROLE_TIMEOUT_SECONDS = 900
 
 #############
 # Main Code #
@@ -210,7 +216,11 @@ def is_applicable(configurationItem, event):
 def get_assume_role_credentials(role_arn):
     sts_client = boto3.client('sts')
     try:
-        assume_role_response = sts_client.assume_role(RoleArn=role_arn, RoleSessionName="configLambdaExecution")
+        assume_role_response = sts_client.assume_role(RoleArn=role_arn,
+                                                      RoleSessionName="configLambdaExecution",
+                                                      DurationSeconds=CONFIG_ROLE_TIMEOUT_SECONDS)
+        # Do not uncomment in regular usage
+        # liblogging.logSession(role_arn, assume_role_response)
         return assume_role_response['Credentials']
     except botocore.exceptions.ClientError as ex:
         # Scrub error message for any internal account info leaks
@@ -258,8 +268,9 @@ def clean_up_old_evaluations(latest_evaluations, event):
 
     return cleaned_evaluations + latest_evaluations
 
-# This decorates the lambda_handler in rule_code with the actual PutEvaluation call
 def lambda_handler(event, context):
+    # Do not uncomment in regular usage
+    # liblogging.logEvent(event)
 
     global AWS_CONFIG_CLIENT
 
