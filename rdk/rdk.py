@@ -1212,8 +1212,8 @@ class rdk:
                 "RoleName": config_role_name,
                 "Path": "/rdk/",
                 "ManagedPolicyArns": [
-                    "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSConfigRole",
-                    "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"
+                    {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSConfigRole"},
+                    {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}
                 ],
                 "AssumeRolePolicyDocument": {
                     "Version": "2012-10-17",
