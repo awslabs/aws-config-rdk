@@ -29,6 +29,10 @@ setup(name='rdk',
           'mock',
           'future'
       ],
-      scripts=['bin/rdk','bin/rdk.cmd'],
+      entry_points={
+              'console_scripts': [
+                  'rdk=rdk.cli:main',
+              ],
+            },
       zip_safe=False,
       include_package_data=True)

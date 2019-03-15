@@ -6,12 +6,15 @@
 #
 #    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
-import argparse
-from rdk import rdk
+import six
+if six.PY2:
+    import rdk
+else:
+    from rdk import rdk
 
 
 def main():
-    #Set up command-line argument parser and parse the args.
+    # Set up command-line argument parser and parse the args.
     my_parser = rdk.get_command_parser()
     args = my_parser.parse_args()
     my_rdk = rdk.rdk(args)
