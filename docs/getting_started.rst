@@ -63,7 +63,7 @@ In your working directory, use the ``create`` command to start creating a new cu
 
 ::
 
-  $ rdk create MyRule --runtime python3.6 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
+  $ rdk create MyRule --runtime python3.7 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
   Running create!
   Local Rule files created.
 
