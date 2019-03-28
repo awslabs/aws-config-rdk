@@ -149,6 +149,12 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
 # Boilerplate Code #
 ####################
 
+# Helper function to build annotation
+def build_annotation(annotation_string):
+    if len(annotation_string) > 256:
+        return annotation_string[0:242] + "[...truncated]"
+    return annotation_string
+
 # Helper function used to validate input
 def check_defined(reference, reference_name):
     if not reference:
