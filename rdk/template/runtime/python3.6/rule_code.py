@@ -79,6 +79,12 @@ def evaluate_parameters(rule_parameters):
 # Helper Functions #
 ####################
 
+# Helper function to build annotation
+def build_annotation(annotation_string):
+    if len(annotation_string) > 256:
+        return annotation_string[:244] + " [truncated]"
+    return annotation_string
+
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
     """Return an error dictionary when the evaluate_parameters() raises a ValueError.
@@ -121,7 +127,7 @@ def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_
     """
     eval_cc = {}
     if annotation:
-        eval_cc['Annotation'] = annotation
+        eval_cc['Annotation'] = build_annotation(annotation)
     eval_cc['ComplianceResourceType'] = resource_type
     eval_cc['ComplianceResourceId'] = resource_id
     eval_cc['ComplianceType'] = compliance_type
@@ -138,7 +144,7 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
     """
     eval_ci = {}
     if annotation:
-        eval_ci['Annotation'] = annotation
+        eval_ci['Annotation'] = build_annotation(annotation)
     eval_ci['ComplianceResourceType'] = configuration_item['resourceType']
     eval_ci['ComplianceResourceId'] = configuration_item['resourceId']
     eval_ci['ComplianceType'] = compliance_type
@@ -148,12 +154,6 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
 ####################
 # Boilerplate Code #
 ####################
-
-# Helper function to build annotation
-def build_annotation(annotation_string):
-    if len(annotation_string) > 256:
-        return annotation_string[0:242] + "[...truncated]"
-    return annotation_string
 
 # Helper function used to validate input
 def check_defined(reference, reference_name):
