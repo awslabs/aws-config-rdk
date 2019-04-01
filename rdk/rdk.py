@@ -65,7 +65,7 @@ accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::St
                         'AWS::EC2::RouteTable', 'AWS::EC2::Subnet', 'AWS::EC2::VPC', 'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::AutoScaling::AutoScalingGroup', 'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction', 'AWS::ACM::Certificate',
                         'AWS::CloudFormation::Stack', 'AWS::CloudTrail::Trail', 'AWS::CodeBuild::Project', 'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::IAM::User', 'AWS::IAM::Group', 'AWS::IAM::Role', 'AWS::IAM::Policy', 'AWS::Lambda::Function',
                         'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::WebACL', 'AWS::WAF::RuleGroup', 'AWS::WAFRegional::RateBasedRule', 'AWS::WAFRegional::Rule', 'AWS::WAFRegional::WebACL', 'AWS::WAFRegional::RuleGroup', 'AWS::XRay::EncryptionConfig', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::ElasticLoadBalancing::LoadBalancer',
-                        'AWS::ElasticLoadBalancingV2::LoadBalancer']
+                        'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Stage', 'AWS::ApiGateway::RestApi', 'AWS::ApiGatewayV2::Api', 'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct', 'AWS::ServiceCatalog::Portfolio', 'AWS::ServiceCatalog::CloudFormationProduct']
 
 def get_command_parser():
     #This is needed to get sphinx to auto-generate the CLI documentation correctly.
