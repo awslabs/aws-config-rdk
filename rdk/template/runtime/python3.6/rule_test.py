@@ -16,6 +16,7 @@ try:
 except ImportError:
     from mock import MagicMock
 import botocore
+from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -157,6 +158,7 @@ class TestStsErrors(unittest.TestCase):
 
     def test_sts_unknown_error(self):
         RULE.ASSUME_ROLE_MODE = True
+        RULE.evaluate_parameters = MagicMock(return_value=True)
         STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
         response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
@@ -165,6 +167,7 @@ class TestStsErrors(unittest.TestCase):
 
     def test_sts_access_denied(self):
         RULE.ASSUME_ROLE_MODE = True
+        RULE.evaluate_parameters = MagicMock(return_value=True)
         STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
         response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
