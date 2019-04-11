@@ -93,19 +93,21 @@ def build_parameters_value_error_response(ex):
 
 # This gets the client after assuming the Config service role
 # either in the same AWS account or cross-account.
-def get_client(service, event):
+def get_client(service, event, region=None):
     """Return the service boto client. It should be used instead of directly calling the client.
 
     Keyword arguments:
     service -- the service name used for calling the boto.client()
     event -- the event variable given in the lambda handler
+    region -- the region where the client is called (default: None)
     """
     if not ASSUME_ROLE_MODE:
-        return boto3.client(service)
-    credentials = get_assume_role_credentials(event["executionRoleArn"])
+        return boto3.client(service, region)
+    credentials = get_assume_role_credentials(event["executionRoleArn"], region)
     return boto3.client(service, aws_access_key_id=credentials['AccessKeyId'],
                         aws_secret_access_key=credentials['SecretAccessKey'],
-                        aws_session_token=credentials['SessionToken']
+                        aws_session_token=credentials['SessionToken'],
+                        region_name=region
                        )
 
 # This generate an evaluation for config
@@ -222,8 +224,8 @@ def is_applicable(configuration_item, event):
         print("Resource Deleted, setting Compliance Status to NOT_APPLICABLE.")
     return status in ('OK', 'ResourceDiscovered') and not event_left_scope
 
-def get_assume_role_credentials(role_arn):
-    sts_client = boto3.client('sts')
+def get_assume_role_credentials(role_arn, region=None):
+    sts_client = boto3.client('sts', region)
     try:
         assume_role_response = sts_client.assume_role(RoleArn=role_arn,
                                                       RoleSessionName="configLambdaExecution",
