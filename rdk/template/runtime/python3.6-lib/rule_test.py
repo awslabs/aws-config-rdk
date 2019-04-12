@@ -33,7 +33,8 @@ class Boto3Mock():
 
 sys.modules['boto3'] = Boto3Mock()
 
-RULE = __import__('<%RuleName%>')
+MODULE = __import__('<%RuleName%>')
+RULE = MODULE.<%RuleName%>()
 
 class SampleTest(unittest.TestCase):
 
