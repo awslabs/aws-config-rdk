@@ -12,7 +12,7 @@
 from rdklib import rdklib
 
 class <%RuleName%>(rdklib.ConfigRule):
-    def evaluate_compliance(event, configuration_item, valid_rule_parameters):
+    def evaluate_compliance(self, event, configuration_item, valid_rule_parameters):
         """Form the evaluation(s) to be return to Config Rules
 
         Return either:
@@ -38,7 +38,7 @@ class <%RuleName%>(rdklib.ConfigRule):
 
         return 'NOT_APPLICABLE'
 
-    def evaluate_parameters(rule_parameters):
+    def evaluate_parameters(self, rule_parameters):
         """Evaluate the rule parameters dictionary validity. Raise a ValueError for invalid parameters.
 
         Return:
