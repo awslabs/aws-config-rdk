@@ -534,15 +534,6 @@ class rdk:
 
             if not self.args.source_identifier:
                 #copy rule template into rule directory
-                if self.args.runtime == 'python3.6-lib':
-                    src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, 'handler.py')
-                    dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, 'handler.py')
-                    shutil.copyfile(src, dst)
-                    f = fileinput.input(files=dst, inplace=True)
-                    for line in f:
-                        print(line.replace('<%RuleName%>', self.args.rulename), end='')
-                    f.close()
-
                 if self.args.runtime == 'java8':
                     self.__create_java_rule()
                 elif self.args.runtime in ['dotnetcore1.0', 'dotnetcore2.0']:
@@ -1933,10 +1924,8 @@ class rdk:
                     time.sleep(5)
 
     def __get_handler(self, rule_name, params):
-        if params['SourceRuntime'] in ['python2.7','python3.6', 'nodejs4.3','nodejs6.10','nodejs8.10']:
+        if params['SourceRuntime'] in ['python2.7','python3.6', 'python3.6-lib', 'nodejs4.3','nodejs6.10','nodejs8.10']:
             return (rule_name+'.lambda_handler')
-        if params['SourceRuntime'] in ['python3.6-lib']:
-            return ('handler.lambda_handler')
         elif params['SourceRuntime'] in ['java8']:
             return ('com.rdk.RuleUtil::handler')
         elif params['SourceRuntime'] in ['dotnetcore1.0','dotnetcore2.0']:

@@ -49,3 +49,11 @@ class <%RuleName%>(rdklib.ConfigRule):
         """
         valid_rule_parameters = rule_parameters
         return valid_rule_parameters
+
+
+################################
+# DO NOT MODIFY ANYTHING BELOW #
+################################
+def lambda_handler(event, context):
+    my_rule = <%RuleName%>()
+    return my_rule.internal_lambda_handler(event, context)
