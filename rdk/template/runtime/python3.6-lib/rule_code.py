@@ -56,4 +56,5 @@ class <%RuleName%>(rdklib.ConfigRule):
 ################################
 def lambda_handler(event, context):
     my_rule = <%RuleName%>()
+    my_rule.ASSUME_ROLE_MODE=True
     return my_rule.internal_lambda_handler(event, context)
