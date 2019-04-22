@@ -1247,7 +1247,7 @@ class rdk:
                             "Sid": "REMOTE",
                             "Effect": "Allow",
                             "Principal": {
-                                "AWS": {"Fn::Sub": "arn:${AWS::Partition}:iam::${LambdaAccountId}:root"}
+                                "AWS": "arn:aws:iam::<%ACCOUNTID%>:root"
                             },
                             "Action": "sts:AssumeRole"
                         }
