@@ -1,0 +1,74 @@
+[
+  {
+    "version": "1.3",
+    "accountId": "823362693882",
+    "configurationItemCaptureTime": "2018-05-11T17:53:48.872Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1526061228872",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:lambda:us-east-1:823362693882:function:test-function",
+    "resourceType": "AWS::Lambda::Function",
+    "resourceId": "test-function",
+    "resourceName": "test-function",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "tags": {
+      "test": "value"
+    },
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::IAM::Role",
+        "resourceName": "lambda_basic_execution",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-e463c89c",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-23deb22f",
+        "relationshipName": "Is contained in "
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-8dee48a7",
+        "relationshipName": "Is contained in "
+      }
+    ],
+    "configuration": {
+      "functionName": "test-function",
+      "functionArn": "arn:aws:lambda:us-east-1:823362693882:function:test-function",
+      "runtime": "nodejs6.10",
+      "role": "arn:aws:iam::823362693882:role/lambda_basic_execution",
+      "handler": "index.handler",
+      "codeSize": 216,
+      "description": "",
+      "timeout": 3,
+      "memorySize": 128,
+      "lastModified": "2018-05-11T17:51:41.919+0000",
+      "codeSha256": "IIwUc2FF9nrH3U856beLym8t6M2ZBgwZJ5MLu3OWGAo=",
+      "version": "$LATEST",
+      "vpcConfig": {
+        "subnetIds": [
+          "subnet-8dee48a7",
+          "subnet-23deb22f"
+        ],
+        "securityGroupIds": [
+          "sg-e463c89c"
+        ]
+      },
+      "tracingConfig": {
+        "mode": "PassThrough"
+      },
+      "revisionId": "156c57a0-7f2f-41d2-8240-29797b0132ed"
+    },
+    "supplementaryConfiguration": {
+      "Tags": {
+        "test": "value"
+      }
+    }
+  }
+]
