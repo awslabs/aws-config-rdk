@@ -1,21 +1,12 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License"). You may
-# not use this file except in compliance with the License. A copy of the License is located at
-#
-#        http://aws.amazon.com/apache2.0/
-#
-# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
-# the specific language governing permissions and limitations under the License.
-
 import sys
 import unittest
 try:
     from unittest.mock import MagicMock
 except ImportError:
+    import mock
     from mock import MagicMock
 import botocore
+from botocore.exceptions import ClientError
 
 ##############
 # Parameters #
@@ -32,19 +23,19 @@ CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
 
 class Boto3Mock():
-    @staticmethod
-    def client(client_name, *args, **kwargs):
+    def client(self, client_name, *args, **kwargs):
         if client_name == 'config':
             return CONFIG_CLIENT_MOCK
-        if client_name == 'sts':
+        elif client_name == 'sts':
             return STS_CLIENT_MOCK
-        raise Exception("Attempting to create an unknown client")
+        else:
+            raise Exception("Attempting to create an unknown client")
 
 sys.modules['boto3'] = Boto3Mock()
 
 RULE = __import__('<%RuleName%>')
 
-class ComplianceTest(unittest.TestCase):
+class SampleTest(unittest.TestCase):
 
     rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
 
@@ -157,7 +148,6 @@ class TestStsErrors(unittest.TestCase):
 
     def test_sts_unknown_error(self):
         RULE.ASSUME_ROLE_MODE = True
-        RULE.evaluate_parameters = MagicMock(return_value=True)
         STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'unknown-code', 'Message': 'unknown-message'}}, 'operation'))
         response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})
@@ -166,7 +156,6 @@ class TestStsErrors(unittest.TestCase):
 
     def test_sts_access_denied(self):
         RULE.ASSUME_ROLE_MODE = True
-        RULE.evaluate_parameters = MagicMock(return_value=True)
         STS_CLIENT_MOCK.assume_role = MagicMock(side_effect=botocore.exceptions.ClientError(
             {'Error': {'Code': 'AccessDenied', 'Message': 'access-denied'}}, 'operation'))
         response = RULE.lambda_handler(build_lambda_configurationchange_event('{}'), {})

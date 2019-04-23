@@ -67,7 +67,7 @@ accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::St
                         'AWS::EC2::RouteTable', 'AWS::EC2::Subnet', 'AWS::EC2::VPC', 'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::AutoScaling::AutoScalingGroup', 'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction', 'AWS::ACM::Certificate',
                         'AWS::CloudFormation::Stack', 'AWS::CloudTrail::Trail', 'AWS::CodeBuild::Project', 'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::IAM::User', 'AWS::IAM::Group', 'AWS::IAM::Role', 'AWS::IAM::Policy', 'AWS::Lambda::Function',
                         'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::WebACL', 'AWS::WAF::RuleGroup', 'AWS::WAFRegional::RateBasedRule', 'AWS::WAFRegional::Rule', 'AWS::WAFRegional::WebACL', 'AWS::WAFRegional::RuleGroup', 'AWS::XRay::EncryptionConfig', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::ElasticLoadBalancing::LoadBalancer',
-                        'AWS::ElasticLoadBalancingV2::LoadBalancer']
+                        'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Stage', 'AWS::ApiGateway::RestApi', 'AWS::ApiGatewayV2::Api', 'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct', 'AWS::ServiceCatalog::Portfolio', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::SSM::ManagedInstanceInventory::Linux', 'AWS::SSM::ManagedInstanceInventory::Windows']
 
 def get_command_parser():
     #This is needed to get sphinx to auto-generate the CLI documentation correctly.
@@ -124,7 +124,7 @@ def get_rule_parser(is_required, command):
     )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
     runtime_group = parser.add_mutually_exclusive_group(required=is_required)
-    runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3','java8','python2.7','python3.6', 'python3.6-lib','dotnetcore1.0','dotnetcore2.0'])
+    runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'dotnetcore1.0', 'dotnetcore2.0'])
     runtime_group.add_argument('--source-identifier', required=False, help="[optional] Used only for creating Managed Rules.")
     parser.add_argument('-r','--resource-types', required=False, help='[optional] Resource types that will trigger event-based Rule evaluation')
     parser.add_argument('-m','--maximum-frequency', required=False, help='[optional] Maximum execution frequency for scheduled Rules', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
@@ -515,7 +515,18 @@ class rdk:
                 print("Runtime is required for 'create' command.")
                 return 1
 
-            extension_mapping = {'java8':'.java', 'python2.7':'.py', 'python3.6':'.py','nodejs4.3':'.js', 'dotnetcore1.0':'cs', 'dotnetcore2.0':'cs', 'python3.6-managed':'.py', 'python3.6-lib':'.py'}
+            extension_mapping = {
+                'java8': '.java',
+                'python2.7': '.py',
+                'python3.6': '.py',
+                'python3.6-managed':'.py',
+                'python3.6-lib':'.py',
+                'python3.7': '.py',
+                'nodejs4.3': '.js',
+                'dotnetcore1.0': 'cs',
+                'dotnetcore2.0': 'cs',
+                'python3.6-managed': '.py',
+            }
             if self.args.runtime not in extension_mapping:
                 print ("rdk does not support that runtime yet.")
 
@@ -1032,7 +1043,7 @@ class rdk:
 
         for rule_name in rule_names:
             rule_params, rule_tags = self.__get_rule_parameters(rule_name)
-            if rule_params['SourceRuntime'] not in ('python2.7','python3.6', 'python3.6-lib'):
+            if rule_params['SourceRuntime'] not in ('python2.7', 'python3.6', 'python3.6-lib', 'python3.7'):
                 print ("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
 
@@ -1924,7 +1935,7 @@ class rdk:
                     time.sleep(5)
 
     def __get_handler(self, rule_name, params):
-        if params['SourceRuntime'] in ['python2.7','python3.6', 'python3.6-lib', 'nodejs4.3','nodejs6.10','nodejs8.10']:
+        if params['SourceRuntime'] in ['python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'nodejs4.3', 'nodejs6.10', 'nodejs8.10']:
             return (rule_name+'.lambda_handler')
         elif params['SourceRuntime'] in ['java8']:
             return ('com.rdk.RuleUtil::handler')
