@@ -58,6 +58,8 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
+RDK_LIB_LAYER_VERSION = "17"
+
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
 accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution', 'AWS::CloudWatch::Alarm', 'AWS::DynamoDB::Table', 'AWS::SSM::ManagedInstanceInventory', 'AWS::EC2::Host', 'AWS::EC2::EIP', 'AWS::EC2::Instance',
                         'AWS::EC2::NetworkInterface', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Volume', 'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup', 'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
@@ -122,7 +124,7 @@ def get_rule_parser(is_required, command):
     )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
     runtime_group = parser.add_mutually_exclusive_group(required=is_required)
-    runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python2.7', 'python3.6', 'python3.7', 'dotnetcore1.0', 'dotnetcore2.0'])
+    runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'dotnetcore1.0', 'dotnetcore2.0'])
     runtime_group.add_argument('--source-identifier', required=False, help="[optional] Used only for creating Managed Rules.")
     parser.add_argument('-r','--resource-types', required=False, help='[optional] Resource types that will trigger event-based Rule evaluation')
     parser.add_argument('-m','--maximum-frequency', required=False, help='[optional] Maximum execution frequency for scheduled Rules', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
@@ -517,6 +519,8 @@ class rdk:
                 'java8': '.java',
                 'python2.7': '.py',
                 'python3.6': '.py',
+                'python3.6-managed':'.py',
+                'python3.6-lib':'.py',
                 'python3.7': '.py',
                 'nodejs4.3': '.js',
                 'dotnetcore1.0': 'cs',
@@ -549,6 +553,10 @@ class rdk:
                     src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, rule_handler + extension_mapping[self.args.runtime])
                     dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename + extension_mapping[self.args.runtime])
                     shutil.copyfile(src, dst)
+                    f = fileinput.input(files=dst, inplace=True)
+                    for line in f:
+                        print(line.replace('<%RuleName%>', self.args.rulename), end='')
+                    f.close()
 
                     src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, 'rule_test' + extension_mapping[self.args.runtime])
                     if os.path.exists(src):
@@ -819,6 +827,11 @@ class rdk:
             if 'InputParameters' in rule_params:
                 combined_input_parameters.update(json.loads(rule_params['InputParameters']))
 
+            rdk_lib_version = "0"
+            if 'SourceRuntime' in rule_params:
+                if rule_params['SourceRuntime'] == "python3.6-lib":
+                    rdk_lib_version = RDK_LIB_LAYER_VERSION
+
             if 'OptionalParameters' in rule_params:
                 #Remove empty parameters
                 keys_to_delete = []
@@ -929,7 +942,7 @@ class rdk:
                 },
                 {
                     'ParameterKey': 'SourceRuntime',
-                    'ParameterValue': rule_params['SourceRuntime'],
+                    'ParameterValue': self.__get_runtime_string(rule_params),
                 },
                 {
                     'ParameterKey': 'SourceEvents',
@@ -947,6 +960,10 @@ class rdk:
                     'ParameterKey': 'SourceHandler',
                     'ParameterValue': self.__get_handler(rule_name, rule_params)
 
+                },
+                {
+                    'ParameterKey': 'RDKLibVersion',
+                    'ParameterValue': rdk_lib_version
                 }]
 
             #deploy config rule
@@ -1026,7 +1043,7 @@ class rdk:
 
         for rule_name in rule_names:
             rule_params, rule_tags = self.__get_rule_parameters(rule_name)
-            if rule_params['SourceRuntime'] not in ('python2.7', 'python3.6', 'python3.7'):
+            if rule_params['SourceRuntime'] not in ('python2.7', 'python3.6', 'python3.6-lib', 'python3.7'):
                 print ("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
 
@@ -1918,12 +1935,18 @@ class rdk:
                     time.sleep(5)
 
     def __get_handler(self, rule_name, params):
-        if params['SourceRuntime'] in ['python2.7', 'python3.6', 'python3.7', 'nodejs4.3', 'nodejs6.10', 'nodejs8.10']:
+        if params['SourceRuntime'] in ['python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'nodejs4.3', 'nodejs6.10', 'nodejs8.10']:
             return (rule_name+'.lambda_handler')
         elif params['SourceRuntime'] in ['java8']:
             return ('com.rdk.RuleUtil::handler')
         elif params['SourceRuntime'] in ['dotnetcore1.0','dotnetcore2.0']:
             return ('csharp7.0::Rdk.CustomConfigHandler::FunctionHandler')
+
+    def __get_runtime_string(self, params):
+        if params['SourceRuntime'] in ['python3.6-lib', 'python3.6-managed']:
+            return 'python3.6'
+
+        return params['SourceRuntime']
 
     def __get_test_CIs(self, rulename):
         test_ci_list = []
