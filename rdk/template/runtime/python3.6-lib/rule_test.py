@@ -22,6 +22,8 @@ DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
 
 CONFIG_CLIENT_MOCK = MagicMock()
 STS_CLIENT_MOCK = MagicMock()
+MODULE = __import__('<%RuleName%>')
+RULE = MODULE.<%RuleName%>()
 
 def mock_get_client(client_name, *args, **kwargs):
     if client_name == 'config':
@@ -30,10 +32,7 @@ def mock_get_client(client_name, *args, **kwargs):
         return STS_CLIENT_MOCK
     raise Exception("Attempting to create an unknown client")
 
-MODULE = __import__('<%RuleName%>')
-RULE = MODULE.<%RuleName%>()
-
-class SampleTest(unittest.TestCase):
+class ComplianceTest(unittest.TestCase):
 
     rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
 
