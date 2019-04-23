@@ -1,4 +1,4 @@
-# Copyright 2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You may
 # not use this file except in compliance with the License. A copy of the License is located at
@@ -10,6 +10,17 @@
 # the specific language governing permissions and limitations under the License.
 
 from rdklib import rdklib
+
+##############
+# Parameters #
+##############
+
+# Define the default resource to report to Config Rules
+RESOURCE_TYPE = 'AWS::::Account'
+
+#############
+# Main Code #
+#############
 
 class <%RuleName%>(rdklib.ConfigRule):
     def evaluate_compliance(self, event, configuration_item, valid_rule_parameters):
@@ -56,5 +67,5 @@ class <%RuleName%>(rdklib.ConfigRule):
 ################################
 def lambda_handler(event, context):
     my_rule = <%RuleName%>()
-    my_rule.ASSUME_ROLE_MODE=True
+    my_rule.RESOURCE_TYPE = RESOURCE_TYPE
     return my_rule.internal_lambda_handler(event, context)
