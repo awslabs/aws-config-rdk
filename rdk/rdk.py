@@ -58,7 +58,7 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
-RDK_LIB_LAYER_VERSION = "17"
+RDKLIB_LAYER_VERSION={'ap-south-1':'4', 'us-east-2':'6', 'us-east-1':'6', 'us-west-1':'6', 'us-west-2':'5', 'ap-northeast-2':'4', 'ap-southeast-1':'21', 'ap-southeast-2':'4', 'ap-northeast-1':'4', 'ca-central-1':'4', 'eu-central-1':'4', 'eu-west-1':'4', 'eu-west-2':'4', 'eu-west-3':'4', 'eu-north-1':'4', 'sa-east-1':'4'}
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
 accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution', 'AWS::CloudWatch::Alarm', 'AWS::DynamoDB::Table', 'AWS::SSM::ManagedInstanceInventory', 'AWS::EC2::Host', 'AWS::EC2::EIP', 'AWS::EC2::Instance',
@@ -830,7 +830,7 @@ class rdk:
             rdk_lib_version = "0"
             if 'SourceRuntime' in rule_params:
                 if rule_params['SourceRuntime'] == "python3.6-lib":
-                    rdk_lib_version = RDK_LIB_LAYER_VERSION
+                    rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
 
             if 'OptionalParameters' in rule_params:
                 #Remove empty parameters

@@ -76,7 +76,7 @@
         "Timeout": 60,
         "Layers": [
           {"Fn::If": [ "UseRDKLib",
-              { "Fn::Join" : ["", ["arn:aws:lambda:ap-southeast-1:711761543063:layer:rdklib:", {"Ref": "RDKLibVersion"}]]},
+              { "Fn::Join" : ["", ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":711761543063:layer:rdklib:", {"Ref": "RDKLibVersion"}]]},
               { "Ref": "AWS::NoValue"}
             ]
           }
