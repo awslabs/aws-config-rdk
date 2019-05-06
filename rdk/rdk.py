@@ -2173,6 +2173,7 @@ class rdk:
             properties["Role"] = {"Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]}
             properties["Runtime"] = params["SourceRuntime"]
             properties["Timeout"] = 300
+            properties["Tags"] = tags
             lambda_function["Properties"] = properties
             resources[alphanum_rule_name+"LambdaFunction"] = lambda_function
 
