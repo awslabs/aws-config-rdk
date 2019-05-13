@@ -58,7 +58,7 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
-RDKLIB_LAYER_VERSION={'ap-south-1':'4', 'us-east-2':'6', 'us-east-1':'6', 'us-west-1':'6', 'us-west-2':'5', 'ap-northeast-2':'4', 'ap-southeast-1':'21', 'ap-southeast-2':'4', 'ap-northeast-1':'4', 'ca-central-1':'4', 'eu-central-1':'4', 'eu-west-1':'4', 'eu-west-2':'4', 'eu-west-3':'4', 'eu-north-1':'4', 'sa-east-1':'4'}
+RDKLIB_LAYER_VERSION={'ap-south-1':'5', 'us-east-2':'7', 'us-east-1':'7', 'us-west-1':'7', 'us-west-2':'6', 'ap-northeast-2':'5', 'ap-southeast-1':'24', 'ap-southeast-2':'5', 'ap-northeast-1':'5', 'ca-central-1':'5', 'eu-central-1':'5', 'eu-west-1':'5', 'eu-west-2':'5', 'eu-west-3':'5', 'eu-north-1':'5', 'sa-east-1':'5'}
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
 accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution', 'AWS::CloudWatch::Alarm', 'AWS::DynamoDB::Table', 'AWS::SSM::ManagedInstanceInventory', 'AWS::EC2::Host', 'AWS::EC2::EIP', 'AWS::EC2::Instance',
