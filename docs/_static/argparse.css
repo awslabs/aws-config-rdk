@@ -1,0 +1,13 @@
+/* override table width restrictions */
+/*@media screen and (min-width: 767px) {
+  .wy-table-responsive table td {
+      white-space: normal !important;
+  }
+  .wy-table-responsive {
+      overflow: visible !important;
+  }
+}
+
+.highlight {
+  overflow: visible !important
+}*/
