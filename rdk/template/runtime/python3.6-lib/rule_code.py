@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
 
-from rdklib import rdklib
+import rdklib
 
 class <%RuleName%>(rdklib.ConfigRule):
     def evaluate_compliance(self, event, configuration_item, valid_rule_parameters):
@@ -56,5 +56,5 @@ class <%RuleName%>(rdklib.ConfigRule):
 ################################
 def lambda_handler(event, context):
     my_rule = <%RuleName%>()
-    my_rule.ASSUME_ROLE_MODE=True
-    return my_rule.internal_lambda_handler(event, context)
+    evaluator = rdklib.Evaluator(my_rule)
+    return evaluator.handle(event, context)

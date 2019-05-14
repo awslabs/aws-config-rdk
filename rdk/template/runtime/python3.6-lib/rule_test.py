@@ -8,6 +8,8 @@ except ImportError:
 import botocore
 from botocore.exceptions import ClientError
 from unittest.mock import patch
+import rdklib
+import rdklibtest
 
 ##############
 # Parameters #
@@ -68,7 +70,7 @@ def sts_mock():
 
 class TestStsErrors(unittest.TestCase):
 
-    @patch('rdklib.rdklib.get_client', side_effect=botocore.exceptions.ClientError(
+    @patch('rdklib.build_client', side_effect=botocore.exceptions.ClientError(
         {'Error': {'Code': 'InternalError', 'Message': 'InternalError'}}, 'operation'))
     def test_sts_unknown_error(self, my_mock):
         response = MODULE.lambda_handler(rdklib.build_lambda_scheduled_event(), {})
@@ -76,7 +78,7 @@ class TestStsErrors(unittest.TestCase):
         rdklib.assert_customer_error_response(
             self, response, 'InternalError', 'InternalError')
 
-    @patch('rdklib.rdklib.get_client', side_effect=botocore.exceptions.ClientError(
+    @patch('rdklib.build_client', side_effect=botocore.exceptions.ClientError(
         {'Error': {'Code': 'AccessDenied', 'Message': 'AWS Config does not have permission to assume the IAM role.'}}, 'operation'))
     def test_sts_access_denied(self, my_mock):
         response = MODULE.lambda_handler(rdklib.build_lambda_scheduled_event(), {})
