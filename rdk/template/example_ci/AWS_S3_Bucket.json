@@ -39,7 +39,7 @@
   "resourceType": "AWS::S3::Bucket",
   "resourceId": "mborch-test-bucket-config-item",
   "resourceName": "mborch-test-bucket-config-item",
-  "ARN": "arn:aws:s3:::mborch-test-bucket-config-item",
+  "arn": "arn:aws:s3:::mborch-test-bucket-config-item",
   "awsRegion": "us-east-1",
   "availabilityZone": "Regional",
   "configurationStateMd5Hash": "",
