@@ -1,4 +1,14 @@
-import sys
+# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You may
+# not use this file except in compliance with the License. A copy of the License is located at
+#
+#        http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
+# the specific language governing permissions and limitations under the License.
+
 import unittest
 try:
     from unittest.mock import MagicMock
@@ -16,27 +26,27 @@ import rdklibtest
 ##############
 
 # Define the default resource to report to Config Rules
-DEFAULT_RESOURCE_TYPE = 'AWS::::Account'
+RESOURCE_TYPE = 'AWS::::Account'
 
 #############
 # Main Code #
 #############
 
-CONFIG_CLIENT_MOCK = MagicMock()
-STS_CLIENT_MOCK = MagicMock()
-
-def mock_get_client(client_name, *args, **kwargs):
-    if client_name == 'config':
-        return CONFIG_CLIENT_MOCK
-    elif client_name == 'sts':
-        return STS_CLIENT_MOCK
-    else:
-        raise Exception("Attempting to create an unknown client")
-
 MODULE = __import__('<%RuleName%>')
 RULE = MODULE.<%RuleName%>()
 
-class SampleTest(unittest.TestCase):
+CLIENT_FACTORY = MagicMock()
+
+#example for mocking S3 API calls
+S3_CLIENT_MOCK = MagicMock()
+
+def mock_get_client(client_name, *args, **kwargs):
+    if client_name == 's3':
+        return S3_CLIENT_MOCK
+    raise Exception("Attempting to create an unknown client")
+
+@patch.object(CLIENT_FACTORY, 'build_client', MagicMock(side_effect=mock_get_client))
+class ComplianceTest(unittest.TestCase):
 
     rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
 
@@ -49,39 +59,7 @@ class SampleTest(unittest.TestCase):
         self.assertTrue(True)
 
     #def test_sample_2(self):
-    #    RULE.ASSUME_ROLE_MODE = False
-    #    response = RULE.lambda_handler(build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
+    #    response = MODULE.lambda_handler(rdklib.build_lambda_configurationchange_event(self.invoking_event_iam_role_sample, self.rule_parameters), {})
     #    resp_expected = []
-    #    resp_expected.append(build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
-    #    assert_successful_evaluation(self, response, resp_expected)
-
-def sts_mock():
-    assume_role_response = {
-        "Credentials": {
-            "AccessKeyId": "string",
-            "SecretAccessKey": "string",
-            "SessionToken": "string"}}
-    STS_CLIENT_MOCK.reset_mock(return_value=True)
-    STS_CLIENT_MOCK.assume_role = MagicMock(return_value=assume_role_response)
-
-##################
-# Common Testing #
-##################
-
-class TestStsErrors(unittest.TestCase):
-
-    @patch('rdklib.build_client', side_effect=botocore.exceptions.ClientError(
-        {'Error': {'Code': 'InternalError', 'Message': 'InternalError'}}, 'operation'))
-    def test_sts_unknown_error(self, my_mock):
-        response = MODULE.lambda_handler(rdklib.build_lambda_scheduled_event(), {})
-        print(response)
-        rdklib.assert_customer_error_response(
-            self, response, 'InternalError', 'InternalError')
-
-    @patch('rdklib.build_client', side_effect=botocore.exceptions.ClientError(
-        {'Error': {'Code': 'AccessDenied', 'Message': 'AWS Config does not have permission to assume the IAM role.'}}, 'operation'))
-    def test_sts_access_denied(self, my_mock):
-        response = MODULE.lambda_handler(rdklib.build_lambda_scheduled_event(), {})
-        print(response)
-        rdklib.assert_customer_error_response(
-            self, response, 'AccessDenied', 'AWS Config does not have permission to assume the IAM role.')
+    #    resp_expected.append(rdklib.build_expected_response('NOT_APPLICABLE', 'some-resource-id', 'AWS::IAM::Role'))
+    #    rdklib.assert_successful_evaluation(self, response, resp_expected)
