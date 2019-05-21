@@ -10,8 +10,16 @@
 # the specific language governing permissions and limitations under the License.
 
 import unittest
-from mock import mock, MagicMock
-from rdklib import rdklib
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    import mock
+    from mock import MagicMock
+import botocore
+from botocore.exceptions import ClientError
+from unittest.mock import patch
+import rdklib
+import rdklibtest
 
 ##############
 # Parameters #
@@ -27,16 +35,17 @@ RESOURCE_TYPE = 'AWS::::Account'
 MODULE = __import__('<%RuleName%>')
 RULE = MODULE.<%RuleName%>()
 
-CONFIG_CLIENT_MOCK = MagicMock()
-STS_CLIENT_MOCK = MagicMock()
+CLIENT_FACTORY = MagicMock()
+
+#example for mocking S3 API calls
+S3_CLIENT_MOCK = MagicMock()
 
 def mock_get_client(client_name, *args, **kwargs):
-    if client_name == 'config':
-        return CONFIG_CLIENT_MOCK
-    if client_name == 'sts':
-        return STS_CLIENT_MOCK
+    if client_name == 's3':
+        return S3_CLIENT_MOCK
     raise Exception("Attempting to create an unknown client")
 
+@patch.object(CLIENT_FACTORY, 'build_client', MagicMock(side_effect=mock_get_client))
 class ComplianceTest(unittest.TestCase):
 
     rule_parameters = '{"SomeParameterKey":"SomeParameterValue","SomeParameterKey2":"SomeParameterValue2"}'
