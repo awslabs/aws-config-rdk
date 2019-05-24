@@ -9,7 +9,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for
 # the specific language governing permissions and limitations under the License.
 
-from rdklib import Evaluation, ConfigRule, ComplianceType
+from rdklib import Evaluator, Evaluation, ConfigRule, ComplianceType
 
 class <%RuleName%>(ConfigRule):
     def evaluate_change(self, event, client_factory, configuration_item, valid_rule_parameters):
