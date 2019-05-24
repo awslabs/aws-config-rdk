@@ -19,6 +19,7 @@ import botocore
 from botocore.exceptions import ClientError
 from unittest.mock import patch
 import rdklib
+from rdklib import Evaluation, ComplianceType
 import rdklibtest
 
 ##############
