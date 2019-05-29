@@ -10,14 +10,8 @@
 # the specific language governing permissions and limitations under the License.
 
 import unittest
-try:
-    from unittest.mock import MagicMock
-except ImportError:
-    import mock
-    from mock import MagicMock
-import botocore
+from mock import patch, MagicMock
 from botocore.exceptions import ClientError
-from unittest.mock import patch
 import rdklib
 from rdklib import Evaluation, ComplianceType
 import rdklibtest
