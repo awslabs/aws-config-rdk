@@ -267,6 +267,7 @@ class rdk:
         delivery_channels = my_config.describe_delivery_channels()
         if len(delivery_channels['DeliveryChannels']) > 0:
             delivery_channel_exists = True
+            config_bucket_exists = True
             config_bucket_name = delivery_channels['DeliveryChannels'][0]['s3BucketName']
 
         my_s3 = my_session.client('s3')
