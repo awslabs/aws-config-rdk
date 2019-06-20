@@ -154,7 +154,7 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited list of RuleSet names')
     parser.add_argument('-f','--functions-only', action='store_true', required=False, help="[optional] Only deploy Lambda functions.  Useful for cross-account deployments.")
     parser.add_argument('--stack-name', required=False, help="[optional] CloudFormation Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
-    parser.add_argument('--ssm-parameter', required=False, help="[optional] SSM parameter name that will store stack name, ie. /Test/IAD/CaC_Lambda_CFN")
+    parser.add_argument('--ssm-parameter', required=False, help="[optional] SSM parameter name that will store stack name, ie. /org/cac_compliace_ruleset_latest_installed/VALUE)
     if ForceArgument:
         parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
     return parser
