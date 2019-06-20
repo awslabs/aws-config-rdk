@@ -154,6 +154,7 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited list of RuleSet names')
     parser.add_argument('-f','--functions-only', action='store_true', required=False, help="[optional] Only deploy Lambda functions.  Useful for cross-account deployments.")
     parser.add_argument('--stack-name', required=False, help="[optional] CloudFormation Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
+    parser.add_argument('--ssm-parameter', required=False, help="[optional] SSM parameter name that will store stack name, ie. /Test/IAD/CaC_Lambda_CFN")
     if ForceArgument:
         parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
     return parser
@@ -681,14 +682,13 @@ class rdk:
         print("To re-deploy, use the 'deploy' command.")
 
     def deploy(self):
+    
         self.__parse_deploy_args()
-
         #get the rule names
         rule_names = self.__get_rule_list_for_command()
 
         #run the deploy code
         print ("Running deploy!")
-
         #create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
 
@@ -2065,6 +2065,7 @@ class rdk:
 
     def __create_function_cloudformation_template(self):
         print ("Generating CloudFormation template for Lambda Functions!")
+        
 
         #First add the common elements - description, parameters, and resource section header
         template = {}
@@ -2081,7 +2082,17 @@ class rdk:
         template["Parameters"] = parameters
 
         resources = {}
-
+        if self.args.ssm_parameter:
+            print('SSM Parameter Added')
+            ssm_stack_name = {}
+            ssm_stack_name["Type"] = "AWS::SSM::Parameter"
+            ssm_stack_name["Properties"] = {}
+            ssm_stack_name["Properties"]["Description"] = "RDK Function Stack SSM Parameter"
+            ssm_stack_name["Properties"]["Name"] = "/org/cac_compliace_ruleset_latest_installed/" + self.args.ssm_parameter
+            ssm_stack_name["Properties"]["Type"] = "String"
+            ssm_stack_name["Properties"]["Value"] = {"Ref":"AWS::StackName"}
+            resources["StackNameSSMPARAM"] = ssm_stack_name
+            
         lambda_role = {}
         lambda_role["Type"] = "AWS::IAM::Role"
         lambda_role["Properties"] = {}
