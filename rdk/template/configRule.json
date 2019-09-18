@@ -9,6 +9,10 @@
       "MinLength": "1",
       "MaxLength": "255"
     },
+    "LambdaRoleArn": {
+      "Description": "ARN of the existing IAM role that you want to attach to the lambda function.",
+      "Type": "String"
+    },
     "SourceBucket": {
       "Description": "Name of the S3 bucket that you have stored the rule zip files in.",
       "Type": "String",
@@ -55,6 +59,7 @@
     }
   },
   "Conditions": {
+    "CreateNewLambdaRole" : { "Fn::Equals" : [{ "Ref": "LambdaRoleArn" }, ""]},
     "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
     "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]},
     "UseRDKLib": {"Fn::Not": [{"Fn::Equals": [{"Ref": "RDKLibVersion"}, "0"]}]}
@@ -71,7 +76,12 @@
         "Description": "Create a new AWS lambda function for rule code",
         "Handler": { "Ref": "SourceHandler"},
         "MemorySize": "256",
-        "Role":  { "Fn::GetAtt": [ "rdkLambdaRole", "Arn" ] } ,
+        "Role": {
+          "Fn::If": [ "CreateNewLambdaRole",
+              { "Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]},
+              { "Ref": "LambdaRoleArn" }
+            ]
+          },
         "Runtime": { "Ref": "SourceRuntime"},
         "Timeout": 60,
         "Layers": [
@@ -95,8 +105,7 @@
     "rdkConfigRule": {
       "Type": "AWS::Config::ConfigRule",
       "DependsOn": [
-        "ConfigPermissionToCallrdkRuleCodeLambda",
-        "rdkLambdaRole"
+        "ConfigPermissionToCallrdkRuleCodeLambda"
       ],
       "Properties": {
         "ConfigRuleName": { "Ref": "RuleName" },
@@ -132,6 +141,7 @@
       }
     },
     "rdkLambdaRole": {
+      "Condition": "CreateNewLambdaRole",
       "Type": "AWS::IAM::Role",
       "Properties": {
         "Path": "/rdk/",

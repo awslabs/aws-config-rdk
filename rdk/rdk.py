@@ -153,7 +153,7 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited list of RuleSet names')
     parser.add_argument('-f','--functions-only', action='store_true', required=False, help="[optional] Only deploy Lambda functions.  Useful for cross-account deployments.")
-    parser.add_argument('--lambda-role-arn', required=False, help="[optional] Assign existing iam role to lambda functions. If omitted, \"rdkLambdaRole\" will be used.")
+    parser.add_argument('--lambda-role-arn', required=False, help="[optional] Assign existing iam role to lambda functions. If omitted, \"rdkLambdaRole\" will be created.")
     parser.add_argument('--stack-name', required=False, help="[optional] CloudFormation Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
     if ForceArgument:
         parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
@@ -214,6 +214,7 @@ def get_create_rule_template_parser():
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be included in the generated CloudFormation template.")
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names to be included in the generated template.')
     parser.add_argument('-o','--output-file', required=True, default="RDK-Config-Rules", help="filename of generated CloudFormation template")
+    parser.add_argument('--config-role-arn', required=False, help="[optional] Assign existing iam role as config role. If omitted, \"config-role\" will be created.")
     parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
     return parser
 
@@ -927,11 +928,19 @@ class rdk:
             s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
 
             #create CFN Parameters for Custom Rules
+            lambdaRoleArn = ""
+            if self.args.lambda_role_arn:
+                print ("Existing IAM Role provided: " + self.args.lambda_role_arn)
+                lambdaRoleArn = self.args.lambda_role_arn
 
             my_params = [
                 {
                     'ParameterKey': 'RuleName',
                     'ParameterValue': rule_name,
+                },
+                {
+                    'ParameterKey': 'LambdaRoleArn',
+                    'ParameterValue': lambdaRoleArn,
                 },
                 {
                     'ParameterKey': 'SourceBucket',
@@ -1231,66 +1240,70 @@ class rdk:
         conditions = {}
 
         if not self.args.rules_only:
-            #Create Config Role
-            resources["ConfigRole"] = {}
-            resources["ConfigRole"]["Type"] = "AWS::IAM::Role"
-            resources["ConfigRole"]["DependsOn"] = "ConfigBucket"
-            resources["ConfigRole"]["Properties"] = {
-                "RoleName": config_role_name,
-                "Path": "/rdk/",
-                "ManagedPolicyArns": [
-                    {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSConfigRole"},
-                    {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}
-                ],
-                "AssumeRolePolicyDocument": {
-                    "Version": "2012-10-17",
-                    "Statement": [
+            if self.args.config_role_arn:
+                print ("Existing Config Role provided: " + self.args.config_role_arn)
+            else:
+                print ("No IAM role provided, creating a new IAM role for Config Role")
+                #Create Config Role
+                resources["ConfigRole"] = {}
+                resources["ConfigRole"]["Type"] = "AWS::IAM::Role"
+                resources["ConfigRole"]["DependsOn"] = "ConfigBucket"
+                resources["ConfigRole"]["Properties"] = {
+                    "RoleName": config_role_name,
+                    "Path": "/rdk/",
+                    "ManagedPolicyArns": [
+                        {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSConfigRole"},
+                        {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}
+                    ],
+                    "AssumeRolePolicyDocument": {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Sid": "LOCAL",
+                                "Effect": "Allow",
+                                "Principal": {
+                                    "Service": [
+                                        "config.amazonaws.com"
+                                    ]
+                                },
+                                "Action": "sts:AssumeRole"
+                            },
+                            {
+                                "Sid": "REMOTE",
+                                "Effect": "Allow",
+                                "Principal": {
+                                    "AWS": {"Fn::Sub": "arn:${AWS::Partition}:iam::${LambdaAccountId}:root"}
+                                },
+                                "Action": "sts:AssumeRole"
+                            }
+                        ]
+                    },
+                    "Policies": [
                         {
-                            "Sid": "LOCAL",
-                            "Effect": "Allow",
-                            "Principal": {
-                                "Service": [
-                                    "config.amazonaws.com"
+                            "PolicyName": "DeliveryPermission",
+                            "PolicyDocument": {
+                                "Version": "2012-10-17",
+                                "Statement": [
+                                    {
+                                        "Effect": "Allow",
+                                        "Action": "s3:PutObject*",
+                                        "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${ConfigBucket}/AWSLogs/${AWS::AccountId}/*" },
+                                        "Condition": {
+                                            "StringLike": {
+                                                "s3:x-amz-acl": "bucket-owner-full-control"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "Effect": "Allow",
+                                        "Action": "s3:GetBucketAcl",
+                                        "Resource": {"Fn::Sub": "arn:${AWS::Partition}:s3:::${ConfigBucket}"}
+                                    }
                                 ]
-                            },
-                            "Action": "sts:AssumeRole"
-                        },
-                        {
-                            "Sid": "REMOTE",
-                            "Effect": "Allow",
-                            "Principal": {
-                                "AWS": {"Fn::Sub": "arn:${AWS::Partition}:iam::${LambdaAccountId}:root"}
-                            },
-                            "Action": "sts:AssumeRole"
+                            }
                         }
                     ]
-                },
-                "Policies": [
-                    {
-                        "PolicyName": "DeliveryPermission",
-                        "PolicyDocument": {
-                            "Version": "2012-10-17",
-                            "Statement": [
-                                {
-                                    "Effect": "Allow",
-                                    "Action": "s3:PutObject*",
-                                    "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${ConfigBucket}/AWSLogs/${AWS::AccountId}/*" },
-                                    "Condition": {
-                                        "StringLike": {
-                                            "s3:x-amz-acl": "bucket-owner-full-control"
-                                        }
-                                    }
-                                },
-                                {
-                                    "Effect": "Allow",
-                                    "Action": "s3:GetBucketAcl",
-                                    "Resource": {"Fn::Sub": "arn:${AWS::Partition}:s3:::${ConfigBucket}"}
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
+                }
 
             #Create Bucket for Config Data
             resources["ConfigBucket"] = {
@@ -1312,6 +1325,8 @@ class rdk:
                     }
                 }
             }
+            if self.args.config_role_arn:
+                resources["ConfigurationRecorder"]["Properties"]["RoleARN"] = self.args.config_role_arn
 
             resources["DeliveryChannel"] = {
                 "Type": "AWS::Config::DeliveryChannel",
