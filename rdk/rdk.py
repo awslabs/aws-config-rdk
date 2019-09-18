@@ -2067,11 +2067,6 @@ class rdk:
     def __create_function_cloudformation_template(self):
         print ("Generating CloudFormation template for Lambda Functions!")
 
-        lambda_role_arn = ""
-        if self.args.lambda_role_arn:
-            lambda_role_arn = self.args.lambda_role_arn
-            print ("Existing IAM role provided: " + lambda_role_arn)
-
         #First add the common elements - description, parameters, and resource section header
         template = {}
         template["AWSTemplateFormatVersion"] = "2010-09-09"
@@ -2088,7 +2083,10 @@ class rdk:
 
         resources = {}
 
-        if not lambda_role_arn:
+        if self.args.lambda_role_arn:
+            print ("Existing IAM role provided: " + self.args.lambda_role_arn)
+        else:
+            print ("No IAM role provided, creating a new IAM role for lambda function")
             lambda_role = {}
             lambda_role["Type"] = "AWS::IAM::Role"
             lambda_role["Properties"] = {}
@@ -2176,8 +2174,8 @@ class rdk:
             properties["Description"] = "Function for AWS Config Rule " + rule_name
             properties["Handler"] = self.__get_handler(rule_name, params)
             properties["MemorySize"] = "256"
-            if lambda_role_arn:
-                properties["Role"] = lambda_role_arn
+            if self.args.lambda_role_arn:
+                properties["Role"] = self.args.lambda_role_arn
             else:
                 lambda_function["DependsOn"] = "rdkLambdaRole"
                 properties["Role"] = {"Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]}
