@@ -61,13 +61,22 @@ event_template_filename = 'test_event_template.json'
 RDKLIB_LAYER_VERSION={'ap-southeast-1':'51', 'ap-south-1':'29', 'us-east-2':'31', 'us-east-1':'31', 'us-west-1':'31', 'us-west-2':'30', 'ap-northeast-2':'29', 'ap-southeast-2':'29', 'ap-northeast-1':'29', 'ca-central-1':'29', 'eu-central-1':'29', 'eu-west-1':'29', 'eu-west-2':'29', 'eu-west-3':'29', 'eu-north-1':'29', 'sa-east-1':'29'}
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
-accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution', 'AWS::CloudWatch::Alarm', 'AWS::DynamoDB::Table', 'AWS::SSM::ManagedInstanceInventory', 'AWS::EC2::Host', 'AWS::EC2::EIP', 'AWS::EC2::Instance',
-                        'AWS::EC2::NetworkInterface', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Volume', 'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup', 'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
-                        'AWS::Redshift::EventSubscription', 'AWS::RDS::DBInstance', 'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup', 'AWS::RDS::EventSubscription', 'AWS::S3::Bucket', 'AWS::EC2::CustomerGateway', 'AWS::EC2::InternetGateway', 'AWS::EC2::NetworkAcl',
-                        'AWS::EC2::RouteTable', 'AWS::EC2::Subnet', 'AWS::EC2::VPC', 'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::AutoScaling::AutoScalingGroup', 'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction', 'AWS::ACM::Certificate',
-                        'AWS::CloudFormation::Stack', 'AWS::CloudTrail::Trail', 'AWS::CodeBuild::Project', 'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::IAM::User', 'AWS::IAM::Group', 'AWS::IAM::Role', 'AWS::IAM::Policy', 'AWS::Lambda::Function',
-                        'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::WebACL', 'AWS::WAF::RuleGroup', 'AWS::WAFRegional::RateBasedRule', 'AWS::WAFRegional::Rule', 'AWS::WAFRegional::WebACL', 'AWS::WAFRegional::RuleGroup', 'AWS::XRay::EncryptionConfig', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::ElasticLoadBalancing::LoadBalancer',
-                        'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Stage', 'AWS::ApiGateway::RestApi', 'AWS::ApiGatewayV2::Api', 'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct', 'AWS::ServiceCatalog::Portfolio', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::SSM::ManagedInstanceInventory::Linux', 'AWS::SSM::ManagedInstanceInventory::Windows']
+accepted_resource_types = [
+    'AWS::ACM::Certificate', 'AWS::ApiGateway::RestApi', 'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Api', 'AWS::ApiGatewayV2::Stage', 'AWS::AutoScaling::AutoScalingGroup',
+    'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction', 'AWS::CloudFormation::Stack', 'AWS::CloudFront::Distribution',
+    'AWS::CloudFront::StreamingDistribution', 'AWS::CloudTrail::Trail', 'AWS::CloudWatch::Alarm', 'AWS::CodeBuild::Project', 'AWS::CodePipeline::Pipeline', 'AWS::DynamoDB::Table',
+    'AWS::EC2::CustomerGateway', 'AWS::EC2::EIP', 'AWS::EC2::EgressOnlyInternetGateway', 'AWS::EC2::FlowLog', 'AWS::EC2::Host', 'AWS::EC2::Instance', 'AWS::EC2::InternetGateway',
+    'AWS::EC2::NatGateway', 'AWS::EC2::NetworkAcl', 'AWS::EC2::NetworkInterface', 'AWS::EC2::RouteTable', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Subnet', 'AWS::EC2::VPC',
+    'AWS::EC2::VPCEndpoint', 'AWS::EC2::VPCEndpointService', 'AWS::EC2::VPCPeeringConnection', 'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::EC2::Volume',
+    'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::ElasticLoadBalancing::LoadBalancer',
+    'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::IAM::Group', 'AWS::IAM::Policy', 'AWS::IAM::Role', 'AWS::IAM::User', 'AWS::Lambda::Function', 'AWS::QLDB::Ledger',
+    'AWS::RDS::DBCluster', 'AWS::RDS::DBClusterSnapshot', 'AWS::RDS::DBInstance', 'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup', 'AWS::RDS::EventSubscription',
+    'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup', 'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
+    'AWS::Redshift::EventSubscription', 'AWS::S3::AccountPublicAccessBlock', 'AWS::S3::Bucket', 'AWS::SSM::AssociationCompliance', 'AWS::SSM::ManagedInstanceInventory',
+    'AWS::SSM::PatchCompliance', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct', 'AWS::ServiceCatalog::Portfolio',
+    'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection', 'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::RuleGroup', 'AWS::WAF::WebACL', 'AWS::WAFRegional::RateBasedRule',
+    'AWS::WAFRegional::Rule', 'AWS::WAFRegional::RuleGroup', 'AWS::WAFRegional::WebACL', 'AWS::XRay::EncryptionConfig'
+]
 
 def get_command_parser():
     #This is needed to get sphinx to auto-generate the CLI documentation correctly.
