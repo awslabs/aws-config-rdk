@@ -15,3 +15,5 @@ Create-Rule-Template
    The generated CloudFormation template includes a Parameter for the AccountID that contains the Lambda functions that provide the compliance logic for the Rules, and also exposes all of the Config Rule input parameters as CloudFormation stack parameters.
 
    By default the generated CloudFormation template will set up Config as per the settings used by the RDK ``init`` command, but those resources can be omitted using the ``--rules-only`` flag.
+
+   The ``--config-role-arn`` flag can be used for assigning existing config role to the created Configuration Recorder.
