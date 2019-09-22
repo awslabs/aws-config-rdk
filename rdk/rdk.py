@@ -1705,9 +1705,10 @@ class rdk:
                         if s_input.intersection(s_params):
                             rule_names.append(obj_name)
         elif self.args.rulename:
-            cleaned_rule_name = self.__clean_rule_name(self.args.rulename[0])
-            if os.path.isdir(cleaned_rule_name):
-                rule_names.append(cleaned_rule_name)
+            for rule_name in self.args.rulename:
+                cleaned_rule_name = self.__clean_rule_name(rule_name)
+                if os.path.isdir(cleaned_rule_name):
+                    rule_names.append(cleaned_rule_name)
         else:
             print ('Invalid Option: Specify Rule Name or RuleSet. Run "rdk deploy -h" for more info.')
             sys.exit(1)
