@@ -59,6 +59,7 @@ test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
 RDKLIB_LAYER_VERSION={'ap-southeast-1':'51', 'ap-south-1':'29', 'us-east-2':'31', 'us-east-1':'31', 'us-west-1':'31', 'us-west-2':'30', 'ap-northeast-2':'29', 'ap-southeast-2':'29', 'ap-northeast-1':'29', 'ca-central-1':'29', 'eu-central-1':'29', 'eu-west-1':'29', 'eu-west-2':'29', 'eu-west-3':'29', 'eu-north-1':'29', 'sa-east-1':'29'}
+RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib:{version}"
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
 accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution', 'AWS::CloudWatch::Alarm', 'AWS::DynamoDB::Table', 'AWS::SSM::ManagedInstanceInventory', 'AWS::EC2::Host', 'AWS::EC2::EIP', 'AWS::EC2::Instance',
@@ -68,6 +69,50 @@ accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::St
                         'AWS::CloudFormation::Stack', 'AWS::CloudTrail::Trail', 'AWS::CodeBuild::Project', 'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::IAM::User', 'AWS::IAM::Group', 'AWS::IAM::Role', 'AWS::IAM::Policy', 'AWS::Lambda::Function',
                         'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::WebACL', 'AWS::WAF::RuleGroup', 'AWS::WAFRegional::RateBasedRule', 'AWS::WAFRegional::Rule', 'AWS::WAFRegional::WebACL', 'AWS::WAFRegional::RuleGroup', 'AWS::XRay::EncryptionConfig', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::ElasticLoadBalancing::LoadBalancer',
                         'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Stage', 'AWS::ApiGateway::RestApi', 'AWS::ApiGatewayV2::Api', 'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct', 'AWS::ServiceCatalog::Portfolio', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::SSM::ManagedInstanceInventory::Linux', 'AWS::SSM::ManagedInstanceInventory::Windows']
+
+CONFIG_ROLE_ASSUME_ROLE_POLICY_DOCUMENT = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "LOCAL",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": [
+                        "config.amazonaws.com"
+                    ]
+                },
+                "Action": "sts:AssumeRole"
+            },
+            {
+                "Sid": "REMOTE",
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": {"Fn::Sub": "arn:${AWS::Partition}:iam::${LambdaAccountId}:root"}
+                },
+                "Action": "sts:AssumeRole"
+            }
+        ]
+    }
+CONFIG_ROLE_POLICY_DOCUMENT = {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": "s3:PutObject*",
+                "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${ConfigBucket}/AWSLogs/${AWS::AccountId}/*" },
+                "Condition": {
+                    "StringLike": {
+                        "s3:x-amz-acl": "bucket-owner-full-control"
+                    }
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": "s3:GetBucketAcl",
+                "Resource": {"Fn::Sub": "arn:${AWS::Partition}:s3:::${ConfigBucket}"}
+            }
+        ]
+    }
 
 def get_command_parser():
     #This is needed to get sphinx to auto-generate the CLI documentation correctly.
@@ -153,8 +198,11 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited list of RuleSet names')
     parser.add_argument('-f','--functions-only', action='store_true', required=False, help="[optional] Only deploy Lambda functions.  Useful for cross-account deployments.")
-    parser.add_argument('--lambda-role-arn', required=False, help="[optional] Assign existing iam role to lambda functions. If omitted, \"rdkLambdaRole\" will be created.")
     parser.add_argument('--stack-name', required=False, help="[optional] CloudFormation Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
+    parser.add_argument('--execution-role-name', required=False, help="[optional] IAM Role that the Lambda function(s) will assume in each target account.")
+    parser.add_argument('--rdklib-layer-arn', required=False, help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.")
+    parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
+
     if ForceArgument:
         parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
     return parser
@@ -214,7 +262,6 @@ def get_create_rule_template_parser():
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be included in the generated CloudFormation template.")
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names to be included in the generated template.')
     parser.add_argument('-o','--output-file', required=True, default="RDK-Config-Rules", help="filename of generated CloudFormation template")
-    parser.add_argument('--config-role-arn', required=False, help="[optional] Assign existing iam role as config role. If omitted, \"config-role\" will be created.")
     parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
     return parser
 
@@ -829,10 +876,13 @@ class rdk:
             if 'InputParameters' in rule_params:
                 combined_input_parameters.update(json.loads(rule_params['InputParameters']))
 
+            layers = []
             rdk_lib_version = "0"
             if 'SourceRuntime' in rule_params:
                 if rule_params['SourceRuntime'] == "python3.6-lib":
                     rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
+                    rdklib_arn = RDKLIB_ARN_STRING.format(region=my_session.region_name, version=rdk_lib_version)
+                    layers.append(rdklib_arn)
 
             if 'OptionalParameters' in rule_params:
                 #Remove empty parameters
@@ -928,19 +978,11 @@ class rdk:
             s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
 
             #create CFN Parameters for Custom Rules
-            lambdaRoleArn = ""
-            if self.args.lambda_role_arn:
-                print ("Existing IAM Role provided: " + self.args.lambda_role_arn)
-                lambdaRoleArn = self.args.lambda_role_arn
 
             my_params = [
                 {
                     'ParameterKey': 'RuleName',
                     'ParameterValue': rule_name,
-                },
-                {
-                    'ParameterKey': 'LambdaRoleArn',
-                    'ParameterValue': lambdaRoleArn,
                 },
                 {
                     'ParameterKey': 'SourceBucket',
@@ -970,11 +1012,20 @@ class rdk:
                     'ParameterKey': 'SourceHandler',
                     'ParameterValue': self.__get_handler(rule_name, rule_params)
 
-                },
-                {
-                    'ParameterKey': 'RDKLibVersion',
-                    'ParameterValue': rdk_lib_version
                 }]
+            if self.args.rdklib_layer_arn:
+                layers.append(self.args.rdklib_layer_arn)
+
+            if self.args.lambda_layers:
+                if self.args.lambda_layers:
+                    additional_layers = self.args.lambda_layers.split(',')
+                    layers.extend(additional_layers)
+
+            if layers:
+                my_params.append({
+                    'ParameterKey': 'Layers',
+                    'ParameterValue': ",".join(layers)
+                })
 
             #deploy config rule
             cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRule.json")
@@ -1206,6 +1257,28 @@ class rdk:
         else :
             print("Unknown subcommand.")
 
+    def create_terraform_template(self):
+        self.args = get_create_rule_template_parser().parse_args(self.args.command_args, self.args)
+
+        if self.args.rulesets:
+            self.args.rulesets = self.args.rulesets.split(',')
+
+        print ("Generating Terraform template!")
+
+        template = self.__generate_terraform_shell(args)
+
+        rule_names = self.__get_rule_list_for_command()
+
+        for rule_name in rule_names:
+            rule_input_params = self.__generate_rule_terraform_params(rule_name)
+            rule_def = self.__generate_rule_terraform(rule_name)
+            template.append(rule_input_params)
+            template.append(rule_def)
+
+        output_file = open(self.args.output_file, 'w')
+        output_file.write(json.dumps(template, indent=2))
+        print("CloudFormation template written to " + self.args.output_file)
+
     def create_rule_template(self):
         self.args = get_create_rule_template_parser().parse_args(self.args.command_args, self.args)
 
@@ -1240,70 +1313,25 @@ class rdk:
         conditions = {}
 
         if not self.args.rules_only:
-            if self.args.config_role_arn:
-                print ("Existing Config Role provided: " + self.args.config_role_arn)
-            else:
-                print ("No IAM role provided, creating a new IAM role for Config Role")
-                #Create Config Role
-                resources["ConfigRole"] = {}
-                resources["ConfigRole"]["Type"] = "AWS::IAM::Role"
-                resources["ConfigRole"]["DependsOn"] = "ConfigBucket"
-                resources["ConfigRole"]["Properties"] = {
-                    "RoleName": config_role_name,
-                    "Path": "/rdk/",
-                    "ManagedPolicyArns": [
-                        {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSConfigRole"},
-                        {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}
-                    ],
-                    "AssumeRolePolicyDocument": {
-                        "Version": "2012-10-17",
-                        "Statement": [
-                            {
-                                "Sid": "LOCAL",
-                                "Effect": "Allow",
-                                "Principal": {
-                                    "Service": [
-                                        "config.amazonaws.com"
-                                    ]
-                                },
-                                "Action": "sts:AssumeRole"
-                            },
-                            {
-                                "Sid": "REMOTE",
-                                "Effect": "Allow",
-                                "Principal": {
-                                    "AWS": {"Fn::Sub": "arn:${AWS::Partition}:iam::${LambdaAccountId}:root"}
-                                },
-                                "Action": "sts:AssumeRole"
-                            }
-                        ]
-                    },
-                    "Policies": [
-                        {
-                            "PolicyName": "DeliveryPermission",
-                            "PolicyDocument": {
-                                "Version": "2012-10-17",
-                                "Statement": [
-                                    {
-                                        "Effect": "Allow",
-                                        "Action": "s3:PutObject*",
-                                        "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${ConfigBucket}/AWSLogs/${AWS::AccountId}/*" },
-                                        "Condition": {
-                                            "StringLike": {
-                                                "s3:x-amz-acl": "bucket-owner-full-control"
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "Effect": "Allow",
-                                        "Action": "s3:GetBucketAcl",
-                                        "Resource": {"Fn::Sub": "arn:${AWS::Partition}:s3:::${ConfigBucket}"}
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
+            #Create Config Role
+            resources["ConfigRole"] = {}
+            resources["ConfigRole"]["Type"] = "AWS::IAM::Role"
+            resources["ConfigRole"]["DependsOn"] = "ConfigBucket"
+            resources["ConfigRole"]["Properties"] = {
+                "RoleName": config_role_name,
+                "Path": "/rdk/",
+                "ManagedPolicyArns": [
+                    {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSConfigRole"},
+                    {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}
+                ],
+                "AssumeRolePolicyDocument": CONFIG_ROLE_ASSUME_ROLE_POLICY_DOCUMENT,
+                "Policies": [
+                    {
+                        "PolicyName": "DeliveryPermission",
+                        "PolicyDocument": CONFIG_ROLE_POLICY_DOCUMENT
+                    }
+                ]
+            }
 
             #Create Bucket for Config Data
             resources["ConfigBucket"] = {
@@ -1325,8 +1353,6 @@ class rdk:
                     }
                 }
             }
-            if self.args.config_role_arn:
-                resources["ConfigurationRecorder"]["Properties"]["RoleARN"] = self.args.config_role_arn
 
             resources["DeliveryChannel"] = {
                 "Type": "AWS::Config::DeliveryChannel",
@@ -1482,6 +1508,15 @@ class rdk:
         output_file = open(self.args.output_file, 'w')
         output_file.write(json.dumps(template, indent=2))
         print("CloudFormation template written to " + self.args.output_file)
+
+    def __generate_terraform_shell(self, args):
+        return ""
+
+    def __generate_rule_terraform(self, rule_name):
+        return ""
+
+    def __generate_rule_terraform_params(self, rule_name):
+        return ""
 
     def __remove_ruleset_rule(self, ruleset, rulename):
         params, tags = self.__get_rule_parameters(rulename)
@@ -1816,8 +1851,24 @@ class rdk:
 
         self.args = get_deployment_parser(ForceArgument).parse_args(self.args.command_args, self.args)
 
+        ### Validate inputs ###
         if self.args.stack_name and not self.args.functions_only:
             print("--stack-name can only be specified when using the --functions-only feature.")
+            sys.exit(1)
+
+        #Make sure we're not exceeding Layer limits
+        if self.args.lambda_layers:
+            layer_count = len(self.args.lambda_layers.split(","))
+            if layer_count > 5:
+                print("You may only specify 5 Lambda Layers.")
+                sys.exit(1)
+            if self.args.rdklib_layer_arn and layer_count > 4:
+                print("Because you have selected a 'lib' runtime You may only specify 4 additional Lambda Layers.")
+                sys.exit(1)
+
+        #RDKLib version and RDKLib Layer ARN are mutually exclusive.
+        if "rdk_lib_version" in self.args and "rdklib_layer_arn" in self.args:
+            print("Specify EITHER an RDK Lib version to use the official release OR a specific Layer ARN to use a custom implementation.")
             sys.exit(1)
 
         #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
@@ -2098,78 +2149,74 @@ class rdk:
 
         resources = {}
 
-        if self.args.lambda_role_arn:
-            print ("Existing IAM role provided: " + self.args.lambda_role_arn)
-        else:
-            print ("No IAM role provided, creating a new IAM role for lambda function")
-            lambda_role = {}
-            lambda_role["Type"] = "AWS::IAM::Role"
-            lambda_role["Properties"] = {}
-            lambda_role["Properties"]["Path"] = "/rdk/"
-            lambda_role["Properties"]["AssumeRolePolicyDocument"] = {
-              "Version": "2012-10-17",
-              "Statement": [ {
-                "Sid": "AllowLambdaAssumeRole",
+        lambda_role = {}
+        lambda_role["Type"] = "AWS::IAM::Role"
+        lambda_role["Properties"] = {}
+        lambda_role["Properties"]["Path"] = "/rdk/"
+        lambda_role["Properties"]["AssumeRolePolicyDocument"] = {
+          "Version": "2012-10-17",
+          "Statement": [ {
+            "Sid": "AllowLambdaAssumeRole",
+            "Effect": "Allow",
+            "Principal": { "Service": "lambda.amazonaws.com" },
+            "Action": "sts:AssumeRole"
+          } ]
+        }
+        lambda_role["Properties"]["Policies"] = [{
+          "PolicyName": "ConfigRulePolicy",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "1",
+                "Action": [
+                  "s3:GetObject"
+                ],
                 "Effect": "Allow",
-                "Principal": { "Service": "lambda.amazonaws.com" },
-                "Action": "sts:AssumeRole"
-              } ]
-            }
-            lambda_role["Properties"]["Policies"] = [{
-              "PolicyName": "ConfigRulePolicy",
-              "PolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": [
-                  {
-                    "Sid": "1",
-                    "Action": [
-                      "s3:GetObject"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${SourceBucket}/*" }
-                  },
-                  {
-                    "Sid": "2",
-                    "Action": [
-                      "logs:CreateLogGroup",
-                      "logs:CreateLogStream",
-                      "logs:PutLogEvents",
-                      "logs:DescribeLogStreams"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  },
-                  {
-                    "Sid": "3",
-                    "Action": [
-                      "config:PutEvaluations"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  },
-                  {
-                    "Sid": "4",
-                    "Action": [
-                      "iam:List*",
-                      "iam:Describe*",
-                      "iam:Get*"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  },
-                  {
-                    "Sid": "5",
-                    "Action": [
-                      "sts:AssumeRole"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  }
-                ]
+                "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${SourceBucket}/*" }
+              },
+              {
+                "Sid": "2",
+                "Action": [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents",
+                  "logs:DescribeLogStreams"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
+              },
+              {
+                "Sid": "3",
+                "Action": [
+                  "config:PutEvaluations"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
+              },
+              {
+                "Sid": "4",
+                "Action": [
+                  "iam:List*",
+                  "iam:Describe*",
+                  "iam:Get*"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
+              },
+              {
+                "Sid": "5",
+                "Action": [
+                  "sts:AssumeRole"
+                ],
+                "Effect": "Allow",
+                "Resource": "*"
               }
-            } ]
-            lambda_role["Properties"]["ManagedPolicyArns"] = [{"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}]
-            resources["rdkLambdaRole"] = lambda_role
+            ]
+          }
+        } ]
+        lambda_role["Properties"]["ManagedPolicyArns"] = [{"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}]
+        resources["rdkLambdaRole"] = lambda_role
 
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
@@ -2183,20 +2230,26 @@ class rdk:
 
             lambda_function = {}
             lambda_function["Type"] = "AWS::Lambda::Function"
+            lambda_function["DependsOn"] = "rdkLambdaRole"
             properties = {}
             properties["FunctionName"] = "RDK-Rule-Function-" + stack_name
             properties["Code"] = {"S3Bucket": { "Ref": "SourceBucket"}, "S3Key": rule_name+"/"+rule_name+".zip"}
             properties["Description"] = "Function for AWS Config Rule " + rule_name
             properties["Handler"] = self.__get_handler(rule_name, params)
             properties["MemorySize"] = "256"
-            if self.args.lambda_role_arn:
-                properties["Role"] = self.args.lambda_role_arn
-            else:
-                lambda_function["DependsOn"] = "rdkLambdaRole"
-                properties["Role"] = {"Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]}
+            properties["Role"] = {"Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]}
             properties["Runtime"] = params["SourceRuntime"]
             properties["Timeout"] = 300
             properties["Tags"] = tags
+            layers = []
+            if self.args.rdklib_layer_arn:
+                layers.append(self.args.rdklib_layer_arn)
+            if self.args.lambda_layers:
+                for layer in self.args.lambda_layers.split(','):
+                    layers.append(layer)
+            if layers:
+                properties["Layers"] = layers
+
             lambda_function["Properties"] = properties
             resources[alphanum_rule_name+"LambdaFunction"] = lambda_function
 
