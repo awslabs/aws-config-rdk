@@ -158,7 +158,7 @@ def get_execution_role_arn(event):
         rule_params = json.loads(event['ruleParameters'])
         role_name = rule_params.get("ExecutionRoleName")
         if role_name:
-            execution_role_prefix = event["executionRoleArn"].split("/")[1]
+            execution_role_prefix = event["executionRoleArn"].split("/")[0]
             role_arn = "{}/{}".format(execution_role_prefix, role_name)
 
     if not role_arn:
