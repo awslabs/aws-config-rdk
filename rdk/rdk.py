@@ -876,14 +876,6 @@ class rdk:
             if 'InputParameters' in rule_params:
                 combined_input_parameters.update(json.loads(rule_params['InputParameters']))
 
-            layers = []
-            rdk_lib_version = "0"
-            if 'SourceRuntime' in rule_params:
-                if rule_params['SourceRuntime'] == "python3.6-lib":
-                    rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
-                    rdklib_arn = RDKLIB_ARN_STRING.format(region=my_session.region_name, version=rdk_lib_version)
-                    layers.append(rdklib_arn)
-
             if 'OptionalParameters' in rule_params:
                 #Remove empty parameters
                 keys_to_delete = []
@@ -1013,8 +1005,17 @@ class rdk:
                     'ParameterValue': self.__get_handler(rule_name, rule_params)
 
                 }]
-            if self.args.rdklib_layer_arn:
-                layers.append(self.args.rdklib_layer_arn)
+            layers = []
+            rdk_lib_version = "0"
+            if 'SourceRuntime' in rule_params:
+                if rule_params['SourceRuntime'] == "python3.6-lib":
+                    if self.args.rdklib_layer_arn:
+                        layers.append(self.args.rdklib_layer_arn)
+                    else:
+                        rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
+                        rdklib_arn = RDKLIB_ARN_STRING.format(region=my_session.region_name, version=rdk_lib_version)
+                        layers.append(rdklib_arn)
+
 
             if self.args.lambda_layers:
                 if self.args.lambda_layers:
