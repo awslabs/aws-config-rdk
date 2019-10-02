@@ -103,7 +103,7 @@ def get_client(service, event, region=None):
     """
     if not ASSUME_ROLE_MODE:
         return boto3.client(service, region)
-    credentials = get_assume_role_credentials(event["executionRoleArn"], region)
+    credentials = get_assume_role_credentials(get_execution_role_arn(event), region)
     return boto3.client(service, aws_access_key_id=credentials['AccessKeyId'],
                         aws_secret_access_key=credentials['SecretAccessKey'],
                         aws_session_token=credentials['SessionToken'],
@@ -150,6 +150,21 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
 ####################
 # Boilerplate Code #
 ####################
+
+# Get execution role for Lambda function
+def get_execution_role_arn(event):
+    role_arn = None
+    if 'ruleParameters' in event:
+        rule_params = json.loads(event['ruleParameters'])
+        role_name = rule_params.get("ExecutionRoleName")
+        if role_name:
+            execution_role_prefix = event["executionRoleArn"].split("/")[0]
+            role_arn = "{}/{}".format(execution_role_prefix, role_name)
+
+    if not role_arn:
+        role_arn = event['executionRoleArn']
+
+    return role_arn
 
 # Build annotation within Service constraints
 def build_annotation(annotation_string):

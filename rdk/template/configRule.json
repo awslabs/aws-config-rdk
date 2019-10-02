@@ -9,6 +9,11 @@
       "MinLength": "1",
       "MaxLength": "255"
     },
+    "LambdaRoleArn": {
+      "Description": "ARN of the existing IAM role that you want to attach to the lambda function.",
+      "Type": "String",
+      "Default": ""
+    },
     "SourceBucket": {
       "Description": "Name of the S3 bucket that you have stored the rule zip files in.",
       "Type": "String",
@@ -48,16 +53,17 @@
         "Description": "Lambda Function Handler",
         "Type": "String"
     },
-    "RDKLibVersion": {
-      "Description": "Use experimental RDKLib Lambda Layer",
-      "Type": "Number",
-      "Default": "0"
+    "Layers": {
+      "Description": "Comma-separated list of Lambda layers to be included with Lambda Function deployment",
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
+    "CreateNewLambdaRole" : { "Fn::Equals" : [{ "Ref": "LambdaRoleArn" }, ""]},
     "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
     "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]},
-    "UseRDKLib": {"Fn::Not": [{"Fn::Equals": [{"Ref": "RDKLibVersion"}, "0"]}]}
+    "UseAdditionalLayers": {"Fn::Not": [{"Fn::Equals": [{"Ref": "Layers"}, ""]}]}
   },
   "Resources": {
     "rdkRuleCodeLambda": {
@@ -71,16 +77,21 @@
         "Description": "Create a new AWS lambda function for rule code",
         "Handler": { "Ref": "SourceHandler"},
         "MemorySize": "256",
-        "Role":  { "Fn::GetAtt": [ "rdkLambdaRole", "Arn" ] } ,
+        "Role": {
+          "Fn::If": [ "CreateNewLambdaRole",
+              { "Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]},
+              { "Ref": "LambdaRoleArn" }
+            ]
+          },
         "Runtime": { "Ref": "SourceRuntime"},
         "Timeout": 60,
-        "Layers": [
-          {"Fn::If": [ "UseRDKLib",
-              { "Fn::Join" : ["", ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":711761543063:layer:rdklib:", {"Ref": "RDKLibVersion"}]]},
+        "Layers":
+          {"Fn::If":
+            [ "UseAdditionalLayers",
+              { "Fn::Split": [",", {"Ref": "Layers"}]},
               { "Ref": "AWS::NoValue"}
             ]
           }
-        ]
       }
     },
     "ConfigPermissionToCallrdkRuleCodeLambda": {
@@ -95,8 +106,7 @@
     "rdkConfigRule": {
       "Type": "AWS::Config::ConfigRule",
       "DependsOn": [
-        "ConfigPermissionToCallrdkRuleCodeLambda",
-        "rdkLambdaRole"
+        "ConfigPermissionToCallrdkRuleCodeLambda"
       ],
       "Properties": {
         "ConfigRuleName": { "Ref": "RuleName" },
@@ -132,6 +142,7 @@
       }
     },
     "rdkLambdaRole": {
+      "Condition": "CreateNewLambdaRole",
       "Type": "AWS::IAM::Role",
       "Properties": {
         "Path": "/rdk/",
