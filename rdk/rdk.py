@@ -176,7 +176,16 @@ def get_rule_parser(is_required, command):
     parser.add_argument('-i','--input-parameters', help="[optional] JSON for required Config parameters.")
     parser.add_argument('--optional-parameters', help="[optional] JSON for optional Config parameters.")
     parser.add_argument('--tags', help="[optional] JSON for tags to be applied to all CFN created resources.")
-    parser.add_argument('-s','--rulesets', required=False, help='[optional] comma-delimited list of RuleSet names to add this Rule to')
+    parser.add_argument('-s','--rulesets', required=False, help='[optional] comma-delimited list of RuleSet names to add this Rule to.')
+    parser.add_argument('--remediation-action', required=False, help='[optional] SSM document for remediation.')
+    parser.add_argument('--remediation-action-version', required=False, help='[optional] SSM document version for remediation action.')
+    parser.add_argument('--auto-remediate', action='store_true', required=False, help='[optional] Set the SSM remediation to trigger automatically.')
+    parser.add_argument('--auto-remediation-retry-attempts', required=False, help='[optional] Number of times to retry automated remediation.')
+    parser.add_argument('--auto-remediation-retry-time', required=False, help='[optional] Duration of automated remediation retries.')
+    parser.add_argument('--remediation-concurrent-execution-percent', required=False, help='[optional] Concurrent execution rate of the SSM document for remediation.')
+    parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
+    parser.add_argument('--remediation-resource-id-parameter', required=False, help='[optional] Parameter that will be passed to SSM remediation document.')
+    parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
     return parser
 
 def get_undeploy_parser():
@@ -669,6 +678,16 @@ class rdk:
         if not self.args.tags and tags:
             self.args.tags = tags
 
+        if not self.args.remediation_action and 'Remediation' in old_params:
+            params = old_params["Remediation"]
+            self.args.auto_remediate = params.get("Automatic", "")
+            self.args.remediation_concurrent_execution_percent = params.get("ExecutionControls", "").get("ConcurrentExecutionRatePercentage", "")
+            self.args.remediation_error_rate_percent = params.get("ExecutionControls","").get("ErrorPercentage", "")
+            self.args.remediation_parameters = json.dumps(params.get("Parameters", ""))
+            self.args.auto_remediation_retry_time = params.get("RetryAttemptSeconds", "")
+            self.args.remediation_action = params.get("TargetId", "")
+            self.args.remediation_action_version = params.get("TargetVersion", "")
+
         if 'RuleSets' in old_params:
             if not self.args.rulesets:
                 self.args.rulesets = old_params['RuleSets']
@@ -1038,8 +1057,19 @@ class rdk:
                     'ParameterValue': ",".join(layers)
                 })
 
+            remediation = ""
+            if "Remediation" in rule_params:
+                remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
+
             #deploy config rule
             cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRule.json")
+            template_body = open(cfn_body, "r").read()
+            json_body = json.loads(template_body)
+            json_body["Resources"]["Remediation"] = remediation
+
+            #debugging
+            #print(json.dumps(json_body, indent=2))
+
             my_cfn = my_session.client('cloudformation')
             try:
                 my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
@@ -1049,7 +1079,7 @@ class rdk:
                 try:
                     cfn_args = {
                         'StackName': my_stack_name,
-                        'TemplateBody': open(cfn_body, "r").read(),
+                        'TemplateBody': json.dumps(json_body),
                         'Parameters': my_params,
                         'Capabilities': ['CAPABILITY_IAM']
                     }
@@ -1087,7 +1117,7 @@ class rdk:
                 print ("Creating CloudFormation Stack for " + rule_name)
                 cfn_args = {
                     'StackName': my_stack_name,
-                    'TemplateBody': open(cfn_body, "r").read(),
+                    'TemplateBody': json.dumps(json_body),
                     'Parameters': my_params,
                     'Capabilities': ['CAPABILITY_IAM']
                 }
@@ -1491,9 +1521,18 @@ class rdk:
                         ]
                     }
 
-            config_rule["Properties"] = properties
 
-            resources[self.__get_alphanumeric_rule_name(rule_name)+"ConfigRule"] = config_rule
+            config_rule["Properties"] = properties
+            config_rule_resource_name = self.__get_alphanumeric_rule_name(rule_name)+"ConfigRule"
+            resources[config_rule_resource_name] = config_rule
+
+            if "Remediation" in params:
+                remediation = self.__create_remediation_cloudformation_block(params["Remediation"])
+                remediation["DependsOn"] = [config_rule_resource_name]
+                if not self.args.rules_only:
+                    remediation["DependsOn"].append("ConfigRole")
+
+                resources[self.__get_alphanumeric_rule_name(rule_name)+"Remediation"] = remediation
 
         template["Resources"] = resources
         template["Conditions"] = conditions
@@ -1934,6 +1973,13 @@ class rdk:
             except Exception as e:
                 print("Error parsing optional tags JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and tags string is enclosed in single quotes.")
 
+        my_remediation = {}
+        if self.args.remediation_action:
+            try:
+                my_remediation = self.__generate_remediation_params()
+            except Exception as e:
+                print("Error parsing remediation configuration.")
+
         #create config file and place in rule directory
         parameters = {
             'RuleName': self.args.rulename,
@@ -1960,7 +2006,47 @@ class rdk:
             parameters['CodeKey'] = None
             parameters['SourceRuntime'] = None
 
+        if my_remediation:
+            parameters['Remediation'] = my_remediation
+
         self.__write_params_file(self.args.rulename, parameters, tags)
+
+    def __generate_remediation_params(self):
+        params = {}
+        if self.args.auto_remediate:
+            params["Automatic"] = self.args.auto_remediate
+
+        params["ConfigRuleName"] = self.args.rulename
+
+        ssm_controls = {}
+        if self.args.remediation_concurrent_execution_percent:
+            ssm_controls["ConcurrentExecutionRatePercentage"] = self.args.remediation_concurrent_execution_percent
+
+        if self.args.remediation_error_rate_percent:
+            ssm_controls["ErrorPercentage"] = self.args.remediation_error_rate_percent
+
+        if ssm_controls:
+            params["ExecutionControls"] = ssm_controls
+
+        if self.args.auto_remediation_retry_attempts:
+            params["MaximumAutomaticAttempts"] = self.args.auto_remediation_retry_attempts
+
+        if self.args.remediation_parameters:
+            params["Parameters"] = json.loads(self.args.remediation_parameters)
+
+        if len(self.args.resource_types.split(",")) == 1:
+            params["ResourceType"] = self.args.resource_types
+
+        if self.args.auto_remediation_retry_time:
+            params["RetryAttemptSeconds"] = self.args.auto_remediation_retry_time
+
+        params["TargetId"] = self.args.remediation_action
+        params["TargetType"] = "SSM_DOCUMENT"
+
+        if self.args.remediation_action_version:
+            params["TargetVersion"] = self.args.remediation_action_version
+
+        return params
 
     def __write_params_file(self, rulename, parameters, tags):
         my_params = {
@@ -2142,6 +2228,16 @@ class rdk:
         print ("Upload complete.")
 
         return s3_dst
+
+    def __create_remediation_cloudformation_block(self, remediation_config):
+        remediation = {
+            "Type" : "AWS::Config::RemediationConfiguration",
+            "DependsOn": "rdkConfigRule",
+            "Properties" :
+                remediation_config
+        }
+
+        return remediation
 
     def __create_function_cloudformation_template(self):
         print ("Generating CloudFormation template for Lambda Functions!")
