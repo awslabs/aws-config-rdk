@@ -656,7 +656,7 @@ class rdk:
 
         #Get existing parameters
         old_params, tags = self.__get_rule_parameters(self.args.rulename)
-        print(json.dumps(old_params, indent=2))
+
         if not self.args.resource_types and 'SourceEvents' in old_params:
             self.args.resource_types = old_params['SourceEvents']
 
@@ -681,8 +681,10 @@ class rdk:
         if not self.args.remediation_action and 'Remediation' in old_params:
             params = old_params["Remediation"]
             self.args.auto_remediate = params.get("Automatic", "")
-            self.args.remediation_concurrent_execution_percent = params.get("ExecutionControls", "").get("ConcurrentExecutionRatePercentage", "")
-            self.args.remediation_error_rate_percent = params.get("ExecutionControls","").get("ErrorPercentage", "")
+            execution_controls = params.get("ExecutionControls", "")
+            if execution_controls:
+                self.args.remediation_concurrent_execution_percent = execution_controls.get("ConcurrentExecutionRatePercentage", "")
+                self.args.remediation_error_rate_percent = execution_controls.get("ErrorPercentage", "")
             self.args.remediation_parameters = json.dumps(params.get("Parameters", ""))
             self.args.auto_remediation_retry_time = params.get("RetryAttemptSeconds", "")
             self.args.remediation_action = params.get("TargetId", "")
