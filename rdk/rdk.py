@@ -1059,19 +1059,20 @@ class rdk:
                     'ParameterValue': ",".join(layers)
                 })
 
-            remediation = ""
-            if "Remediation" in rule_params:
-                remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
-
-            #deploy config rule
+            #create json of CFN template
             cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRule.json")
             template_body = open(cfn_body, "r").read()
             json_body = json.loads(template_body)
-            json_body["Resources"]["Remediation"] = remediation
+
+            remediation = ""
+            if "Remediation" in rule_params:
+                remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
+                json_body["Resources"]["Remediation"] = remediation
 
             #debugging
             #print(json.dumps(json_body, indent=2))
 
+            #deploy config rule
             my_cfn = my_session.client('cloudformation')
             try:
                 my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
