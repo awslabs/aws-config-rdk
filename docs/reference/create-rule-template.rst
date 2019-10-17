@@ -17,3 +17,5 @@ Create-Rule-Template
    By default the generated CloudFormation template will set up Config as per the settings used by the RDK ``init`` command, but those resources can be omitted using the ``--rules-only`` flag.
 
    The ``--config-role-arn`` flag can be used for assigning existing config role to the created Configuration Recorder.
+
+   As of version 0.6, RDK supports Config remediation.  Note that in order to use SSM documents for remediation you must supply all of the necessary document parameters.  These can be found in the SSM document listing on the AWS console, but RDK will *not* validate at rule creation that you have all of the necessary parameters supplied.
