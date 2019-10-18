@@ -1,14 +1,14 @@
-  {
-    "version": "1.2",
-    "accountId": "264683526309",
+{
+    "awsAccountId": "112233445566",
     "configurationItemCaptureTime": "2016-11-06T17:56:56.560Z",
+	"configurationItemVersion": "1.3",
     "configurationItemStatus": "OK",
     "configurationStateId": "1478455016560",
     "configurationItemMD5Hash": "0a2aae6878d94cd28a9ec808a10e8402",
-    "arn": "arn:aws:iam::264683526309:user/aaronfre",
+    "ARN": "arn:aws:iam::112233445566:user/johndoe",
     "resourceType": "AWS::IAM::User",
     "resourceId": "AIDAILEDWOGIPJFAKOJKW",
-    "resourceName": "aaronfre",
+    "resourceName": "johndoe",
     "awsRegion": "global",
     "availabilityZone": "Not Applicable",
     "resourceCreationTime": "2016-09-22T05:55:07.000Z",
@@ -38,13 +38,13 @@
     ],
     "configuration": {
       "path": "/",
-      "userName": "aaronfre",
+      "userName": "johndoe",
       "userId": "AIDAILEDWOGIPJFAKOJKW",
-      "arn": "arn:aws:iam::264683526309:user/aaronfre",
+      "arn": "arn:aws:iam::112233445566:user/johndoe",
       "createDate": "2016-09-22T05:55:07.000Z",
       "userPolicyList": [
         {
-          "policyName": "policygen-aaronfre-201611060951",
+          "policyName": "policygen-johndoe-201611060951",
           "policyDocument": [
             {
               "Version": "2012-10-17",
