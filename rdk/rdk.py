@@ -2030,11 +2030,7 @@ class rdk:
             ssm_controls["ErrorPercentage"] = self.args.remediation_error_rate_percent
 
         if ssm_controls:
-<<<<<<< HEAD
             params["ExecutionControls"] = {"SsmControls": ssm_controls}
-=======
-            params["ExecutionControls"] = ssm_controls
->>>>>>> 2afb96924108e678363c1fa9160f2899c71d2ee7
 
         if self.args.auto_remediation_retry_attempts:
             params["MaximumAutomaticAttempts"] = self.args.auto_remediation_retry_attempts
