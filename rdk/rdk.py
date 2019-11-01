@@ -979,7 +979,7 @@ class rdk:
                     except ClientError as e:
                         #If we're in the exception, the stack does not exist and we should create it.
                         print ("Creating CloudFormation Stack for " + rule_name)
-                        #TODO Need to add the ability to build a remediation on a managed config rule
+                        
                         if "Remediation" in rule_params:
                             cfn_args = {
                                 'StackName': my_stack_name,
@@ -987,8 +987,7 @@ class rdk:
                                 'Parameters': my_params
                             }
 
-                            print(json_body)
-                            print('-')
+
                         else:
                             cfn_args = {
                                 'StackName': my_stack_name,
