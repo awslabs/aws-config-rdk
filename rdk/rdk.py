@@ -186,6 +186,7 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
     parser.add_argument('--remediation-resource-id-parameter', required=False, help='[optional] Parameter that will be passed to SSM remediation document.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
+    parser.add_argument('--automation-document', required=False, help='[optional] JSON-formatted string of the SSM Automation Document.')
     return parser
 
 def get_undeploy_parser():
@@ -936,128 +937,57 @@ class rdk:
                         'ParameterKey': 'SourceIdentifier',
                         'ParameterValue': rule_params['SourceIdentifier']
                     }]
-                
-                my_cfn = my_session.client('cloudformation')
-                #Check if this managed rule needs to have an assoicated remedation block
-                remediation = ""
-                if "Remediation" in rule_params:
-                    print('Build The CFN Template with Remedation Settings')
-                    cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemedation.json")
-                    template_body = open(cfn_body, "r").read()
-                    json_body = json.loads(template_body)
-                    remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
-                    json_body["Resources"]["Remediation"] = remediation
-                    
-                    try:
-                        my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
-                        my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
-                        #If we've gotten here, stack exists and we should update it.
-                        print ("Updating CloudFormation Stack for " + rule_name)
-                        try:
-                            cfn_args = {
-                                'StackName': my_stack_name,
-                                'TemplateBody': json.dumps(json_body),
-                                'Parameters': my_params
-                            }
 
-                            # If no tags key is specified, or if the tags dict is empty
-                            if cfn_tags is not None:
-                                cfn_args['Tags'] = cfn_tags
-
-                            response = my_cfn.update_stack(**cfn_args)
-                        except ClientError as e:
-                            if e.response['Error']['Code'] == 'ValidationError':
-                                if 'No updates are to be performed.' in str(e):
-                                    #No changes made to Config rule definition, so CloudFormation won't do anything.
-                                    print("No changes to Config Rule.")
-                                else:
-                                    #Something unexpected has gone wrong.  Emit an error and bail.
-                                    print(e)
-                                    return 1
-                            else:
-                                raise
-                    except ClientError as e:
-                        #If we're in the exception, the stack does not exist and we should create it.
-                        print ("Creating CloudFormation Stack for " + rule_name)
-                        
-                        if "Remediation" in rule_params:
-                            cfn_args = {
-                                'StackName': my_stack_name,
-                                'TemplateBody': json.dumps(json_body),
-                                'Parameters': my_params
-                            }
-
-
-                        else:
-                            cfn_args = {
-                                'StackName': my_stack_name,
-                                'TemplateBody': open(cfn_body, "r").read(),
-                                'Parameters': my_params
-                            }
-
-                        if cfn_tags is not None:
-                            cfn_args['Tags'] = cfn_tags
-
-                        response = my_cfn.create_stack(**cfn_args)
-
-                    #wait for changes to propagate.
-                    self.__wait_for_cfn_stack(my_cfn, my_stack_name)
-
-                    continue
-
-
-                    
-
-                else:
                 #deploy config rule
-                    cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRule.json")
+                cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRule.json")
+                my_cfn = my_session.client('cloudformation')
 
+                try:
+                    my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
+                    my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
+                    #If we've gotten here, stack exists and we should update it.
+                    print ("Updating CloudFormation Stack for " + rule_name)
                     try:
-                        my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
-                        my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
-                        #If we've gotten here, stack exists and we should update it.
-                        print ("Updating CloudFormation Stack for " + rule_name)
-                        try:
-                            cfn_args = {
-                                'StackName': my_stack_name,
-                                'TemplateBody': open(cfn_body, "r").read(),
-                                'Parameters': my_params
-                            }
-
-                            # If no tags key is specified, or if the tags dict is empty
-                            if cfn_tags is not None:
-                                cfn_args['Tags'] = cfn_tags
-
-                            response = my_cfn.update_stack(**cfn_args)
-                        except ClientError as e:
-                            if e.response['Error']['Code'] == 'ValidationError':
-                                if 'No updates are to be performed.' in str(e):
-                                    #No changes made to Config rule definition, so CloudFormation won't do anything.
-                                    print("No changes to Config Rule.")
-                                else:
-                                    #Something unexpected has gone wrong.  Emit an error and bail.
-                                    print(e)
-                                    return 1
-                            else:
-                                raise
-                    except ClientError as e:
-                        #If we're in the exception, the stack does not exist and we should create it.
-                        print ("Creating CloudFormation Stack for " + rule_name)
                         cfn_args = {
                             'StackName': my_stack_name,
                             'TemplateBody': open(cfn_body, "r").read(),
                             'Parameters': my_params
                         }
 
+                        # If no tags key is specified, or if the tags dict is empty
                         if cfn_tags is not None:
                             cfn_args['Tags'] = cfn_tags
 
-                        response = my_cfn.create_stack(**cfn_args)
+                        response = my_cfn.update_stack(**cfn_args)
+                    except ClientError as e:
+                        if e.response['Error']['Code'] == 'ValidationError':
+                            if 'No updates are to be performed.' in str(e):
+                                #No changes made to Config rule definition, so CloudFormation won't do anything.
+                                print("No changes to Config Rule.")
+                            else:
+                                #Something unexpected has gone wrong.  Emit an error and bail.
+                                print(e)
+                                return 1
+                        else:
+                            raise
+                except ClientError as e:
+                    #If we're in the exception, the stack does not exist and we should create it.
+                    print ("Creating CloudFormation Stack for " + rule_name)
+                    cfn_args = {
+                        'StackName': my_stack_name,
+                        'TemplateBody': open(cfn_body, "r").read(),
+                        'Parameters': my_params
+                    }
 
-                    #wait for changes to propagate.
-                    self.__wait_for_cfn_stack(my_cfn, my_stack_name)
+                    if cfn_tags is not None:
+                        cfn_args['Tags'] = cfn_tags
 
-                    continue
+                    response = my_cfn.create_stack(**cfn_args)
+
+                #wait for changes to propagate.
+                self.__wait_for_cfn_stack(my_cfn, my_stack_name)
+
+                continue
 
             print("Found Custom Rule.")
 
@@ -1141,6 +1071,19 @@ class rdk:
                 remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
                 json_body["Resources"]["Remediation"] = remediation
 
+                if "SSMAutomation" in rule_params:
+                    #AWS needs to build the SSM before the Config Rule
+                    resource_depends_on = ['rdkConfigRule', rule_name+"React"]
+                    remediation["DependsOn"] = resource_depends_on
+                    #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
+                    remediation['Properties']['TargetId'] = {"Ref" : rule_name + 'React' }
+
+            if "SSMAutomation" in rule_params:
+                print('Building SSM Automation Section')
+                ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], rule_name)
+                json_body["Resources"][rule_name+'React'] = ssm_automation
+                print('stop here and check out the cfn')
+                
             #debugging
             #print(json.dumps(json_body, indent=2))
 
@@ -1601,13 +1544,27 @@ class rdk:
             config_rule_resource_name = self.__get_alphanumeric_rule_name(rule_name)+"ConfigRule"
             resources[config_rule_resource_name] = config_rule
 
+            if "SSMAutomation" in params:
+                ssm_automation = self.__create_automation_cloudformation_block(params['SSMAutomation'], rule_name)
+                #Add the CFN Block to the cfn here
+
             if "Remediation" in params:
                 remediation = self.__create_remediation_cloudformation_block(params["Remediation"])
                 remediation["DependsOn"] = [config_rule_resource_name]
                 if not self.args.rules_only:
                     remediation["DependsOn"].append("ConfigRole")
+                    
+                    if "SSMAutomation" in params:
+                        #AWS needs to build the SSM before the Config Rule
+                        remediation["DependsOn"].append(rule_name+'React')
+                        #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
+                        remediation['Properties']['TargetId'] = {"Ref" : rule_name + 'React' }
 
                 resources[self.__get_alphanumeric_rule_name(rule_name)+"Remediation"] = remediation
+                resources[rule_name+"React"] = ssm_automation
+
+                
+
 
         template["Resources"] = resources
         template["Conditions"] = conditions
@@ -2313,6 +2270,27 @@ class rdk:
         }
 
         return remediation
+
+    def __create_automation_cloudformation_block(self, ssm_automation, rule_name):
+        print('Generate SSM Resources')
+        
+        #params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
+        ssm_automation_content = open(ssm_automation['Document'], 'r').read()
+        ssm_automation_json = json.loads(ssm_automation_content)
+        ssm_automation_config = {
+                                "Type": "AWS::SSM::Document",
+                                 "Properties": {
+                                    "DocumentType": "Automation",
+                                    "Content" : ssm_automation_json
+                                    }
+                                
+            }
+        
+         
+        return(ssm_automation_config)
+                            
+
+
 
     def __create_function_cloudformation_template(self):
         print ("Generating CloudFormation template for Lambda Functions!")
