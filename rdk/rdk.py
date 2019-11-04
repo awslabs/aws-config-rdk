@@ -186,7 +186,6 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
     parser.add_argument('--remediation-resource-id-parameter', required=False, help='[optional] Parameter that will be passed to SSM remediation document.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
-    parser.add_argument('--automation-document', required=False, help='[optional] JSON-formatted string of the SSM Automation Document.')
     return parser
 
 def get_undeploy_parser():
