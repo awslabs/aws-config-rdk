@@ -1,5 +1,5 @@
 # Created by https://www.gitignore.io/api/python
-
+.gitignore
 ### Python ###
 # Byte-compiled / optimized / DLL files
 rdk/__pycache__/
@@ -103,3 +103,17 @@ venv.bak/
 
 # End of https://www.gitignore.io/api/python
 
+
+.vscode/launch.json
+
+.vscode/settings.json
+
+myAutomationTest/
+
+myAutomationTestWithManegedRule/
+
+myAutomationTestWithManPeridoc/
+
+myAutomationTestWithResouceType/
+
+.vscode/sk.py
