@@ -7,7 +7,7 @@ Deploy
    :prog: rdk deploy
    :nodescription:
 
-   This command will deploy the specified Rule(s) to the Account and Region determined by the credentials being used to execute the command, and the value of the AWS_DEFAULT_REGION environment variable, unless those credentials or region are overrided using the common flags.
+   This command will deploy the specified Rule(s) to the Account and Region determined by the credentials being used to execute the command, and the value of the AWS_DEFAULT_REGION environment variable, unless those credentials or region are overridden using the common flags.
 
    Once deployed, RDK will _not_ explicitly start a Rule evaluation.  Depending on the changes being made to your Config Rule setup AWS Config may re-evaluate the deployed Rules automatically, or you can run an evaluation using the AWS configservice CLI.
 
