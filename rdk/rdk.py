@@ -2358,7 +2358,7 @@ class rdk:
             else:
                 lambda_function["DependsOn"] = "rdkLambdaRole"
                 properties["Role"] = {"Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]}
-            properties["Runtime"] = params["SourceRuntime"]
+            properties["Runtime"] = self.__get_runtime_string(params)
             properties["Timeout"] = 300
             properties["Tags"] = tags
             layers = []
