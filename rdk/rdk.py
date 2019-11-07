@@ -1169,8 +1169,8 @@ class rdk:
                 if "IAM" in rule_params['SSMAutomation']:
                     print('Lets Build IAM Role and Policy')
                     ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(rule_params['SSMAutomation'], rule_name)
-                    json_body["Resources"][rule_name+'Role'] = ssm_iam_role
-                    json_body["Resources"][rule_name+'Policy'] = ssm_iam_policy
+                    json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
+                    json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
                 
             #debugging
             #print(json.dumps(json_body, indent=2))
