@@ -2286,7 +2286,8 @@ class rdk:
 
     def __create_automation_cloudformation_block(self, ssm_automation, rule_name):
         print('Generate SSM Resources')
-        
+        ssm_json_dir = os.path.join(os.getcwd(), ssm_automation['Document'])
+        print('Reading SSM JSON From -> ' + ssm_json_dir
         #params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
         ssm_automation_content = open(ssm_automation['Document'], 'r').read()
         ssm_automation_json = json.loads(ssm_automation_content)
@@ -2303,6 +2304,7 @@ class rdk:
         return(ssm_automation_config)
 
     def __create_automation_iam_cloudformation_block(self, ssm_automation, rule_name):
+        
 
 
         print('Generate IAM Role for SSM Document with these actions', str(ssm_automation['IAM']))
