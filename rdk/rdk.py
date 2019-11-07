@@ -2289,7 +2289,6 @@ class rdk:
         current_working_direcoty = os.getcwd()
         ssm_json_dir = os.path.join(os.getcwd(), ssm_automation['Document'])
         print('Reading SSM JSON From -> ' + ssm_json_dir)
-        print('Reading SSM JSON From -> ' + current_working_direcoty)
         #params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
         ssm_automation_content = open(ssm_json_dir, 'r').read()
         ssm_automation_json = json.loads(ssm_automation_content)
