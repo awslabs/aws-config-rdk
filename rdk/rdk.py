@@ -2289,7 +2289,7 @@ class rdk:
         ssm_json_dir = os.path.join(os.getcwd(), ssm_automation['Document'])
         print('Reading SSM JSON From -> ' + ssm_json_dir)
         #params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
-        ssm_automation_content = open(ssm_automation['Document'], 'r').read()
+        ssm_automation_content = open(ssm_json_dir, 'r').read()
         ssm_automation_json = json.loads(ssm_automation_content)
         ssm_automation_config = {
                                 "Type": "AWS::SSM::Document",
