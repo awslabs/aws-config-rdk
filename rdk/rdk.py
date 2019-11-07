@@ -937,11 +937,9 @@ class rdk:
                         'ParameterKey': 'SourceIdentifier',
                         'ParameterValue': rule_params['SourceIdentifier']
                     }]
-
                 my_cfn = my_session.client('cloudformation')
-                #Check if this managed rule needs to have an assoicated remedation block
-                remediation = ""
                 if "Remediation" in rule_params:
+                    print("Adding Remedation to Managed Rule")
                     print('Build The CFN Template with Remedation Settings')
                     cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemedation.json")
                     template_body = open(cfn_body, "r").read()
@@ -949,6 +947,22 @@ class rdk:
                     remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
                     json_body["Resources"]["Remediation"] = remediation
                     
+                    if "SSMAutomation" in rule_params:
+                        print('Building SSM Automation Section')
+                        ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
+                        json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'React')] = ssm_automation
+                        if "IAM" in rule_params['SSMAutomation']:
+                            print('Lets Build IAM Role and Policy')
+                            ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
+                            json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
+                            json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
+                    
+                            print('Build Supporting SSM Resources')
+                            resource_depends_on = ['rdkConfigRule', self.__get_alphanumeric_rule_name(rule_name+"React")]
+                            #Builds SSM Document Before Config RUle
+                            json_body["Resources"]["Remediation"]['DependsOn'] = resource_depends_on
+                            json_body["Resources"]["Remediation"]['Properties']['TargetId'] = {'Ref': self.__get_alphanumeric_rule_name(rule_name+"React")}
+
                     try:
                         my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
                         my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
@@ -958,7 +972,8 @@ class rdk:
                             cfn_args = {
                                 'StackName': my_stack_name,
                                 'TemplateBody': json.dumps(json_body),
-                                'Parameters': my_params
+                                'Parameters': my_params,
+                                'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'] 
                             }
 
                             # If no tags key is specified, or if the tags dict is empty
@@ -985,7 +1000,8 @@ class rdk:
                             cfn_args = {
                                 'StackName': my_stack_name,
                                 'TemplateBody': json.dumps(json_body),
-                                'Parameters': my_params
+                                'Parameters': my_params,
+                                'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM']
                             }
 
 
@@ -1006,13 +1022,9 @@ class rdk:
 
                     continue
 
-
-                    
-
                 else:
                 #deploy config rule
                     cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRule.json")
-                my_cfn = my_session.client('cloudformation')
 
                     try:
                         my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
@@ -1031,7 +1043,7 @@ class rdk:
                                 cfn_args['Tags'] = cfn_tags
 
                             response = my_cfn.update_stack(**cfn_args)
-                    except ClientError as e:
+                        except ClientError as e:
                             if e.response['Error']['Code'] == 'ValidationError':
                                 if 'No updates are to be performed.' in str(e):
                                     #No changes made to Config rule definition, so CloudFormation won't do anything.
@@ -2378,8 +2390,6 @@ class rdk:
 
     def __create_automation_iam_cloudformation_block(self, ssm_automation, rule_name):
         
-
-
         print('Generate IAM Role for SSM Document with these actions', str(ssm_automation['IAM']))
         
         assume_role_template = {
