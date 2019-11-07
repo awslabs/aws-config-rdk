@@ -2288,6 +2288,7 @@ class rdk:
         print('Generate SSM Resources')
         ssm_json_dir = os.path.join(os.getcwd(), ssm_automation['Document'])
         print('Reading SSM JSON From -> ' + ssm_json_dir)
+        print('Reading SSM JSON From -> ' + str(os.listdir())
         #params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
         ssm_automation_content = open(ssm_json_dir, 'r').read()
         ssm_automation_json = json.loads(ssm_automation_content)
@@ -2308,7 +2309,7 @@ class rdk:
 
 
         print('Generate IAM Role for SSM Document with these actions', str(ssm_automation['IAM']))
-        ssm_actions = ['dynamodb:Get', 'dynamo:Put']
+        
         assume_role_template = {
                                     "Version": "2012-10-17",
                                     "Statement": [
@@ -2340,7 +2341,7 @@ class rdk:
                                             "PolicyDocument": {
                                             "Statement": [
                                                 {
-                                                    "Action": ssm_actions,
+                                                    "Action": ssm_automation['IAM'],
                                                     "Effect": "Allow",
                                                     "Resource": "*"
                                                 }
