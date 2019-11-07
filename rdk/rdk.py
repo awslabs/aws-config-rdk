@@ -2436,7 +2436,7 @@ class rdk:
                                             "PolicyName": rule_name + "-Remediation-Policy" ,
                                             "Roles": [
                                             {
-                                                "Ref": rule_name+'Role'
+                                                "Ref": self.__get_alphanumeric_rule_name(rule_name+'Role')
                                             }
                                             ]
                                         }
