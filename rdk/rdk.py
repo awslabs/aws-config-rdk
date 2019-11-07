@@ -1197,13 +1197,14 @@ class rdk:
                     response = my_cfn.update_stack(**cfn_args)
                 except ClientError as e:
                     if e.response['Error']['Code'] == 'ValidationError':
-                        print('Validation Error on CFN')
-                        print(json.dumps(cfn_args))
+                        
                         if 'No updates are to be performed.' in str(e):
                             #No changes made to Config rule definition, so CloudFormation won't do anything.
                             print("No changes to Config Rule.")
                         else:
                             #Something unexpected has gone wrong.  Emit an error and bail.
+                            print('Validation Error on CFN')
+                            print(json.dumps(cfn_args))
                             print(e)
                             return 1
                     else:
