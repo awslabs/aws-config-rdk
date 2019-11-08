@@ -939,17 +939,18 @@ class rdk:
                     }]
                 my_cfn = my_session.client('cloudformation')
                 if "Remediation" in rule_params:
-                    print("Adding Remedation to Managed Rule")
-                    print('Build The CFN Template with Remedation Settings')
-                    cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemedation.json")
+                    print("Adding Remediation to Managed Rule")
+                    print('Build The CFN Template with Remediation Settings')
+                    cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemediation.json")
                     template_body = open(cfn_body, "r").read()
                     json_body = json.loads(template_body)
                     remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
                     json_body["Resources"]["Remediation"] = remediation
                     
                     if "SSMAutomation" in rule_params:
-                        #Reference the SSM Automation Role Created
-                        json_body["Resources"]['Remedation']['Properties']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Ref":self.__get_alphanumeric_rule_name(rule_name+"Role")}]
+                        #Reference the SSM Automation Role Created, if IAM is created
+                        #TODO Check For IAM Settings
+                        json_body["Resources"]['Remediation']['Properties']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Ref":self.__get_alphanumeric_rule_name(rule_name+"Role")}]
                         print('Building SSM Automation Section')
                         ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
                         json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'React')] = ssm_automation
