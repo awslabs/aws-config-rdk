@@ -948,6 +948,8 @@ class rdk:
                     json_body["Resources"]["Remediation"] = remediation
                     
                     if "SSMAutomation" in rule_params:
+                        #Reference the SSM Automation Role Created
+                        json_body["Resources"]['Remedation']['Properties']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Ref":self.__get_alphanumeric_rule_name(rule_name+"Role")}]
                         print('Building SSM Automation Section')
                         ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
                         json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'React')] = ssm_automation
