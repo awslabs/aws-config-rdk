@@ -949,13 +949,14 @@ class rdk:
                     
                     if "SSMAutomation" in rule_params:
                         #Reference the SSM Automation Role Created, if IAM is created
-                        #TODO Check For IAM Settings
-                        json_body["Resources"]['Remediation']['Properties']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Ref":self.__get_alphanumeric_rule_name(rule_name+"Role")}]
                         print('Building SSM Automation Section')
                         ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
                         json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'React')] = ssm_automation
                         if "IAM" in rule_params['SSMAutomation']:
                             print('Lets Build IAM Role and Policy')
+                            #TODO Check For IAM Settings
+                            json_body["Resources"]['Remediation']['Properties']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Ref":self.__get_alphanumeric_rule_name(rule_name+"Role")}]
+                        
                             ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
                             json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
                             json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
@@ -1159,7 +1160,7 @@ class rdk:
                 json_body["Resources"]["Remediation"] = remediation
 
                 if "SSMAutomation" in rule_params:
-                    #AWS needs to build the SSM before the Config Rule
+                    ##AWS needs to build the SSM before the Config Rule
                     resource_depends_on = ['rdkConfigRule', self.__get_alphanumeric_rule_name(rule_name+"React")]
                     remediation["DependsOn"] = resource_depends_on
                     #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
@@ -1167,10 +1168,14 @@ class rdk:
 
             if "SSMAutomation" in rule_params:
                 print('Building SSM Automation Section')
+                
                 ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], rule_name)
                 json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+"React")] = ssm_automation
                 if "IAM" in rule_params['SSMAutomation']:
                     print('Lets Build IAM Role and Policy')
+                    #TODO Check For IAM Settings
+                    json_body["Resources"]['Remediation']['Properties']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Ref":self.__get_alphanumeric_rule_name(rule_name+"Role")}]
+                    
                     ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(rule_params['SSMAutomation'], rule_name)
                     json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
                     json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
