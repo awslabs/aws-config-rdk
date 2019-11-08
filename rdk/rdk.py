@@ -939,8 +939,7 @@ class rdk:
                     }]
                 my_cfn = my_session.client('cloudformation')
                 if "Remediation" in rule_params:
-                    print("Adding Remediation to Managed Rule")
-                    print('Build The CFN Template with Remediation Settings')
+                    print('Build The CFN Template with Remediation Settings' + rule_name)
                     cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemediation.json")
                     template_body = open(cfn_body, "r").read()
                     json_body = json.loads(template_body)
