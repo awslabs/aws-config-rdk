@@ -955,7 +955,7 @@ class rdk:
                         if "IAM" in rule_params['SSMAutomation']:
                             print('Lets Build IAM Role and Policy')
                             #TODO Check For IAM Settings
-                            json_body["Resources"]['Remediation']['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Ref":self.__get_alphanumeric_rule_name(rule_name+"Role")}]
+                            json_body["Resources"]['Remediation']['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"FN::GetAtt":[self.__get_alphanumeric_rule_name(rule_name+"Role"), "Arn"]}]
                         
                             ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
                             json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
