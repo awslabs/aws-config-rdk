@@ -1646,27 +1646,27 @@ class rdk:
             resources[config_rule_resource_name] = config_rule
 
 
-            #If Remedation create the Remeation section with potential links to the SSM Details
+            #If Remedation create the remedation section with potential links to the SSM Details
             if "Remediation" in params:
                 remediation = self.__create_remediation_cloudformation_block(params["Remediation"])
                 remediation["DependsOn"] = [config_rule_resource_name]
                 if not self.args.rules_only:
                     remediation["DependsOn"].append("ConfigRole")
                     
-                    if "SSMAutomation" in params:
-                        ssm_automation = self.__create_automation_cloudformation_block(params['SSMAutomation'], rule_name)
-                        #AWS needs to build the SSM before the Config Rule
-                        remediation["DependsOn"].append(rule_name+'React')
-                        #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
-                        remediation['Properties']['TargetId'] = {"Ref" : rule_name + 'React' }
-                        
-                        if "IAM" in params['SSMAutomation']:
-                            print('Lets Build IAM Role and Policy For the SSM Document')
-                            ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(params['SSMAutomation'], rule_name)
-                            resources[rule_name+'Role'] = ssm_iam_role
-                            resources[rule_name+'Policy'] = ssm_iam_policy
-                            remediation['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = {"Ref" : rule_name + 'Role' }
-                            #Override the placeholder to associate the SSM Document Role with newly crafted role
+                if "SSMAutomation" in params:
+                    ssm_automation = self.__create_automation_cloudformation_block(params['SSMAutomation'], rule_name)
+                    #AWS needs to build the SSM before the Config Rule
+                    remediation["DependsOn"].append(rule_name+'React')
+                    #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
+                    remediation['Properties']['TargetId'] = {"Ref" : rule_name + 'React' }
+                    
+                    if "IAM" in params['SSMAutomation']:
+                        print('Lets Build IAM Role and Policy For the SSM Document')
+                        ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(params['SSMAutomation'], rule_name)
+                        resources[rule_name+'Role'] = ssm_iam_role
+                        resources[rule_name+'Policy'] = ssm_iam_policy
+                        remediation['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = {"Ref" : rule_name + 'Role' }
+                        #Override the placeholder to associate the SSM Document Role with newly crafted role
 
  
 
