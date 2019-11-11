@@ -1665,7 +1665,7 @@ class rdk:
                         ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(params['SSMAutomation'], rule_name)
                         resources[rule_name+'Role'] = ssm_iam_role
                         resources[rule_name+'Policy'] = ssm_iam_policy
-                        remediation['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = {"Ref" : rule_name + 'Role' }
+                        remediation['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Fn::GetAtt":[self.__get_alphanumeric_rule_name(rule_name+"Role"), "Arn"]}]
                         #Override the placeholder to associate the SSM Document Role with newly crafted role
 
  
@@ -2422,7 +2422,7 @@ class rdk:
                                         "Properties": {
                                             "Description" : "IAM Role to Support Config Remediation for " + rule_name,
                                             "Path": "/rdk-remediation-role/",
-                                            "RoleName": rule_name + "-Remediation-Role",
+                                            "RoleName": {"Fn::Sub": "" + rule_name + "-Remedation-Role-${AWS::Region}"},
                                             "AssumeRolePolicyDocument" : assume_role_template
                                             }
                                 
@@ -2441,10 +2441,10 @@ class rdk:
                                             ],
                                             "Version": "2012-10-17"
                                             },
-                                            "PolicyName": rule_name + "-Remediation-Policy" ,
+                                            "PolicyName": {"Fn::Sub": "" + rule_name + "-Remedation-Policy-${AWS::Region}"},
                                             "Roles": [
                                             {
-                                                "Ref": self.__get_alphanumeric_rule_name(rule_name+'Role')
+                                                "Ref": rule_name + 'Role'
                                             }
                                             ]
                                         }
