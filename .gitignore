@@ -119,3 +119,7 @@ myAutomationTestWithResouceType/
 .vscode/sk.py
 
 CLOUD_TRAIL_ENCRYPTION_ENABLED/
+
+API_GW_NOT_EDGE_OPTIMISED/
+
+manageTest/

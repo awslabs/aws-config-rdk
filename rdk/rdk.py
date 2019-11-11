@@ -1608,6 +1608,9 @@ class rdk:
             if 'SourceIdentifier' in params:
                 source["Owner"] = "AWS"
                 source["SourceIdentifier"] = params['SourceIdentifier']
+                #Check the frequency of the managed rule if defined
+                if 'SourcePeriodic' in params:
+                    properties['MaximumExecutionFrequency'] = params["SourcePeriodic"]
                 del source["SourceDetails"]
             else:
                 source["Owner"] = "CUSTOM_LAMBDA"
@@ -1642,10 +1645,8 @@ class rdk:
             config_rule_resource_name = self.__get_alphanumeric_rule_name(rule_name)+"ConfigRule"
             resources[config_rule_resource_name] = config_rule
 
-            if "SSMAutomation" in params:
-                ssm_automation = self.__create_automation_cloudformation_block(params['SSMAutomation'], rule_name)
-                #Add the CFN Block to the cfn here
 
+            #If Remedation create the Remeation section with potential links to the SSM Details
             if "Remediation" in params:
                 remediation = self.__create_remediation_cloudformation_block(params["Remediation"])
                 remediation["DependsOn"] = [config_rule_resource_name]
@@ -1653,6 +1654,7 @@ class rdk:
                     remediation["DependsOn"].append("ConfigRole")
                     
                     if "SSMAutomation" in params:
+                        ssm_automation = self.__create_automation_cloudformation_block(params['SSMAutomation'], rule_name)
                         #AWS needs to build the SSM before the Config Rule
                         remediation["DependsOn"].append(rule_name+'React')
                         #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
@@ -1663,14 +1665,13 @@ class rdk:
                             ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(params['SSMAutomation'], rule_name)
                             resources[rule_name+'Role'] = ssm_iam_role
                             resources[rule_name+'Policy'] = ssm_iam_policy
+                            remediation['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = {"Ref" : rule_name + 'Role' }
+                            #Override the placeholder to associate the SSM Document Role with newly crafted role
+
  
 
                 resources[self.__get_alphanumeric_rule_name(rule_name)+"Remediation"] = remediation
                 resources[rule_name+"React"] = ssm_automation
-
-
-
-                
 
 
         template["Resources"] = resources
