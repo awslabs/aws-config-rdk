@@ -950,7 +950,7 @@ class rdk:
                         #Reference the SSM Automation Role Created, if IAM is created
                         print('Building SSM Automation Section')
                         ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
-                        json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'React')] = ssm_automation
+                        json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'RemediationAction')] = ssm_automation
                         if "IAM" in rule_params['SSMAutomation']:
                             print('Lets Build IAM Role and Policy')
                             #TODO Check For IAM Settings
@@ -961,10 +961,10 @@ class rdk:
                             json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
                     
                             print('Build Supporting SSM Resources')
-                            resource_depends_on = ['rdkConfigRule', self.__get_alphanumeric_rule_name(rule_name+"React")]
+                            resource_depends_on = ['rdkConfigRule', self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")]
                             #Builds SSM Document Before Config RUle
                             json_body["Resources"]["Remediation"]['DependsOn'] = resource_depends_on
-                            json_body["Resources"]["Remediation"]['Properties']['TargetId'] = {'Ref': self.__get_alphanumeric_rule_name(rule_name+"React")}
+                            json_body["Resources"]["Remediation"]['Properties']['TargetId'] = {'Ref': self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")}
 
                     try:
                         my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
@@ -1160,16 +1160,16 @@ class rdk:
 
                 if "SSMAutomation" in rule_params:
                     ##AWS needs to build the SSM before the Config Rule
-                    resource_depends_on = ['rdkConfigRule', self.__get_alphanumeric_rule_name(rule_name+"React")]
+                    resource_depends_on = ['rdkConfigRule', self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")]
                     remediation["DependsOn"] = resource_depends_on
                     #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
-                    remediation['Properties']['TargetId'] = {"Ref" : self.__get_alphanumeric_rule_name(rule_name+"React") }
+                    remediation['Properties']['TargetId'] = {"Ref" : self.__get_alphanumeric_rule_name(rule_name+"RemediationAction") }
 
             if "SSMAutomation" in rule_params:
                 print('Building SSM Automation Section')
                 
                 ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], rule_name)
-                json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+"React")] = ssm_automation
+                json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")] = ssm_automation
                 if "IAM" in rule_params['SSMAutomation']:
                     print('Lets Build IAM Role and Policy')
                     #TODO Check For IAM Settings
@@ -1656,22 +1656,22 @@ class rdk:
                 if "SSMAutomation" in params:
                     ssm_automation = self.__create_automation_cloudformation_block(params['SSMAutomation'], rule_name)
                     #AWS needs to build the SSM before the Config Rule
-                    remediation["DependsOn"].append(rule_name+'React')
+                    remediation["DependsOn"].append(self.__get_alphanumeric_rule_name(rule_name+'RemediationAction'))
                     #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
-                    remediation['Properties']['TargetId'] = {"Ref" : rule_name + 'React' }
+                    remediation['Properties']['TargetId'] = {"Ref" : self.__get_alphanumeric_rule_name(rule_name) + 'RemediationAction' }
                     
                     if "IAM" in params['SSMAutomation']:
                         print('Lets Build IAM Role and Policy For the SSM Document')
                         ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(params['SSMAutomation'], rule_name)
-                        resources[rule_name+'Role'] = ssm_iam_role
-                        resources[rule_name+'Policy'] = ssm_iam_policy
-                        remediation['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = {"Ref" : rule_name + 'Role' }
+                        resources[self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
+                        resources[self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
+                        remediation['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Fn::GetAtt":[self.__get_alphanumeric_rule_name(rule_name+"Role"), "Arn"]}]
                         #Override the placeholder to associate the SSM Document Role with newly crafted role
 
  
 
                 resources[self.__get_alphanumeric_rule_name(rule_name)+"Remediation"] = remediation
-                resources[rule_name+"React"] = ssm_automation
+                resources[self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")] = ssm_automation
 
 
         template["Resources"] = resources
@@ -2422,7 +2422,7 @@ class rdk:
                                         "Properties": {
                                             "Description" : "IAM Role to Support Config Remediation for " + rule_name,
                                             "Path": "/rdk-remediation-role/",
-                                            "RoleName": rule_name + "-Remediation-Role",
+                                            #"RoleName": {"Fn::Sub": "" + rule_name + "-Remedation-Role-${AWS::Region}"},
                                             "AssumeRolePolicyDocument" : assume_role_template
                                             }
                                 
@@ -2441,10 +2441,10 @@ class rdk:
                                             ],
                                             "Version": "2012-10-17"
                                             },
-                                            "PolicyName": rule_name + "-Remediation-Policy" ,
+                                            "PolicyName": {"Fn::Sub": "" + rule_name + "-Remedation-Policy-${AWS::Region}"},
                                             "Roles": [
                                             {
-                                                "Ref": self.__get_alphanumeric_rule_name(rule_name+'Role')
+                                                "Ref": self.__get_alphanumeric_rule_name(rule_name + 'Role')
                                             }
                                             ]
                                         }
