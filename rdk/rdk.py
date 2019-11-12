@@ -2422,7 +2422,7 @@ class rdk:
                                         "Properties": {
                                             "Description" : "IAM Role to Support Config Remediation for " + rule_name,
                                             "Path": "/rdk-remediation-role/",
-                                            "RoleName": {"Fn::Sub": "" + rule_name + "-Remedation-Role-${AWS::Region}"},
+                                            #"RoleName": {"Fn::Sub": "" + rule_name + "-Remedation-Role-${AWS::Region}"},
                                             "AssumeRolePolicyDocument" : assume_role_template
                                             }
                                 
