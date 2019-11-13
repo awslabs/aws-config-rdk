@@ -220,7 +220,7 @@ def convert_api_configuration(configuration_item):
 def get_configuration_item(invoking_event):
     check_defined(invoking_event, 'invokingEvent')
     if is_oversized_changed_notification(invoking_event['messageType']):
-        configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
+        configuration_item_summary = check_defined(invoking_event['configurationItemSummary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
     if is_scheduled_notification(invoking_event['messageType']):
         return None
