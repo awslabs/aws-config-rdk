@@ -2298,7 +2298,7 @@ class rdk:
                 "Action": "sts:AssumeRole"
               } ]
             }
-            lambda_statement =[
+            lambda_policy_statements =[
                 {
                     "Sid": "1",
                     "Action": [
@@ -2356,12 +2356,12 @@ class rdk:
                     "Effect": "Allow",
                     "Resource": "*"
                 }
-                lambda_statement.append(vpc_policy)
+                lambda_policy_statements.append(vpc_policy)
             lambda_role["Properties"]["Policies"] = [{
               "PolicyName": "ConfigRulePolicy",
               "PolicyDocument": {
                 "Version": "2012-10-17",
-                "Statement": lambda_statement
+                "Statement": lambda_policy_statements
               }
             } ]
             lambda_role["Properties"]["ManagedPolicyArns"] = [{"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}]
