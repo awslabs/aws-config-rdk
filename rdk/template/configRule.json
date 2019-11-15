@@ -75,7 +75,7 @@
     "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]},
     "UseAdditionalLayers": {"Fn::Not": [{"Fn::Equals": [{"Ref": "Layers"}, ""]}]},
     "UseVpcConfig": {
-      "Fn:And": [
+      "Fn::And": [
         {"Fn::Not": [{"Fn::Equals": [{"Ref": "SecurityGroupIds"}, ""]}]},
         {"Fn::Not": [{"Fn::Equals": [{"Ref": "SubnetIds"}, ""]}]}
       ]
