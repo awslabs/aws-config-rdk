@@ -216,11 +216,12 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited list of RuleSet names')
     parser.add_argument('-f','--functions-only', action='store_true', required=False, help="[optional] Only deploy Lambda functions.  Useful for cross-account deployments.")
-    parser.add_argument('--lambda-role-arn', required=False, help="[optional] Assign existing iam role to lambda functions. If omitted, \"rdkLambdaRole\" will be created.")
     parser.add_argument('--stack-name', required=False, help="[optional] CloudFormation Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
-    parser.add_argument('--execution-role-name', required=False, help="[optional] IAM Role that the Lambda function(s) will assume in each target account.")
     parser.add_argument('--rdklib-layer-arn', required=False, help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.")
+    parser.add_argument('--lambda-role-arn', required=False, help="[optional] Assign existing iam role to lambda functions. If omitted, \"rdkLambdaRole\" will be created.")
     parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
+    parser.add_argument('--lambda-subnets', required=False, help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).")
+    parser.add_argument('--lambda-security-groups', required=False, help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).")
 
     if ForceArgument:
         parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
@@ -1059,14 +1060,22 @@ class rdk:
 
 
             if self.args.lambda_layers:
-                if self.args.lambda_layers:
-                    additional_layers = self.args.lambda_layers.split(',')
-                    layers.extend(additional_layers)
+                additional_layers = self.args.lambda_layers.split(',')
+                layers.extend(additional_layers)
 
             if layers:
                 my_params.append({
                     'ParameterKey': 'Layers',
                     'ParameterValue': ",".join(layers)
+                })
+
+            if self.args.lambda_security_groups and self.args.lambda_subnets:
+                my_params.append({
+                    'ParameterKey': 'SecurityGroupIds',
+                    'ParameterValue': self.args.lambda_security_groups
+                },{
+                    'ParameterKey': 'SubnetIds',
+                    'ParameterValue': self.args.lambda_subnets
                 })
 
             #create json of CFN template
@@ -2289,57 +2298,70 @@ class rdk:
                 "Action": "sts:AssumeRole"
               } ]
             }
+            lambda_policy_statements =[
+                {
+                    "Sid": "1",
+                    "Action": [
+                        "s3:GetObject"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${SourceBucket}/*" }
+                },
+                {
+                    "Sid": "2",
+                    "Action": [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents",
+                        "logs:DescribeLogStreams"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                },
+                {
+                    "Sid": "3",
+                    "Action": [
+                        "config:PutEvaluations"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                },
+                {
+                    "Sid": "4",
+                    "Action": [
+                        "iam:List*",
+                        "iam:Describe*",
+                        "iam:Get*"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                },
+                {
+                    "Sid": "5",
+                    "Action": [
+                        "sts:AssumeRole"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                }
+            ]
+            if self.args.lambda_subnets and self.args.lambda_security_groups:
+                vpc_policy={
+                    "Sid": "LambdaVPCAccessExecution",
+                    "Action": [
+                        "ec2:DescribeNetworkInterfaces",
+                        "ec2:DeleteNetworkInterface",
+                        "ec2:CreateNetworkInterface"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                }
+                lambda_policy_statements.append(vpc_policy)
             lambda_role["Properties"]["Policies"] = [{
               "PolicyName": "ConfigRulePolicy",
               "PolicyDocument": {
                 "Version": "2012-10-17",
-                "Statement": [
-                  {
-                    "Sid": "1",
-                    "Action": [
-                      "s3:GetObject"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${SourceBucket}/*" }
-                  },
-                  {
-                    "Sid": "2",
-                    "Action": [
-                      "logs:CreateLogGroup",
-                      "logs:CreateLogStream",
-                      "logs:PutLogEvents",
-                      "logs:DescribeLogStreams"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  },
-                  {
-                    "Sid": "3",
-                    "Action": [
-                      "config:PutEvaluations"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  },
-                  {
-                    "Sid": "4",
-                    "Action": [
-                      "iam:List*",
-                      "iam:Describe*",
-                      "iam:Get*"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  },
-                  {
-                    "Sid": "5",
-                    "Action": [
-                      "sts:AssumeRole"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  }
-                ]
+                "Statement": lambda_policy_statements
               }
             } ]
             lambda_role["Properties"]["ManagedPolicyArns"] = [{"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}]
@@ -2371,6 +2393,11 @@ class rdk:
             properties["Runtime"] = self.__get_runtime_string(params)
             properties["Timeout"] = 300
             properties["Tags"] = tags
+            if self.args.lambda_subnets and self.args.lambda_security_groups:
+                properties["VpcConfig"] = {
+                    "SecurityGroupIds" : self.args.lambda_security_groups.split(","),
+                    "SubnetIds" : self.args.lambda_subnets.split(",")
+                }
             layers = []
             if self.args.rdklib_layer_arn:
                 layers.append(self.args.rdklib_layer_arn)
