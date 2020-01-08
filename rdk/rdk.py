@@ -147,7 +147,10 @@ def get_command_parser():
 def get_init_parser():
     parser = argparse.ArgumentParser(
         prog='rdk init',
-        description = 'Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.')
+        description = 'Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.'
+    )
+
+    parser.add_argument('--config_bucket_exists_in_another_account', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
 
     return parser
 
@@ -322,7 +325,12 @@ class rdk:
         config_recorder_name = "default"
         config_role_arn = ""
         delivery_channel_exists = False
+
         config_bucket_exists = False
+        if self.args.config_bucket_exists_in_another_account:
+            print("Skipping Config Bucket check due to command line args")
+            config_bucket_exists = True
+
         config_bucket_name = config_bucket_prefix + "-" + account_id
 
         #Check to see if the ConfigRecorder has been created.
