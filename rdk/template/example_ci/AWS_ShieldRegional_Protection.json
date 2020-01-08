@@ -1,0 +1,33 @@
+[
+  {
+    "version": "1.3",
+    "accountId": "562609128272",
+    "configurationItemCaptureTime": "2019-11-14T13:50:16.785Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1573740415685",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:shield:eu-west-1:562609128272:protection/remediation-protection/87224b0g-1b2d-4236-8271-f45e40a45a82",
+    "resourceType": "AWS::ShieldRegional::Protection",
+    "resourceId": "87224b0g-1b2d-4236-8271-f45e40a45a82",
+    "resourceName": "remediation-protection",
+    "awsRegion": "eu-west-1",
+    "availabilityZone": "Multiple Availability Zones",
+    "resourceCreationTime": "2019-11-14T13:50:16.785Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::EIP",
+        "resourceId": "eipalloc-23db17t9f4a6e22d3",
+        "resourceName": "eipalloc-23db17t9f4a6e22d3",
+        "relationshipName": "Is associated with "
+      }
+    ],
+    "configuration": {
+      "Id": "87224b0g-1b2d-4236-8271-f45e40a45a82",
+      "Name": "remediation-protection",
+      "ResourceArn": "arn:aws:ec2:eu-west-1:562609128272:eip-allocation/eipalloc-23db17t9f4a6e22d3"
+    },
+    "supplementaryConfiguration": {}
+  }
+]
