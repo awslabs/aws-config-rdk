@@ -960,7 +960,7 @@ class rdk:
                 remediation = ""
                 if "Remediation" in rule_params:
                     print('Build The CFN Template with Remedation Settings')
-                    cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemedation.json")
+                    cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemediation.json")
                     template_body = open(cfn_body, "r").read()
                     json_body = json.loads(template_body)
                     remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
