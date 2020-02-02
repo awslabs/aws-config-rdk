@@ -1,3 +1,14 @@
+# RDK Workshop 
+This workshop is based on **SEC 304 - Compliance Automation. Set it up fast, then code it your way** session that was conducted in re:Inforce 2019 and re:Invent 2019. This local build will give the same environment setup as the lab account and anyone who interests can learn. 
+
+The objective for this workshop is to show how a customer can create their own rules (Custom Config Rule) to detect violation on AWS resources and how they can remediate once the rule is violated. 
+
+In the lab, we will create config rule to interact with only 2 AWS resources as below:
+1. S3 Bucket - To verify if S3 bucket has enabled versioning or not. 
+2. IAM User - To verify if a user has enabled MFA or not.
+
+In case you're stuck with lab 2, 3 or 4. We have provided solutions which contains actual python code down below. 
+
 # Pre-lab
 Before you start performing the exercise in this lab, there are few resources that need to be provisioned.
 You can deploy the required resources using CloudFormation template that is provided along with the instruction directory. 
