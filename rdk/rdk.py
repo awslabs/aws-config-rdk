@@ -1514,13 +1514,13 @@ class rdk:
         for rule_name in rule_names:
             params, tags = self.__get_rule_parameters(rule_name)
             input_params = json.loads(params["InputParameters"])
-            for input_param in input_params:
+            for input_param, value in input_params.items():
                 cfn_param = {}
                 cfn_param["Description"] = "Pass-through to required Input Parameter " + input_param + " for Config Rule " + rule_name
-                if len(input_params[input_param].strip()) == 0:
-                    default = "<REQUIRED>"
+                if isinstance(value, bool) or isinstance(value, int) or len(value.strip()) > 0:
+                    default = value
                 else:
-                    default = input_params[input_param]
+                    default = "<REQUIRED>"
                 cfn_param["Default"] = default
                 cfn_param["Type"] = "String"
                 cfn_param["MinLength"] = 1
