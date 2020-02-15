@@ -196,7 +196,6 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--auto-remediation-retry-time', required=False, help='[optional] Duration of automated remediation retries.')
     parser.add_argument('--remediation-concurrent-execution-percent', required=False, help='[optional] Concurrent execution rate of the SSM document for remediation.')
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
-    parser.add_argument('--remediation-resource-id-parameter', required=False, help='[optional] Parameter that will be passed to SSM remediation document.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
     return parser
 
@@ -2085,8 +2084,7 @@ class rdk:
                     "remediation_action_version",
                     "remediation_concurrent_execution_percent",
                     "remediation_error_rate_percent",
-                    "remediation_parameters",
-                    "remediation_resource_id_parameter"
+                    "remediation_parameters"
                 ]
             )
             and not self.args.remediation_action
