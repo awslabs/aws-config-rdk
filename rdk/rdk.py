@@ -2076,6 +2076,23 @@ class rdk:
                 print("Error parsing optional tags JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and tags string is enclosed in single quotes.")
 
         my_remediation = {}
+        if (
+            any(
+                getattr(self.args, arg) is not None
+                for arg in [
+                    "auto_remediation_retry_attempts",
+                    "auto_remediation_retry_time",
+                    "remediation_action_version",
+                    "remediation_concurrent_execution_percent",
+                    "remediation_error_rate_percent",
+                    "remediation_parameters",
+                    "remediation_resource_id_parameter"
+                ]
+            )
+            and not self.args.remediation_action
+        ):
+            print("Remediation Flags detected but no remeditaion action (--remediation-action) set")
+
         if self.args.remediation_action:
             try:
                 my_remediation = self.__generate_remediation_params()
