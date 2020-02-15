@@ -703,7 +703,8 @@ class rdk:
                 ssm_controls = execution_controls["SsmControls"]
                 self.args.remediation_concurrent_execution_percent = ssm_controls.get("ConcurrentExecutionRatePercentage", "")
                 self.args.remediation_error_rate_percent = ssm_controls.get("ErrorPercentage", "")
-            self.args.remediation_parameters = json.dumps(params.get("Parameters", ""))
+            self.args.remediation_parameters = json.dumps(params["Parameters"]) if params.get("Parameters") else None
+            self.args.auto_remediation_retry_attempts = params.get("MaximumAutomaticAttempts", "")
             self.args.auto_remediation_retry_time = params.get("RetryAttemptSeconds", "")
             self.args.remediation_action = params.get("TargetId", "")
             self.args.remediation_action_version = params.get("TargetVersion", "")
