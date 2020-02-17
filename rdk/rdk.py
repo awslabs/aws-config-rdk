@@ -151,7 +151,7 @@ def get_init_parser():
         description = 'Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.'
     )
 
-    parser.add_argument('--config_bucket_exists_in_another_account', default=False, required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
+    parser.add_argument('--config-bucket-exists-in-another-account', default=False, required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
 
     return parser
 
