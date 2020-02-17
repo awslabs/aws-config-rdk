@@ -825,6 +825,8 @@ class rdk:
                     s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
                     s3_code_objects[rule_name] = s3_dst
 
+            my_cfn = my_session.client('cloudformation')
+
             # Generate the template_url regardless of region using the s3 sdk
             config = my_s3_client._client_config
             config.signature_version = botocore.UNSIGNED
