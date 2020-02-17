@@ -18,6 +18,7 @@ import json
 import time
 import imp
 import argparse
+import botocore
 from botocore.exceptions import ClientError
 from datetime import datetime
 import base64
@@ -824,11 +825,12 @@ class rdk:
                     s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
                     s3_code_objects[rule_name] = s3_dst
 
-            #Check if stack exists.  If it does, update it.  If it doesn't, create it.
-            my_cfn = my_session.client('cloudformation')
-            my_template_url_prefix = "https://s3-"
-            if my_session.region_name == "us-east-1":
-                my_template_url_prefix = "https://s3."
+            # Generate the template_url regardless of region using the s3 sdk
+            config = my_s3_client._client_config
+            config.signature_version = botocore.UNSIGNED
+            template_url = boto3.client('s3', config=config).generate_presigned_url('get_object', ExpiresIn=0, Params={'Bucket': code_bucket_name, 'Key': self.args.stack_name + ".json"})
+
+            # Check if stack exists.  If it does, update it.  If it doesn't, create it.
 
             try:
                 my_stack = my_cfn.describe_stacks(StackName=self.args.stack_name)
@@ -839,7 +841,7 @@ class rdk:
 
                     cfn_args = {
                         'StackName': self.args.stack_name,
-                        'TemplateURL': my_template_url_prefix + my_session.region_name + ".amazonaws.com/" + code_bucket_name + "/" + self.args.stack_name + ".json",
+                        'TemplateURL': template_url,
                         'Parameters': cfn_params,
                         'Capabilities': [ 'CAPABILITY_IAM' ]
                     }
@@ -887,7 +889,7 @@ class rdk:
 
                 cfn_args = {
                     'StackName': self.args.stack_name,
-                    'TemplateURL': my_template_url_prefix + my_session.region_name + ".amazonaws.com/" + code_bucket_name + "/" + self.args.stack_name + ".json",
+                    'TemplateURL': template_url,
                     'Parameters': cfn_params,
                     'Capabilities': ['CAPABILITY_IAM']
                 }
