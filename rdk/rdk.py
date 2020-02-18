@@ -524,7 +524,7 @@ class rdk:
             except Exception as e:
                 print("Error encountered removing Config Role: " + str(e))
         except Exception as e2:
-            print("Error encountered finding Config Role to remove: " + str(e))
+            print("Error encountered finding Config Role to remove: " + str(e2))
 
         config_bucket_names = []
         delivery_channels = my_config.describe_delivery_channels()
