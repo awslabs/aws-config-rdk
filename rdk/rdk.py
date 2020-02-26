@@ -18,6 +18,7 @@ import json
 import time
 import imp
 import argparse
+import botocore
 from botocore.exceptions import ClientError
 from datetime import datetime
 import base64
@@ -150,7 +151,7 @@ def get_init_parser():
         description = 'Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.'
     )
 
-    parser.add_argument('--config_bucket_exists_in_another_account', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
+    parser.add_argument('--config-bucket-exists-in-another-account', default=False, required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
 
     return parser
 
@@ -196,8 +197,9 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--auto-remediation-retry-time', required=False, help='[optional] Duration of automated remediation retries.')
     parser.add_argument('--remediation-concurrent-execution-percent', required=False, help='[optional] Concurrent execution rate of the SSM document for remediation.')
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
-    parser.add_argument('--remediation-resource-id-parameter', required=False, help='[optional] Parameter that will be passed to SSM remediation document.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
+    parser.add_argument('--remediation-role-name', required=False, help='[optional] Name of the Role to be used for the remediation action')
+
     return parser
 
 def get_undeploy_parser():
@@ -522,7 +524,7 @@ class rdk:
             except Exception as e:
                 print("Error encountered removing Config Role: " + str(e))
         except Exception as e2:
-            print("Error encountered finding Config Role to remove: " + str(e))
+            print("Error encountered finding Config Role to remove: " + str(e2))
 
         config_bucket_names = []
         delivery_channels = my_config.describe_delivery_channels()
@@ -704,10 +706,12 @@ class rdk:
                 ssm_controls = execution_controls["SsmControls"]
                 self.args.remediation_concurrent_execution_percent = ssm_controls.get("ConcurrentExecutionRatePercentage", "")
                 self.args.remediation_error_rate_percent = ssm_controls.get("ErrorPercentage", "")
-            self.args.remediation_parameters = json.dumps(params.get("Parameters", ""))
+            self.args.remediation_parameters = json.dumps(params["Parameters"]) if params.get("Parameters") else None
+            self.args.auto_remediation_retry_attempts = params.get("MaximumAutomaticAttempts", "")
             self.args.auto_remediation_retry_time = params.get("RetryAttemptSeconds", "")
             self.args.remediation_action = params.get("TargetId", "")
             self.args.remediation_action_version = params.get("TargetVersion", "")
+            self.args.remediation_role_name = params.get("RoleName", "")
 
         if 'RuleSets' in old_params:
             if not self.args.rulesets:
@@ -821,11 +825,14 @@ class rdk:
                     s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
                     s3_code_objects[rule_name] = s3_dst
 
-            #Check if stack exists.  If it does, update it.  If it doesn't, create it.
             my_cfn = my_session.client('cloudformation')
-            my_template_url_prefix = "https://s3-"
-            if my_session.region_name == "us-east-1":
-                my_template_url_prefix = "https://s3."
+
+            # Generate the template_url regardless of region using the s3 sdk
+            config = my_s3_client._client_config
+            config.signature_version = botocore.UNSIGNED
+            template_url = boto3.client('s3', config=config).generate_presigned_url('get_object', ExpiresIn=0, Params={'Bucket': code_bucket_name, 'Key': self.args.stack_name + ".json"})
+
+            # Check if stack exists.  If it does, update it.  If it doesn't, create it.
 
             try:
                 my_stack = my_cfn.describe_stacks(StackName=self.args.stack_name)
@@ -836,7 +843,7 @@ class rdk:
 
                     cfn_args = {
                         'StackName': self.args.stack_name,
-                        'TemplateURL': my_template_url_prefix + my_session.region_name + ".amazonaws.com/" + code_bucket_name + "/" + self.args.stack_name + ".json",
+                        'TemplateURL': template_url,
                         'Parameters': cfn_params,
                         'Capabilities': [ 'CAPABILITY_IAM' ]
                     }
@@ -884,7 +891,7 @@ class rdk:
 
                 cfn_args = {
                     'StackName': self.args.stack_name,
-                    'TemplateURL': my_template_url_prefix + my_session.region_name + ".amazonaws.com/" + code_bucket_name + "/" + self.args.stack_name + ".json",
+                    'TemplateURL': template_url,
                     'Parameters': cfn_params,
                     'Capabilities': ['CAPABILITY_IAM']
                 }
@@ -2076,6 +2083,23 @@ class rdk:
                 print("Error parsing optional tags JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and tags string is enclosed in single quotes.")
 
         my_remediation = {}
+        if (
+            any(
+                getattr(self.args, arg) is not None
+                for arg in [
+                    "auto_remediation_retry_attempts",
+                    "auto_remediation_retry_time",
+                    "remediation_action_version",
+                    "remediation_concurrent_execution_percent",
+                    "remediation_error_rate_percent",
+                    "remediation_parameters",
+                    "remediation_role_name"
+                ]
+            )
+            and not self.args.remediation_action
+        ):
+            print("Remediation Flags detected but no remeditaion action (--remediation-action) set")
+
         if self.args.remediation_action:
             try:
                 my_remediation = self.__generate_remediation_params()
@@ -2136,7 +2160,10 @@ class rdk:
         if self.args.remediation_parameters:
             params["Parameters"] = json.loads(self.args.remediation_parameters)
 
-        if len(self.args.resource_types.split(",")) == 1:
+        if self.args.remediation_role_name:
+            params["RoleName"] = self.args.remediation_role_name
+
+        if self.args.resource_types and len(self.args.resource_types.split(",")) == 1:
             params["ResourceType"] = self.args.resource_types
 
         if self.args.auto_remediation_retry_time:
@@ -2332,11 +2359,30 @@ class rdk:
         return s3_dst
 
     def __create_remediation_cloudformation_block(self, remediation_config):
+        # Check the role_name is present and remove it from the dict
+        role_name = remediation_config.pop("RoleName", None)
+        if not role_name:
+            print("No RoleName present in remediation config")
+            exit(1)
+
+        # Put the remaining properties into the dict
+        properties = {key: value for key, value in remediation_config.items()}
+
+        # Set the dynamic AutomationAssumeRole CFN Block
+        properties["Parameters"]["AutomationAssumeRole"] = {
+            "StaticValue": {
+                "Values": [
+                    {
+                        "Fn::Sub": "{}/{}".format("arn:${AWS::Partition}:iam::${AWS::AccountId}:role", role_name)
+                    }
+                ]
+            }
+        }
+
         remediation = {
             "Type" : "AWS::Config::RemediationConfiguration",
             "DependsOn": "rdkConfigRule",
-            "Properties" :
-                remediation_config
+            "Properties" : properties
         }
 
         return remediation
