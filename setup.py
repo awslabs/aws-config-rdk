@@ -27,8 +27,7 @@ setup(name='rdk',
       install_requires=[
           'boto3',
           'mock==3.0.5',
-          'future',
-          'sphinx-rtd-theme==0.4.3'
+          'future'
       ],
       entry_points={
               'console_scripts': [
