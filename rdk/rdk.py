@@ -170,7 +170,7 @@ def get_init_parser():
         description = 'Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.'
     )
 
-    parser.add_argument('--config-bucket-exists-in-another-account', default=False, required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
+    parser.add_argument('--config-bucket-exists-in-another-account', action='store_false', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
 
     return parser
 
@@ -217,7 +217,6 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--remediation-concurrent-execution-percent', required=False, help='[optional] Concurrent execution rate of the SSM document for remediation.')
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
-    parser.add_argument('--remediation-role-name', required=False, help='[optional] Name of the Role to be used for the remediation action')
 
     return parser
 
@@ -730,7 +729,6 @@ class rdk:
             self.args.auto_remediation_retry_time = params.get("RetryAttemptSeconds", "")
             self.args.remediation_action = params.get("TargetId", "")
             self.args.remediation_action_version = params.get("TargetVersion", "")
-            self.args.remediation_role_name = params.get("RoleName", "")
 
         if 'RuleSets' in old_params:
             if not self.args.rulesets:
@@ -2111,8 +2109,7 @@ class rdk:
                     "remediation_action_version",
                     "remediation_concurrent_execution_percent",
                     "remediation_error_rate_percent",
-                    "remediation_parameters",
-                    "remediation_role_name"
+                    "remediation_parameters"
                 ]
             )
             and not self.args.remediation_action
@@ -2178,9 +2175,6 @@ class rdk:
 
         if self.args.remediation_parameters:
             params["Parameters"] = json.loads(self.args.remediation_parameters)
-
-        if self.args.remediation_role_name:
-            params["RoleName"] = self.args.remediation_role_name
 
         if self.args.resource_types and len(self.args.resource_types.split(",")) == 1:
             params["ResourceType"] = self.args.resource_types
@@ -2378,30 +2372,10 @@ class rdk:
         return s3_dst
 
     def __create_remediation_cloudformation_block(self, remediation_config):
-        # Check the role_name is present and remove it from the dict
-        role_name = remediation_config.pop("RoleName", None)
-        if not role_name:
-            print("No RoleName present in remediation config")
-            exit(1)
-
-        # Put the remaining properties into the dict
-        properties = {key: value for key, value in remediation_config.items()}
-
-        # Set the dynamic AutomationAssumeRole CFN Block
-        properties["Parameters"]["AutomationAssumeRole"] = {
-            "StaticValue": {
-                "Values": [
-                    {
-                        "Fn::Sub": "{}/{}".format("arn:${AWS::Partition}:iam::${AWS::AccountId}:role", role_name)
-                    }
-                ]
-            }
-        }
-
         remediation = {
             "Type" : "AWS::Config::RemediationConfiguration",
             "DependsOn": "rdkConfigRule",
-            "Properties" : properties
+            "Properties" : remediation_config
         }
 
         return remediation
