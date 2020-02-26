@@ -57,13 +57,29 @@
       "Description": "Comma-separated list of Lambda layers to be included with Lambda Function deployment",
       "Type": "String",
       "Default": ""
+    },
+    "SecurityGroupIds": {
+      "Description": "Comma-separated list of Security Group Ids for Lambda Function deployment",
+      "Type": "String",
+      "Default": ""
+    },
+    "SubnetIds": {
+      "Description": "Comma-separated list of Subnet Ids for Lambda Function deployment",
+      "Type": "String",
+      "Default": ""
     }
   },
   "Conditions": {
     "CreateNewLambdaRole" : { "Fn::Equals" : [{ "Ref": "LambdaRoleArn" }, ""]},
     "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
     "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]},
-    "UseAdditionalLayers": {"Fn::Not": [{"Fn::Equals": [{"Ref": "Layers"}, ""]}]}
+    "UseAdditionalLayers": {"Fn::Not": [{"Fn::Equals": [{"Ref": "Layers"}, ""]}]},
+    "UseVpcConfig": {
+      "Fn::And": [
+        {"Fn::Not": [{"Fn::Equals": [{"Ref": "SecurityGroupIds"}, ""]}]},
+        {"Fn::Not": [{"Fn::Equals": [{"Ref": "SubnetIds"}, ""]}]}
+      ]
+    }
   },
   "Resources": {
     "rdkRuleCodeLambda": {
@@ -89,6 +105,16 @@
           {"Fn::If":
             [ "UseAdditionalLayers",
               { "Fn::Split": [",", {"Ref": "Layers"}]},
+              { "Ref": "AWS::NoValue"}
+            ]
+          },
+        "VpcConfig":
+          {"Fn::If":
+            [ "UseVpcConfig",
+              {
+                "SecurityGroupIds": {"Fn::Split": [",", {"Ref": "SecurityGroupIds"}]},
+                "SubnetIds": {"Fn::Split": [",", {"Ref": "SubnetIds"}]}
+              },
               { "Ref": "AWS::NoValue"}
             ]
           }

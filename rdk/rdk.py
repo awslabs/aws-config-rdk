@@ -62,13 +62,22 @@ RDKLIB_LAYER_VERSION={'ap-southeast-1':'51', 'ap-south-1':'29', 'us-east-2':'31'
 RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib:{version}"
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
-accepted_resource_types = ['AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution', 'AWS::CloudWatch::Alarm', 'AWS::DynamoDB::Table', 'AWS::SSM::ManagedInstanceInventory', 'AWS::EC2::Host', 'AWS::EC2::EIP', 'AWS::EC2::Instance',
-                        'AWS::EC2::NetworkInterface', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Volume', 'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup', 'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
-                        'AWS::Redshift::EventSubscription', 'AWS::RDS::DBInstance', 'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup', 'AWS::RDS::EventSubscription', 'AWS::S3::Bucket', 'AWS::EC2::CustomerGateway', 'AWS::EC2::InternetGateway', 'AWS::EC2::NetworkAcl',
-                        'AWS::EC2::RouteTable', 'AWS::EC2::Subnet', 'AWS::EC2::VPC', 'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::AutoScaling::AutoScalingGroup', 'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction', 'AWS::ACM::Certificate',
-                        'AWS::CloudFormation::Stack', 'AWS::CloudTrail::Trail', 'AWS::CodeBuild::Project', 'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::IAM::User', 'AWS::IAM::Group', 'AWS::IAM::Role', 'AWS::IAM::Policy', 'AWS::Lambda::Function',
-                        'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::WebACL', 'AWS::WAF::RuleGroup', 'AWS::WAFRegional::RateBasedRule', 'AWS::WAFRegional::Rule', 'AWS::WAFRegional::WebACL', 'AWS::WAFRegional::RuleGroup', 'AWS::XRay::EncryptionConfig', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::ElasticLoadBalancing::LoadBalancer',
-                        'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Stage', 'AWS::ApiGateway::RestApi', 'AWS::ApiGatewayV2::Api', 'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct', 'AWS::ServiceCatalog::Portfolio', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::SSM::ManagedInstanceInventory::Linux', 'AWS::SSM::ManagedInstanceInventory::Windows']
+accepted_resource_types = [
+    'AWS::ACM::Certificate', 'AWS::ApiGateway::RestApi', 'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Api', 'AWS::ApiGatewayV2::Stage', 'AWS::AutoScaling::AutoScalingGroup',
+    'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction', 'AWS::CloudFormation::Stack', 'AWS::CloudFront::Distribution',
+    'AWS::CloudFront::StreamingDistribution', 'AWS::CloudTrail::Trail', 'AWS::CloudWatch::Alarm', 'AWS::CodeBuild::Project', 'AWS::CodePipeline::Pipeline', 'AWS::DynamoDB::Table',
+    'AWS::EC2::CustomerGateway', 'AWS::EC2::EIP', 'AWS::EC2::EgressOnlyInternetGateway', 'AWS::EC2::FlowLog', 'AWS::EC2::Host', 'AWS::EC2::Instance', 'AWS::EC2::InternetGateway',
+    'AWS::EC2::NatGateway', 'AWS::EC2::NetworkAcl', 'AWS::EC2::NetworkInterface', 'AWS::EC2::RouteTable', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Subnet', 'AWS::EC2::VPC',
+    'AWS::EC2::VPCEndpoint', 'AWS::EC2::VPCEndpointService', 'AWS::EC2::VPCPeeringConnection', 'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::EC2::Volume',
+    'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::ElasticLoadBalancing::LoadBalancer',
+    'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::IAM::Group', 'AWS::IAM::Policy', 'AWS::IAM::Role', 'AWS::IAM::User', 'AWS::Lambda::Function', 'AWS::QLDB::Ledger',
+    'AWS::RDS::DBCluster', 'AWS::RDS::DBClusterSnapshot', 'AWS::RDS::DBInstance', 'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup', 'AWS::RDS::EventSubscription',
+    'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup', 'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
+    'AWS::Redshift::EventSubscription', 'AWS::S3::AccountPublicAccessBlock', 'AWS::S3::Bucket', 'AWS::SSM::AssociationCompliance', 'AWS::SSM::ManagedInstanceInventory',
+    'AWS::SSM::PatchCompliance', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct', 'AWS::ServiceCatalog::Portfolio',
+    'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection', 'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::RuleGroup', 'AWS::WAF::WebACL', 'AWS::WAFRegional::RateBasedRule',
+    'AWS::WAFRegional::Rule', 'AWS::WAFRegional::RuleGroup', 'AWS::WAFRegional::WebACL', 'AWS::XRay::EncryptionConfig'
+]
 
 CONFIG_ROLE_ASSUME_ROLE_POLICY_DOCUMENT = {
         "Version": "2012-10-17",
@@ -138,7 +147,10 @@ def get_command_parser():
 def get_init_parser():
     parser = argparse.ArgumentParser(
         prog='rdk init',
-        description = 'Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.')
+        description = 'Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.'
+    )
+
+    parser.add_argument('--config_bucket_exists_in_another_account', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
 
     return parser
 
@@ -208,11 +220,12 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited list of RuleSet names')
     parser.add_argument('-f','--functions-only', action='store_true', required=False, help="[optional] Only deploy Lambda functions.  Useful for cross-account deployments.")
-    parser.add_argument('--lambda-role-arn', required=False, help="[optional] Assign existing iam role to lambda functions. If omitted, \"rdkLambdaRole\" will be created.")
     parser.add_argument('--stack-name', required=False, help="[optional] CloudFormation Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
-    parser.add_argument('--execution-role-name', required=False, help="[optional] IAM Role that the Lambda function(s) will assume in each target account.")
     parser.add_argument('--rdklib-layer-arn', required=False, help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.")
+    parser.add_argument('--lambda-role-arn', required=False, help="[optional] Assign existing iam role to lambda functions. If omitted, \"rdkLambdaRole\" will be created.")
     parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
+    parser.add_argument('--lambda-subnets', required=False, help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).")
+    parser.add_argument('--lambda-security-groups', required=False, help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).")
 
     if ForceArgument:
         parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
@@ -313,7 +326,12 @@ class rdk:
         config_recorder_name = "default"
         config_role_arn = ""
         delivery_channel_exists = False
+
         config_bucket_exists = False
+        if self.args.config_bucket_exists_in_another_account:
+            print("Skipping Config Bucket check due to command line args")
+            config_bucket_exists = True
+
         config_bucket_name = config_bucket_prefix + "-" + account_id
 
         #Check to see if the ConfigRecorder has been created.
@@ -939,7 +957,7 @@ class rdk:
                     }]
                 my_cfn = my_session.client('cloudformation')
                 if "Remediation" in rule_params:
-                    print('Build The CFN Template with Remediation Settings' + rule_name)
+                    print('Build The CFN Template with Remedation Settings')
                     cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemediation.json")
                     template_body = open(cfn_body, "r").read()
                     json_body = json.loads(template_body)
@@ -1138,14 +1156,22 @@ class rdk:
 
 
             if self.args.lambda_layers:
-                if self.args.lambda_layers:
-                    additional_layers = self.args.lambda_layers.split(',')
-                    layers.extend(additional_layers)
+                additional_layers = self.args.lambda_layers.split(',')
+                layers.extend(additional_layers)
 
             if layers:
                 my_params.append({
                     'ParameterKey': 'Layers',
                     'ParameterValue': ",".join(layers)
+                })
+
+            if self.args.lambda_security_groups and self.args.lambda_subnets:
+                my_params.append({
+                    'ParameterKey': 'SecurityGroupIds',
+                    'ParameterValue': self.args.lambda_security_groups
+                },{
+                    'ParameterKey': 'SubnetIds',
+                    'ParameterValue': self.args.lambda_subnets
                 })
 
             #create json of CFN template
@@ -1932,9 +1958,10 @@ class rdk:
                         if s_input.intersection(s_params):
                             rule_names.append(obj_name)
         elif self.args.rulename:
-            cleaned_rule_name = self.__clean_rule_name(self.args.rulename[0])
-            if os.path.isdir(cleaned_rule_name):
-                rule_names.append(cleaned_rule_name)
+            for rule_name in self.args.rulename:
+                cleaned_rule_name = self.__clean_rule_name(rule_name)
+                if os.path.isdir(cleaned_rule_name):
+                    rule_names.append(cleaned_rule_name)
         else:
             print ('Invalid Option: Specify Rule Name or RuleSet. Run "rdk deploy -h" for more info.')
             sys.exit(1)
@@ -2492,57 +2519,70 @@ class rdk:
                 "Action": "sts:AssumeRole"
               } ]
             }
+            lambda_policy_statements =[
+                {
+                    "Sid": "1",
+                    "Action": [
+                        "s3:GetObject"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${SourceBucket}/*" }
+                },
+                {
+                    "Sid": "2",
+                    "Action": [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents",
+                        "logs:DescribeLogStreams"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                },
+                {
+                    "Sid": "3",
+                    "Action": [
+                        "config:PutEvaluations"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                },
+                {
+                    "Sid": "4",
+                    "Action": [
+                        "iam:List*",
+                        "iam:Describe*",
+                        "iam:Get*"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                },
+                {
+                    "Sid": "5",
+                    "Action": [
+                        "sts:AssumeRole"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                }
+            ]
+            if self.args.lambda_subnets and self.args.lambda_security_groups:
+                vpc_policy={
+                    "Sid": "LambdaVPCAccessExecution",
+                    "Action": [
+                        "ec2:DescribeNetworkInterfaces",
+                        "ec2:DeleteNetworkInterface",
+                        "ec2:CreateNetworkInterface"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": "*"
+                }
+                lambda_policy_statements.append(vpc_policy)
             lambda_role["Properties"]["Policies"] = [{
               "PolicyName": "ConfigRulePolicy",
               "PolicyDocument": {
                 "Version": "2012-10-17",
-                "Statement": [
-                  {
-                    "Sid": "1",
-                    "Action": [
-                      "s3:GetObject"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${SourceBucket}/*" }
-                  },
-                  {
-                    "Sid": "2",
-                    "Action": [
-                      "logs:CreateLogGroup",
-                      "logs:CreateLogStream",
-                      "logs:PutLogEvents",
-                      "logs:DescribeLogStreams"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  },
-                  {
-                    "Sid": "3",
-                    "Action": [
-                      "config:PutEvaluations"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  },
-                  {
-                    "Sid": "4",
-                    "Action": [
-                      "iam:List*",
-                      "iam:Describe*",
-                      "iam:Get*"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  },
-                  {
-                    "Sid": "5",
-                    "Action": [
-                      "sts:AssumeRole"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": "*"
-                  }
-                ]
+                "Statement": lambda_policy_statements
               }
             } ]
             lambda_role["Properties"]["ManagedPolicyArns"] = [{"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"}]
@@ -2571,9 +2611,14 @@ class rdk:
             else:
                 lambda_function["DependsOn"] = "rdkLambdaRole"
                 properties["Role"] = {"Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]}
-            properties["Runtime"] = params["SourceRuntime"]
+            properties["Runtime"] = self.__get_runtime_string(params)
             properties["Timeout"] = 300
             properties["Tags"] = tags
+            if self.args.lambda_subnets and self.args.lambda_security_groups:
+                properties["VpcConfig"] = {
+                    "SecurityGroupIds" : self.args.lambda_security_groups.split(","),
+                    "SubnetIds" : self.args.lambda_subnets.split(",")
+                }
             layers = []
             if self.args.rdklib_layer_arn:
                 layers.append(self.args.rdklib_layer_arn)
