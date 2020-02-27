@@ -64,20 +64,39 @@ RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib:{version}
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
 accepted_resource_types = [
-    'AWS::ACM::Certificate', 'AWS::ApiGateway::RestApi', 'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Api', 'AWS::ApiGatewayV2::Stage', 'AWS::AutoScaling::AutoScalingGroup',
-    'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction', 'AWS::CloudFormation::Stack', 'AWS::CloudFront::Distribution',
-    'AWS::CloudFront::StreamingDistribution', 'AWS::CloudTrail::Trail', 'AWS::CloudWatch::Alarm', 'AWS::CodeBuild::Project', 'AWS::CodePipeline::Pipeline', 'AWS::DynamoDB::Table',
-    'AWS::EC2::CustomerGateway', 'AWS::EC2::EIP', 'AWS::EC2::EgressOnlyInternetGateway', 'AWS::EC2::FlowLog', 'AWS::EC2::Host', 'AWS::EC2::Instance', 'AWS::EC2::InternetGateway',
-    'AWS::EC2::NatGateway', 'AWS::EC2::NetworkAcl', 'AWS::EC2::NetworkInterface', 'AWS::EC2::RouteTable', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Subnet', 'AWS::EC2::VPC',
-    'AWS::EC2::VPCEndpoint', 'AWS::EC2::VPCEndpointService', 'AWS::EC2::VPCPeeringConnection', 'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::EC2::Volume',
-    'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::ElasticLoadBalancing::LoadBalancer',
-    'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::IAM::Group', 'AWS::IAM::Policy', 'AWS::IAM::Role', 'AWS::IAM::User', 'AWS::Lambda::Function', 'AWS::QLDB::Ledger',
-    'AWS::RDS::DBCluster', 'AWS::RDS::DBClusterSnapshot', 'AWS::RDS::DBInstance', 'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup', 'AWS::RDS::EventSubscription',
-    'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup', 'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
-    'AWS::Redshift::EventSubscription', 'AWS::S3::AccountPublicAccessBlock', 'AWS::S3::Bucket', 'AWS::SSM::AssociationCompliance', 'AWS::SSM::ManagedInstanceInventory',
-    'AWS::SSM::PatchCompliance', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct', 'AWS::ServiceCatalog::Portfolio',
-    'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection', 'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::RuleGroup', 'AWS::WAF::WebACL', 'AWS::WAFRegional::RateBasedRule',
-    'AWS::WAFRegional::Rule', 'AWS::WAFRegional::RuleGroup', 'AWS::WAFRegional::WebACL', 'AWS::XRay::EncryptionConfig'
+    'AWS::ACM::Certificate', 'AWS::ApiGateway::DomainName', 'AWS::ApiGateway::Method',
+    'AWS::ApiGateway::RestApi', 'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Api',
+    'AWS::ApiGatewayV2::DomainName', 'AWS::ApiGatewayV2::Stage', 'AWS::AutoScaling::AutoScalingGroup',
+    'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction',
+    'AWS::CloudFormation::Stack', 'AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution',
+    'AWS::CloudTrail::Trail', 'AWS::CloudWatch::Alarm', 'AWS::CodeBuild::Project', 'AWS::CodePipeline::Pipeline',
+    'AWS::Config::ResourceCompliance', 'AWS::DynamoDB::Table', 'AWS::EC2::CustomerGateway',
+    'AWS::EC2::EgressOnlyInternetGateway', 'AWS::EC2::EIP', 'AWS::EC2::FlowLog',
+    'AWS::EC2::Host', 'AWS::EC2::Instance', 'AWS::EC2::InternetGateway', 'AWS::EC2::NatGateway',
+    'AWS::EC2::NetworkAcl', 'AWS::EC2::NetworkInterface', 'AWS::EC2::RegisteredHAInstance',
+    'AWS::EC2::RouteTable', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Subnet',
+    'AWS::EC2::Volume', 'AWS::EC2::VPC', 'AWS::EC2::VPCEndpoint',
+    'AWS::EC2::VPCEndpointService', 'AWS::EC2::VPCPeeringConnection',
+    'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::ElasticBeanstalk::Application',
+    'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::ElasticLoadBalancing::LoadBalancer',
+    'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::Elasticsearch::Domain', 'AWS::IAM::Group',
+    'AWS::IAM::Policy', 'AWS::IAM::Role', 'AWS::IAM::User',
+    'AWS::KMS::Key', 'AWS::Lambda::Alias', 'AWS::Lambda::Function',
+    'AWS::LicenseManager::LicenseConfiguration', 'AWS::MobileHub::Project', 'AWS::QLDB::Ledger',
+    'AWS::RDS::DBCluster', 'AWS::RDS::DBClusterParameterGroup', 'AWS::RDS::DBClusterSnapshot',
+    'AWS::RDS::DBInstance', 'AWS::RDS::DBOptionGroup', 'AWS::RDS::DBParameterGroup',
+    'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup',
+    'AWS::RDS::EventSubscription', 'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup',
+    'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
+    'AWS::Redshift::EventSubscription', 'AWS::S3::AccountPublicAccessBlock', 'AWS::S3::Bucket',
+    'AWS::SecretsManager::Secret', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct',
+    'AWS::ServiceCatalog::Portfolio', 'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection',
+    'AWS::SNS::Topic', 'AWS::SQS::Queue', 'AWS::SSM::AssociationCompliance',
+    'AWS::SSM::ManagedInstanceInventory', 'AWS::SSM::PatchCompliance', 'AWS::WAF::RateBasedRule',
+    'AWS::WAF::Rule', 'AWS::WAF::RuleGroup', 'AWS::WAF::WebACL', 'AWS::WAFRegional::RateBasedRule',
+    'AWS::WAFRegional::Rule', 'AWS::WAFRegional::RuleGroup', 'AWS::WAFRegional::WebACL',
+    'AWS::WAFv2::WebACL', 'AWS::WAFv2::RuleGroup', 'AWS::WAFv2::IPSet',
+    'AWS::WAFv2::RegexPatternSet', 'AWS::WAFv2::ManagedRuleSet', 'AWS::XRay::EncryptionConfig'
 ]
 
 CONFIG_ROLE_ASSUME_ROLE_POLICY_DOCUMENT = {
@@ -151,7 +170,7 @@ def get_init_parser():
         description = 'Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.'
     )
 
-    parser.add_argument('--config-bucket-exists-in-another-account', default=False, required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
+    parser.add_argument('--config-bucket-exists-in-another-account', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
 
     return parser
 
@@ -198,7 +217,6 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--remediation-concurrent-execution-percent', required=False, help='[optional] Concurrent execution rate of the SSM document for remediation.')
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
-    parser.add_argument('--remediation-role-name', required=False, help='[optional] Name of the Role to be used for the remediation action')
 
     return parser
 
@@ -711,7 +729,6 @@ class rdk:
             self.args.auto_remediation_retry_time = params.get("RetryAttemptSeconds", "")
             self.args.remediation_action = params.get("TargetId", "")
             self.args.remediation_action_version = params.get("TargetVersion", "")
-            self.args.remediation_role_name = params.get("RoleName", "")
 
         if 'RuleSets' in old_params:
             if not self.args.rulesets:
@@ -966,7 +983,7 @@ class rdk:
                 #Check if this managed rule needs to have an assoicated remedation block
                 remediation = ""
                 if "Remediation" in rule_params:
-                    print('Build The CFN Template with Remedation Settings')
+                    print('Build The CFN Template with Remediation Settings')
                     cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemediation.json")
                     template_body = open(cfn_body, "r").read()
                     json_body = json.loads(template_body)
@@ -2099,8 +2116,7 @@ class rdk:
                     "remediation_action_version",
                     "remediation_concurrent_execution_percent",
                     "remediation_error_rate_percent",
-                    "remediation_parameters",
-                    "remediation_role_name"
+                    "remediation_parameters"
                 ]
             )
             and not self.args.remediation_action
@@ -2166,9 +2182,6 @@ class rdk:
 
         if self.args.remediation_parameters:
             params["Parameters"] = json.loads(self.args.remediation_parameters)
-
-        if self.args.remediation_role_name:
-            params["RoleName"] = self.args.remediation_role_name
 
         if self.args.resource_types and len(self.args.resource_types.split(",")) == 1:
             params["ResourceType"] = self.args.resource_types
@@ -2366,30 +2379,10 @@ class rdk:
         return s3_dst
 
     def __create_remediation_cloudformation_block(self, remediation_config):
-        # Check the role_name is present and remove it from the dict
-        role_name = remediation_config.pop("RoleName", None)
-        if not role_name:
-            print("No RoleName present in remediation config")
-            exit(1)
-
-        # Put the remaining properties into the dict
-        properties = {key: value for key, value in remediation_config.items()}
-
-        # Set the dynamic AutomationAssumeRole CFN Block
-        properties["Parameters"]["AutomationAssumeRole"] = {
-            "StaticValue": {
-                "Values": [
-                    {
-                        "Fn::Sub": "{}/{}".format("arn:${AWS::Partition}:iam::${AWS::AccountId}:role", role_name)
-                    }
-                ]
-            }
-        }
-
         remediation = {
             "Type" : "AWS::Config::RemediationConfiguration",
             "DependsOn": "rdkConfigRule",
-            "Properties" : properties
+            "Properties" : remediation_config
         }
 
         return remediation
