@@ -241,7 +241,7 @@ def get_test_parser(command):
     parser.add_argument('--all','-a', action='store_true', help="Test will be run against all rules in the working directory.")
     parser.add_argument('--test-ci-json', '-j', help="[optional] JSON for test CI for testing.")
     parser.add_argument('--test-ci-types', '-t', help="[optional] CI type to use for testing.")
-    parser.add_argument('--verbose', '-v', action='store_true', help='[optional] Enable full log output')
+    parser.add_argument('--verbose', '-v', action='store_false', help='[optional] Enable full log output')
     parser.add_argument('-s','--rulesets', required=False, help='[p[tional] comma-delimited list of RuleSet names')
     return parser
 
@@ -1260,7 +1260,12 @@ class rdk:
             print("Testing "+rule_name)
             test_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
             print("Looking for tests in " + test_dir)
-            results = unittest.TextTestRunner(buffer=True, verbosity=2).run(self.__create_test_suite(test_dir))
+
+            if args.verbose == False:
+                results = unittest.TextTestRunner(buffer=False, verbosity=2).run(self.__create_test_suite(test_dir))
+            else:
+                results = unittest.TextTestRunner(buffer=True, verbosity=2).run(self.__create_test_suite(test_dir))
+
             print (results)
 
             tests_successful = tests_successful and results.wasSuccessful()
@@ -2007,6 +2012,8 @@ class rdk:
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
+
+        return self.args
 
     def __parse_deploy_args(self, ForceArgument=False):
 
