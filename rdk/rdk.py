@@ -1260,7 +1260,12 @@ class rdk:
             print("Testing "+rule_name)
             test_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
             print("Looking for tests in " + test_dir)
-            results = unittest.TextTestRunner(buffer=True, verbosity=2).run(self.__create_test_suite(test_dir))
+
+            if args.verbose == True:
+                results = unittest.TextTestRunner(buffer=False, verbosity=2).run(self.__create_test_suite(test_dir))
+            else:
+                results = unittest.TextTestRunner(buffer=True, verbosity=2).run(self.__create_test_suite(test_dir))
+
             print (results)
 
             tests_successful = tests_successful and results.wasSuccessful()
@@ -2007,6 +2012,8 @@ class rdk:
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
+
+        return self.args
 
     def __parse_deploy_args(self, ForceArgument=False):
 
