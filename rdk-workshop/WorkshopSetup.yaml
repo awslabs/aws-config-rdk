@@ -1,0 +1,393 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "AWS CloudFormation template to create resources needed for the Compliance Automation workshop. You will be billed for the AWS resources used if you create a stack from this template."
+Resources:
+  Cloud9Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: Allow
+            Principal: 
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      RoleName: !Sub "Cloud9Role-${AWS::AccountId}"
+
+  Cloud9InstanceRolePermission:
+      Type: AWS::IAM::ManagedPolicy
+      Properties:
+        ManagedPolicyName: Cloud9InstanceRolePolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - 
+            Sid: RdkPermissions
+            Action:
+              - iam:Get*
+              - iam:List*
+              - iam:DeleteRole
+              - iam:DeleteRolePolicy
+              - iam:DetachRolePolicy
+              - lambda:AddPermission
+              - lambda:CreateFunction
+              - lambda:CreateEventSourceMapping
+              - lambda:DeleteFunction
+              - lambda:RemovePermission
+              - lambda:UpdateFunctionConfiguration
+              - lambda:UpdateFunctionCode
+              - lambda:PublishVersion
+              - lambda:Get*
+              - lambda:List*
+              - config:Describe*
+              - config:Put*
+              - config:List*
+              - config:StartConfigurationRecorder
+              - config:Get*
+              - config:StartConfigRulesEvaluation
+              - config:DeleteConfigRule
+              - cloudformation:*
+              - logs:Describe*
+              - logs:FilterLogEvents
+              - logs:GetLogEvents
+              - s3:List*
+              - s3:PutBucketVersioning
+              - s3:GetBucketVersioning
+              - s3:GetBucketAcl
+              - s3:GetAccountPublicAccessBlock
+              - s3:GetBucketPolicyStatus
+              - s3:GetBucketPublicAccessBlock
+              - s3:CreateBucket
+              - sts:GetCallerIdentity
+            Effect: Allow
+            Resource: "*"
+          - 
+            Sid: GetObjectAcl
+            Action:
+              - s3:GetObjectAcl
+              - s3:GetObjectVersion
+              - s3:GetObjectVersionAcl
+            Effect: Allow
+            Resource: arn:aws:s3:::*/*
+          - 
+            Sid: RdkPermissionsS3
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+            Effect: Allow
+            Resource: arn:aws:s3:::config-rule-code-bucket*
+          - 
+            Sid: RdkPermissionsRolePolicyAttachment
+            Action:
+              - iam:AttachRolePolicy
+              - iam:PutRolePolicy
+              - iam:PassRole
+            Effect: Allow
+            Resource:
+            - arn:aws:iam::*:role/rdk/*
+          - 
+            Sid: RdkPermissionsPassRole
+            Action:
+              - iam:CreateRole
+              - iam:PassRole
+              - iam:PutRolePolicy
+            Effect: Allow
+            Resource: arn:aws:iam::*:role/rdk/*
+          - 
+            Sid: AllowCreateServiceLinkRole
+            Action: iam:CreateServiceLinkedRole
+            Effect: Allow
+            Resource: arn:aws:iam::*:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig*
+            Condition:
+              StringLike:
+                iam:AWSServiceName: config.amazonaws.com
+          - 
+            Sid: AllowAttachRole
+            Action:
+              - iam:AttachRolePolicy
+              - iam:PassRole
+              - iam:PutRolePolicy
+              - iam:DeleteServiceLinkedRole
+              - iam:GetServiceLinkedRoleDeletionStatus
+            Effect: Allow
+            Resource: arn:aws:iam::*:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig*
+          - 
+            Sid: SecurityHubAdmin
+            Action: securityhub:*
+            Effect: Allow
+            Resource: "*"
+          - 
+            Sid: SecurityHubServiceLinkRole
+            Action: iam:CreateServiceLinkedRole
+            Effect: Allow
+            Resource: "*"
+            Condition:
+              StringLike:
+                iam:AWSServiceName: securityhub.amazonaws.com
+          - 
+            Sid: AllowConfigRemediation
+            Action:
+              - config:StartRemediationExecution
+              - config:DeleteRemediationConfiguration
+            Effect: Allow
+            Resource: "*"
+          - 
+            Sid: AllowCloudTrailLookup
+            Action:
+              - cloudtrail:DescribeTrails
+              - cloudtrail:GetTrailStatus
+              - cloudtrail:LookupEvents
+            Effect: Allow
+            Resource: "*"
+          - 
+            Sid: AllowSNSInteraction
+            Action:
+              - sns:AddPermission
+              - sns:CreateTopic
+              - sns:DeleteTopic
+              - sns:GetTopicAttributes
+              - sns:ListPlatformApplications
+              - sns:ListTopics
+              - sns:SetTopicAttributes
+            Effect: Allow
+            Resource: "*"
+          - 
+            Sid: InteractionWithSSM
+            Action:
+              - ssm:DescribeDocument
+              - ssm:GetDocument
+              - ssm:DescribeAutomationExecutions
+              - ssm:DescribeAutomationStepExecutions
+              - ssm:GetAutomationExecution
+              - ssm:ListDocuments
+              - ssm:StartAutomationExecution
+              - ssm:StopAutomationExecution
+            Effect: Allow
+            Resource: "*"
+          - 
+            Sid: Cloud9FullAdmin
+            Action:
+              - cloud9:*
+              - ec2:RunInstances
+              - ec2:DescribeSubnets
+              - ec2:DescribeVpcs
+              - ec2:DescribeInstances
+              - ec2:DescribeInstanceStatus
+              - ec2:DescribeVolumes
+              - ec2:DescribeIamInstanceProfileAssociations
+              - ec2:AssociateIamInstanceProfile
+              - ec2:DisassociateIamInstanceProfile
+              - ec2:ReplaceIamInstanceProfileAssociation
+              - iam:GetUser
+              - iam:ListUsers
+            Effect: Allow
+            Resource: "*"
+          - 
+            Sid: AllowPassRoleForInstanceRole
+            Action: iam:PassRole
+            Effect: Allow
+            Resource:
+            - arn:aws:iam::*:role/Cloud9Role-*
+          - 
+            Sid: Cloud9ServiceLinkedRole
+            Action: iam:CreateServiceLinkedRole
+            Effect: Allow
+            Resource: "*"
+            Condition:
+              StringLike:
+                iam:AWSServiceName: cloud9.amazonaws.com
+          - 
+            Sid: AllowIAMUserAddMFA
+            Action:
+              - iam:CreateVirtualMFADevice
+              - iam:DeactivateMFADevice
+              - iam:DeleteVirtualMFADevice
+              - iam:EnableMFADevice
+              - iam:ListMFADevices
+              - iam:ListVirtualMFADevices
+            Effect: Allow
+            Resource: "*"
+          - 
+            Sid: ManageCloudWatchLogGroup
+            Action:
+              - logs:DescribeLogGroups
+              - logs:CreateLogGroup
+              - logs:Delete*
+              - logs:PutRetentionPolicy
+              - logs:DescribeLogStreams
+              - logs:CreateLogStream
+              - logs:DeleteLogStream
+              - logs:PutLogEvents
+              - logs:GetLogEvents
+              - logs:PutMetricFilter
+              - logs:DescribeMetricFilters
+            Resource: "*"
+            Effect: Allow
+          - 
+            Sid: ManageCloudWatchMetrics
+            Action:
+              - cloudwatch:PutMetricAlarm
+              - cloudwatch:PutMetricData
+              - cloudwatch:ListMetrics
+              - cloudwatch:GetMetricData
+              - cloudwatch:EnableAlarmActions
+              - cloudwatch:DisableAlarmActions
+              - cloudwatch:DescribeAlarms
+              - cloudwatch:DescribeAlarmsForMetric
+              - cloudwatch:DeleteAlarms
+            Resource: "*"
+            Effect: Allow
+          - 
+            Sid: AllowPassRoleForLambdaExecutionRole
+            Action: iam:PassRole
+            Effect: Allow
+            Resource:
+              - arn:aws:iam::*:role/WorkshopRemediationRole
+          - 
+            Sid: CloudWatchEventsConsoleAccess
+            Effect: Allow
+            Action:
+              - autoscaling:DescribeAutoScalingGroups
+              - events:*
+              - iam:ListRoles
+              - swf:RegisterDomain
+            Resource: "*"
+          - 
+            Sid: IAMPassRoleForCloudWatchEvents
+            Effect: Allow
+            Action: iam:PassRole
+            Resource:
+              - arn:aws:iam::*:role/AWS_Events_Invoke_Targets
+              - arn:aws:iam::*:role/AWS_Events_Actions_Execution
+        Roles:
+          - !Ref Cloud9Role
+
+  Cloud9InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref Cloud9Role
+      InstanceProfileName: RDKCloud9InstanceProfile
+
+  AliceUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: Alice
+
+  BobUser:
+      Type: AWS::IAM::User
+      Properties:
+        UserName: Bob
+
+  RemediationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: RemediationPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                  - "logs:DescribeLogStreams"
+                Resource: "arn:aws:logs:*:*:*"
+              -
+                Effect: "Allow"
+                Action:
+                  - "iam:AddUserToGroup"
+                  - "iam:ListUsers"
+                Resource: "*"
+      RoleName: WorkshopRemediationRole
+
+  QuarantineGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: "QuarantinedUsers"
+      Policies:
+        -
+          PolicyName: QuarantinePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Deny"
+                Action: "*"
+                Resource: "*"
+
+  NonCompliantBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join [ "-", ["my-bucket-to-remediate", !Ref "AWS::AccountId", !Ref "AWS::Region"]]
+
+  CompliantBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join [ "-", ["my-compliant-bucket", !Ref "AWS::AccountId", !Ref "AWS::Region"]]
+      VersioningConfiguration:
+        Status: "Enabled"
+
+#--------------------------------- Zom added ---------------------------------#
+
+  ConfigLogsBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: 'AES256'
+      BucketName: !Sub "config-bucket-${AWS::AccountId}"
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  ConfigBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    DependsOn: ConfigLogsBucket
+    Properties:
+      Bucket: !Ref 'ConfigLogsBucket'
+      PolicyDocument:
+        Statement:
+        - Sid: "ConfigAclCheck"
+          Effect: Allow
+          Principal:
+            Service: 'config.amazonaws.com'
+          Action:
+            - s3:GetBucketAcl
+          Resource:
+            - !Sub 'arn:aws:s3:::${ConfigLogsBucket}'
+        - Sid: "ConfigWrite"
+          Effect: Allow
+          Principal:
+            Service: 'config.amazonaws.com'
+          Action:
+            - s3:PutObject
+          Resource:
+            #------------------------------------TOBEEDITED------------------------------------#
+            # SecLogs Account -- this account
+            - !Sub "arn:aws:s3:::${ConfigLogsBucket}/AWSLogs/${AWS::AccountId}/*"
+            #----------------------------------------------------------------------------------#
+          Condition:
+            StringEquals:
+              s3:x-amz-acl: bucket-owner-full-control
+
+#-----------------------------------------------------------------------------#

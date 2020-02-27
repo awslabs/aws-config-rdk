@@ -26,7 +26,7 @@ setup(name='rdk',
       packages=['rdk'],
       install_requires=[
           'boto3',
-          'mock',
+          'mock==3.0.5',
           'future'
       ],
       entry_points={

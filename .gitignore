@@ -109,3 +109,4 @@ venv.bak/
 soccer/
 
 football/
+.vscode/launch.json
