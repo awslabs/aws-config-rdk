@@ -983,7 +983,7 @@ class rdk:
                 #Check if this managed rule needs to have an assoicated remedation block
                 remediation = ""
                 if "Remediation" in rule_params:
-                    print('Build The CFN Template with Remedation Settings')
+                    print('Build The CFN Template with Remediation Settings')
                     cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemediation.json")
                     template_body = open(cfn_body, "r").read()
                     json_body = json.loads(template_body)
