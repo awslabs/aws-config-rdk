@@ -64,7 +64,7 @@
         }
     },
     "Resources": {
-        "rdkConfigManagedRule": {
+        "rdkConfigRule": {
             "Type": "AWS::Config::ConfigRule",
             "Properties": {
                 "ConfigRuleName": {
