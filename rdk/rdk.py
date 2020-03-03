@@ -59,8 +59,8 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
-RDKLIB_LAYER_VERSION={'ap-southeast-1':'51', 'ap-south-1':'29', 'us-east-2':'31', 'us-east-1':'31', 'us-west-1':'31', 'us-west-2':'30', 'ap-northeast-2':'29', 'ap-southeast-2':'29', 'ap-northeast-1':'29', 'ca-central-1':'29', 'eu-central-1':'29', 'eu-west-1':'29', 'eu-west-2':'29', 'eu-west-3':'29', 'eu-north-1':'29', 'sa-east-1':'29'}
-RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib:{version}"
+RDKLIB_LAYER_VERSION={'ap-southeast-1':'20', 'ap-south-1':'1', 'us-east-2':'1', 'us-east-1':'1', 'us-west-1':'1', 'us-west-2':'1', 'ap-northeast-2':'1', 'ap-southeast-2':'1', 'ap-northeast-1':'1', 'ca-central-1':'1', 'eu-central-1':'1', 'eu-west-1':'1', 'eu-west-2':'1', 'eu-west-3':'1', 'eu-north-1':'1', 'sa-east-1':'1'}
+RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{version}"
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
 accepted_resource_types = [
@@ -192,7 +192,7 @@ def get_rule_parser(is_required, command):
     usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--tags <tags JSON>] [--rulesets <RuleSet tags>]"
 
     if is_required:
-        usage_string = "--runtime <runtime> [ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--rulesets <RuleSet tags>]"
+        usage_string = "[ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--rulesets <RuleSet tags>]"
 
     parser = argparse.ArgumentParser(
         prog='rdk '+command,
@@ -200,9 +200,10 @@ def get_rule_parser(is_required, command):
         description="Rules are stored in their own directory along with their metadata.  This command is used to " + command + " the Rule and metadata."
     )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
-    runtime_group = parser.add_mutually_exclusive_group(required=is_required)
+    runtime_group = parser.add_mutually_exclusive_group()
     runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'dotnetcore1.0', 'dotnetcore2.0'])
     runtime_group.add_argument('--source-identifier', required=False, help="[optional] Used only for creating Managed Rules.")
+    parser.set_defaults(runtime='python3.6-lib')
     parser.add_argument('-r','--resource-types', required=False, help='[optional] Resource types that will trigger event-based Rule evaluation')
     parser.add_argument('-m','--maximum-frequency', required=False, help='[optional] Maximum execution frequency for scheduled Rules', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
     parser.add_argument('-i','--input-parameters', help="[optional] JSON for required Config parameters.")

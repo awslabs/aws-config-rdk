@@ -18,6 +18,7 @@ phases:
       - rdk modify LP3-TestRule-P3 --input-parameters '{"TestParameter":"TestValue"}'
       - rdk create LP3-TestRule-P3-Periodic --runtime python3.6 --maximum-frequency One_Hour
       - rdk create LP3-TestRule-P37-Periodic --runtime python3.7 --maximum-frequency One_Hour
+      - rdk create LP3-TestRule-P36lib-Periodic --runtime python3.6-lib --maximum-frequency One_Hour
       - rdk test-local --all
       - rdk deploy --all
       - yes | rdk undeploy LP3-TestRule-P3
@@ -25,6 +26,7 @@ phases:
       - yes | rdk undeploy LP3-TestRule-P37-Periodic
       - sleep 30
       - rdk logs LP3-TestRule-P3
+      - yes | rdk undeploy -a
   post_build:
     commands:
       - echo Build completed on `date`
