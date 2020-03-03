@@ -5,6 +5,7 @@ phases:
     commands:
       - echo Installing rdk...
       - pip install .
+      - pip install rdklib
   pre_build:
     commands:
       - echo Starting tests
