@@ -22,7 +22,7 @@ class <%RuleName%>(ConfigRule):
     #def evaluate_periodic(self, event, client_factory, valid_rule_parameters):
     #    pass
 
-    def evaluate_parameters(self, event, client_factory, rule_parameters):
+    def evaluate_parameters(self, rule_parameters):
         valid_rule_parameters = rule_parameters
         return valid_rule_parameters
 
