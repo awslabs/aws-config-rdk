@@ -27,7 +27,7 @@ phases:
       - yes | rdk undeploy LP2_TestRule_P37_Periodic
       - sleep 30
       - rdk logs LP2_TestRule_P3
-      - - yes | rdk undeploy -a
+      - yes | rdk undeploy -a
 
   post_build:
     commands:
