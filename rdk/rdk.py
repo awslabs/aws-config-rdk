@@ -1,4 +1,4 @@
-#    Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#    Copyright 2017-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
 #
@@ -16,17 +16,13 @@ import tempfile
 import boto3
 import json
 import time
-import imp
 import argparse
 import botocore
 from botocore.exceptions import ClientError
 from datetime import datetime
 import base64
-import ast
-import textwrap
 import fileinput
 import subprocess
-from subprocess import call
 import fnmatch
 import unittest
 
@@ -306,6 +302,7 @@ def get_create_rule_template_parser():
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be included in the generated CloudFormation template.")
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names to be included in the generated template.')
     parser.add_argument('-o','--output-file', required=True, default="RDK-Config-Rules", help="filename of generated CloudFormation template")
+    parser.add_argument('-t','--tag-config-rules-script', required=False, help="filename of generated script to tag config rules with the tags in each paramter.json")
     parser.add_argument('--config-role-arn', required=False, help="[optional] Assign existing iam role as config role. If omitted, \"config-role\" will be created.")
     parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
     return parser
@@ -1046,11 +1043,6 @@ class rdk:
                     #wait for changes to propagate.
                     self.__wait_for_cfn_stack(my_cfn, my_stack_name)
 
-                    continue
-
-
-                    
-
                 else:
                 #deploy config rule
                     cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRule.json")
@@ -1100,7 +1092,11 @@ class rdk:
                     #wait for changes to propagate.
                     self.__wait_for_cfn_stack(my_cfn, my_stack_name)
 
-                    continue
+                #Cloudformation is not supporting tagging config rule currently.
+                if cfn_tags is not None:
+                    self.__tag_config_rule(rule_name, cfn_tags, my_session)
+
+                continue
 
             print("Found Custom Rule.")
 
@@ -1152,7 +1148,6 @@ class rdk:
 
                 }]
             layers = []
-            rdk_lib_version = "0"
             if 'SourceRuntime' in rule_params:
                 if rule_params['SourceRuntime'] == "python3.6-lib":
                     if self.args.rdklib_layer_arn:
@@ -1255,6 +1250,10 @@ class rdk:
 
             #wait for changes to propagate.
             self.__wait_for_cfn_stack(my_cfn, my_stack_name)
+
+            #Cloudformation is not supporting tagging config rule currently.
+            if cfn_tags is not None:
+                self.__tag_config_rule(rule_name, cfn_tags, my_session)
 
         print('Config deploy complete.')
 
@@ -1456,6 +1455,8 @@ class rdk:
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
+
+        script_for_tag="#! /bin/bash \n"
 
         print ("Generating CloudFormation template!")
 
@@ -1665,6 +1666,12 @@ class rdk:
 
                 resources[self.__get_alphanumeric_rule_name(rule_name)+"Remediation"] = remediation
 
+            if tags:
+                tags_str=""
+                for tag in tags:
+                    tags_str += "Key={},Value={} ".format(tag['Key'], tag['Value'])
+                script_for_tag += "aws configservice tag-resource --resources-arn $(aws configservice describe-config-rules --config-rule-names {} --query 'ConfigRules[0].ConfigRuleArn' | tr -d '\"') --tags {} \n".format(rule_name, tags_str)
+
         template["Resources"] = resources
         template["Conditions"] = conditions
         template["Parameters"] = parameters
@@ -1691,6 +1698,17 @@ class rdk:
         output_file = open(self.args.output_file, 'w')
         output_file.write(json.dumps(template, indent=2))
         print("CloudFormation template written to " + self.args.output_file)
+
+        if tags:
+            print ("Found tags on config rules. Cloudformation do not support tagging config rule at the moment")
+            print ("Generating script for config rules tags")
+            if self.args.tag_config_rules_script:
+                with open (self.args.tag_config_rules_script, 'w') as rsh:
+                    rsh.write(script_for_tag)
+            else:
+                print("=========SCRIPT=========")
+                print(script_for_tag)
+                print("you can use flag [--tag_config_rules_script <file path> ] to output the script")
 
     def __generate_terraform_shell(self, args):
         return ""
@@ -2549,6 +2567,15 @@ class rdk:
         template['Resources'] = resources
 
         return json.dumps(template, indent=2)
+
+    def __tag_config_rule(self, rule_name, cfn_tags, my_session):
+        config_client=my_session.client('config')
+        config_arn=config_client.describe_config_rules(ConfigRuleNames=[rule_name])['ConfigRules'][0]['ConfigRuleArn']
+        response = config_client.tag_resource(
+            ResourceArn=config_arn,
+            Tags=cfn_tags
+        )
+        return response
 
 class TestCI():
     def __init__(self, ci_type):
