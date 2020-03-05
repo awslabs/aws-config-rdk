@@ -1456,7 +1456,7 @@ class rdk:
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
 
-        script_for_tag="#! /bin/bash \n"
+        script_for_tag=""
 
         print ("Generating CloudFormation template!")
 
@@ -1699,9 +1699,10 @@ class rdk:
         output_file.write(json.dumps(template, indent=2))
         print("CloudFormation template written to " + self.args.output_file)
 
-        if tags:
+        if script_for_tag:
             print ("Found tags on config rules. Cloudformation do not support tagging config rule at the moment")
             print ("Generating script for config rules tags")
+            script_for_tag= "#! /bin/bash \n" + script_for_tag
             if self.args.tag_config_rules_script:
                 with open (self.args.tag_config_rules_script, 'w') as rsh:
                     rsh.write(script_for_tag)
