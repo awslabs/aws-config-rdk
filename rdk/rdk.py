@@ -188,7 +188,7 @@ def get_rule_parser(is_required, command):
     usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--tags <tags JSON>] [--rulesets <RuleSet tags>]"
 
     if is_required:
-        usage_string = "[ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--rulesets <RuleSet tags>]"
+        usage_string = "[ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--runtime <runtime>] [--rulesets <RuleSet tags>]"
 
     parser = argparse.ArgumentParser(
         prog='rdk '+command,
@@ -1093,7 +1093,7 @@ class rdk:
                     self.__wait_for_cfn_stack(my_cfn, my_stack_name)
 
                 #Cloudformation is not supporting tagging config rule currently.
-                if cfn_tags is not None:
+                if cfn_tags is not None and len(cfn_tags) > 0:
                     self.__tag_config_rule(rule_name, cfn_tags, my_session)
 
                 continue
@@ -1252,7 +1252,7 @@ class rdk:
             self.__wait_for_cfn_stack(my_cfn, my_stack_name)
 
             #Cloudformation is not supporting tagging config rule currently.
-            if cfn_tags is not None:
+            if cfn_tags is not None and len(cfn_tags) > 0:
                 self.__tag_config_rule(rule_name, cfn_tags, my_session)
 
         print('Config deploy complete.')
