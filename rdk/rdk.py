@@ -188,7 +188,7 @@ def get_rule_parser(is_required, command):
     usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--tags <tags JSON>] [--rulesets <RuleSet tags>]"
 
     if is_required:
-        usage_string = "[ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--rulesets <RuleSet tags>]"
+        usage_string = "[ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--runtime <runtime>] [--rulesets <RuleSet tags>]"
 
     parser = argparse.ArgumentParser(
         prog='rdk '+command,
@@ -1093,7 +1093,7 @@ class rdk:
                     self.__wait_for_cfn_stack(my_cfn, my_stack_name)
 
                 #Cloudformation is not supporting tagging config rule currently.
-                if cfn_tags is not None:
+                if cfn_tags is not None and len(cfn_tags) > 0:
                     self.__tag_config_rule(rule_name, cfn_tags, my_session)
 
                 continue
@@ -1252,7 +1252,7 @@ class rdk:
             self.__wait_for_cfn_stack(my_cfn, my_stack_name)
 
             #Cloudformation is not supporting tagging config rule currently.
-            if cfn_tags is not None:
+            if cfn_tags is not None and len(cfn_tags) > 0:
                 self.__tag_config_rule(rule_name, cfn_tags, my_session)
 
         print('Config deploy complete.')
@@ -1456,7 +1456,7 @@ class rdk:
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
 
-        script_for_tag="#! /bin/bash \n"
+        script_for_tag=""
 
         print ("Generating CloudFormation template!")
 
@@ -1699,16 +1699,17 @@ class rdk:
         output_file.write(json.dumps(template, indent=2))
         print("CloudFormation template written to " + self.args.output_file)
 
-        if tags:
+        if script_for_tag:
             print ("Found tags on config rules. Cloudformation do not support tagging config rule at the moment")
             print ("Generating script for config rules tags")
+            script_for_tag= "#! /bin/bash \n" + script_for_tag
             if self.args.tag_config_rules_script:
                 with open (self.args.tag_config_rules_script, 'w') as rsh:
                     rsh.write(script_for_tag)
             else:
                 print("=========SCRIPT=========")
                 print(script_for_tag)
-                print("you can use flag [--tag_config_rules_script <file path> ] to output the script")
+                print("you can use flag [--tag-config-rules-script <file path> ] to output the script")
 
     def __generate_terraform_shell(self, args):
         return ""
