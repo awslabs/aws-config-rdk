@@ -1709,7 +1709,7 @@ class rdk:
             else:
                 print("=========SCRIPT=========")
                 print(script_for_tag)
-                print("you can use flag [--tag_config_rules_script <file path> ] to output the script")
+                print("you can use flag [--tag-config-rules-script <file path> ] to output the script")
 
     def __generate_terraform_shell(self, args):
         return ""
