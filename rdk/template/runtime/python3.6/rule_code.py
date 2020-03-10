@@ -1,4 +1,4 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2017-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You may
 # not use this file except in compliance with the License. A copy of the License is located at
@@ -220,7 +220,7 @@ def convert_api_configuration(configuration_item):
 def get_configuration_item(invoking_event):
     check_defined(invoking_event, 'invokingEvent')
     if is_oversized_changed_notification(invoking_event['messageType']):
-        configuration_item_summary = check_defined(invoking_event['configuration_item_summary'], 'configurationItemSummary')
+        configuration_item_summary = check_defined(invoking_event['configurationItemSummary'], 'configurationItemSummary')
         return get_configuration(configuration_item_summary['resourceType'], configuration_item_summary['resourceId'], configuration_item_summary['configurationItemCaptureTime'])
     if is_scheduled_notification(invoking_event['messageType']):
         return None

@@ -1,0 +1,112 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS CloudFormation template to create Managed AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template.",
+    "Parameters": {
+        "RuleName": {
+            "Description": "Name of the Rule",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "255"
+        },
+        "SourceEvents": {
+            "Description": "Event Type",
+            "Type": "CommaDelimitedList",
+            "Default": "NONE"
+        },
+        "SourcePeriodic": {
+            "Description": "Execution Frequency",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "255",
+            "Default": "NONE"
+        },
+        "SourceIdentifier": {
+            "Description": "Source Identifier of Managed Rule",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "255"
+        },
+        "SourceInputParameters": {
+            "Description": "Input Parameters",
+            "Type": "String",
+            "Default": "{}"
+        }
+    },
+    "Conditions": {
+        "EventTriggered": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Fn::Join": [
+                                ",",
+                                {
+                                    "Ref": "SourceEvents"
+                                }
+                            ]
+                        },
+                        "NONE"
+                    ]
+                }
+            ]
+        },
+        "PeriodicTriggered": {
+            "Fn::Not": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "SourcePeriodic"
+                        },
+                        "NONE"
+                    ]
+                }
+            ]
+        }
+    },
+    "Resources": {
+        "rdkConfigRule": {
+            "Type": "AWS::Config::ConfigRule",
+            "Properties": {
+                "ConfigRuleName": {
+                    "Ref": "RuleName"
+                },
+                "Description": {
+                    "Ref": "RuleName"
+                },
+                "Scope": {
+                    "Fn::If": [
+                        "EventTriggered",
+                        {
+                            "ComplianceResourceTypes": {
+                                "Ref": "SourceEvents"
+                            }
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "MaximumExecutionFrequency": {
+                    "Fn::If": [
+                        "PeriodicTriggered",
+                        {
+                            "Ref": "SourcePeriodic"
+                        },
+                        {
+                            "Ref": "AWS::NoValue"
+                        }
+                    ]
+                },
+                "Source": {
+                    "Owner": "AWS",
+                    "SourceIdentifier": {
+                        "Ref": "SourceIdentifier"
+                    }
+                },
+                "InputParameters": {
+                    "Ref": "SourceInputParameters"
+                }
+            }
+        }
+    }
+}
