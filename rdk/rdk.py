@@ -651,14 +651,22 @@ class rdk:
                     shutil.copyfile(src, dst)
                     f = fileinput.input(files=dst, inplace=True)
                     for line in f:
-                        print(line.replace('<%RuleName%>', self.args.rulename), end='')
+                        if self.args.runtime == 'python3.6-lib':
+                            if self.args.resource_types:
+                                applicable_resource_list = ''
+                                for resource_type in self.args.resource_types.split(','):
+                                    applicable_resource_list += "'" + resource_type + "', "
+                                print(line.replace('<%RuleName%>', self.args.rulename).replace('<%ApplicableResources1%>', '\nAPPLICABLE_RESOURCES = [' + applicable_resource_list[:-2] + ']\n').replace('<%ApplicableResources2%>', ', APPLICABLE_RESOURCES'), end='')
+                            else:
+                                print(line.replace('<%RuleName%>', self.args.rulename).replace('<%ApplicableResources1%>', '').replace('<%ApplicableResources2%>', ''), end='')
+                        else:
+                            print(line.replace('<%RuleName%>', self.args.rulename), end='')
                     f.close()
 
                     src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, 'rule_test' + extension_mapping[self.args.runtime])
                     if os.path.exists(src):
                         dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename+"_test"+extension_mapping[self.args.runtime])
                         shutil.copyfile(src, dst)
-                        #with fileinput.FileInput(dst, inplace=True) as file:
                         f = fileinput.input(files=dst, inplace=True)
                         for line in f:
                             print(line.replace('<%RuleName%>', self.args.rulename), end='')
