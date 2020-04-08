@@ -1332,6 +1332,8 @@ class rdk:
                     if self.args.rdklib_layer_arn:
                         layers.append(self.args.rdklib_layer_arn)
                     else:
+                        #create custom session based on whatever credentials are available to us
+                        my_session = self.__get_boto_session()
                         rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
                         rdklib_arn = RDKLIB_ARN_STRING.format(region=my_session.region_name, version=rdk_lib_version)
                         layers.append(rdklib_arn)
