@@ -10,7 +10,7 @@
 # the specific language governing permissions and limitations under the License.
 
 from rdklib import Evaluator, Evaluation, ConfigRule, ComplianceType
-
+<%ApplicableResources1%>
 class <%RuleName%>(ConfigRule):
     def evaluate_change(self, event, client_factory, configuration_item, valid_rule_parameters):
         ###############################
@@ -32,5 +32,5 @@ class <%RuleName%>(ConfigRule):
 ################################
 def lambda_handler(event, context):
     my_rule = <%RuleName%>()
-    evaluator = Evaluator(my_rule)
+    evaluator = Evaluator(my_rule<%ApplicableResources2%>)
     return evaluator.handle(event, context)
