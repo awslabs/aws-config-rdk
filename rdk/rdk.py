@@ -154,7 +154,7 @@ def get_command_parser():
     parser.add_argument('-r','--region',help='Select the region to run the command in.')
     #parser.add_argument('--verbose','-v', action='count')
     #Removed for now from command choices: 'test-remote', 'status'
-    parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy'])
+    parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy', 'export'])
     parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
     parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
 
@@ -245,6 +245,27 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
 
     if ForceArgument:
         parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
+    return parser
+
+def get_export_parser(ForceArgument=False, Command="export"):
+
+    parser = argparse.ArgumentParser(
+        prog='rdk '+Command,
+        description="Used to " + Command + " the Config Rule to terraform file."
+    )
+    parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to export to a file.')
+    parser.add_argument('-s', '--rulesets', required=False, help='comma-delimited list of RuleSet names')
+    parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
+    parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
+    parser.add_argument('--lambda-subnets', required=False, help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).")
+    parser.add_argument('--lambda-security-groups', required=False, help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).")
+    parser.add_argument('--lambda-role-arn', required=False,
+                        help="[optional] Assign existing iam role to lambda functions. If omitted, new lambda role will be created.")
+    parser.add_argument('--rdklib-layer-arn', required=False,
+                        help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.")
+    parser.add_argument('-v', '--version', required=True, help='Terraform version', choices=['0.11', '0.12'])
+    parser.add_argument('-f', '--format', required=True, help='Export Format', choices=['terraform'])
+    
     return parser
 
 def get_test_parser(command):
@@ -1267,6 +1288,111 @@ class rdk:
 
         return 0
 
+    def export(self):
+
+        self.__parse_export_args()
+
+        # get the rule names
+        rule_names = self.__get_rule_list_for_command("export")
+
+        # run the export code
+        print("Running export")
+
+        for rule_name in rule_names:
+            rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
+
+            if 'SourceIdentifier' in rule_params:
+                print("Found Managed Rule, Ignored.")
+                print("Export support only Custom Rules.")
+                continue
+
+            source_events = []
+            if 'SourceEvents' in rule_params:
+                source_events = [rule_params['SourceEvents']]
+
+            source_periodic = "NONE"
+            if 'SourcePeriodic' in rule_params:
+                source_periodic = rule_params['SourcePeriodic']
+
+            combined_input_parameters = {}
+            if 'InputParameters' in rule_params:
+                combined_input_parameters.update(json.loads(rule_params['InputParameters']))
+
+            if 'OptionalParameters' in rule_params:
+                # Remove empty parameters
+                keys_to_delete = []
+                optional_parameters_json = json.loads(rule_params['OptionalParameters'])
+                for key, value in optional_parameters_json.items():
+                    if not value:
+                        keys_to_delete.append(key)
+                for key in keys_to_delete:
+                    del optional_parameters_json[key]
+                combined_input_parameters.update(optional_parameters_json)
+
+            print("Found Custom Rule.")
+            s3_src = ""
+            s3_dst = self.__package_function_code(rule_name, rule_params)
+
+            layers = []
+            rdk_lib_version = "0"
+            if 'SourceRuntime' in rule_params:
+                if rule_params['SourceRuntime'] == "python3.6-lib":
+                    if self.args.rdklib_layer_arn:
+                        layers.append(self.args.rdklib_layer_arn)
+                    else:
+                        #create custom session based on whatever credentials are available to us
+                        my_session = self.__get_boto_session()
+                        rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
+                        rdklib_arn = RDKLIB_ARN_STRING.format(region=my_session.region_name, version=rdk_lib_version)
+                        layers.append(rdklib_arn)
+
+            if self.args.lambda_layers:
+                additional_layers = self.args.lambda_layers.split(',')
+                layers.extend(additional_layers)
+
+            subnet_ids = []
+            security_group_ids = []
+            if self.args.lambda_security_groups:
+                security_group_ids = self.args.lambda_security_groups.split(",")
+
+            if self.args.lambda_subnets:
+                subnet_ids = self.args.lambda_subnets.split(",")
+
+            lambda_role_arn = "NONE"
+            if self.args.lambda_role_arn:
+                print("Existing IAM Role provided: " + self.args.lambda_role_arn)
+                lambda_role_arn = self.args.lambda_role_arn
+
+            my_params = {
+                "rule_name": rule_name,
+                "source_runtime": self.__get_runtime_string(rule_params),
+                "source_events": source_events,
+                "source_periodic": source_periodic,
+                "source_input_parameters": json.dumps(combined_input_parameters),
+                "source_handler": self.__get_handler(rule_name, rule_params),
+                "subnet_ids": subnet_ids,
+                "security_group_ids": security_group_ids,
+                "lambda_layers": layers,
+                "lambda_role_arn": lambda_role_arn
+            }
+
+            params_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + ".tfvars.json")
+            parameters_file = open(params_file_path, 'w')
+            json.dump(my_params, parameters_file, indent=4)
+            parameters_file.close()
+            # create json of CFN template
+            print(self.args.format + " version: "+ self.args.version)
+            tf_file_body = os.path.join(path.dirname(__file__), 'template', self.args.format, self.args.version,
+                                    "config_rule.tf")
+            tf_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + "_rule.tf")
+            shutil.copy(tf_file_body, tf_file_path)
+
+            variables_file_body = os.path.join(path.dirname(__file__), 'template', self.args.format, self.args.version,
+                                        "variables.tf")
+            variables_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + "_variables.tf")
+            shutil.copy(variables_file_body, variables_file_path)
+            print("Export completed.This will generate three .tf files.")
+
     def test_local(self):
         print ("Running local test!")
         tests_successful = True
@@ -1919,7 +2045,7 @@ class rdk:
 
         return output
 
-    def __get_rule_list_for_command(self):
+    def __get_rule_list_for_command(self, Command="deploy"):
         rule_names = []
         if self.args.all:
             d = '.'
@@ -1955,7 +2081,7 @@ class rdk:
                 if os.path.isdir(cleaned_rule_name):
                     rule_names.append(cleaned_rule_name)
         else:
-            print ('Invalid Option: Specify Rule Name or RuleSet. Run "rdk deploy -h" for more info.')
+            print ('Invalid Option: Specify Rule Name or RuleSet. Run "rdk %s -h" for more info.'%(Command))
             sys.exit(1)
 
         if len(rule_names) == 0:
@@ -2096,6 +2222,74 @@ class rdk:
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
+
+    def __parse_export_args(self, ForceArgument=False):
+
+        self.args = get_export_parser(ForceArgument).parse_args(self.args.command_args, self.args)
+
+        # Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
+        if self.args.rulename:
+            for name in self.args.rulename:
+                if len(name) > 45:
+                    print(
+                        "Error: Found Rule with name over 45 characters: {} \n Recreate the Rule with a shorter name.".format(
+                            name))
+                    sys.exit(1)
+
+    def __package_function_code(self, rule_name, params):
+        if params['SourceRuntime'] == "java8":
+            # Do java build and package.
+            print("Running Gradle Build for " + rule_name)
+            working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            command = ["gradle", "build"]
+            subprocess.call(command, cwd=working_dir)
+
+            # set source as distribution zip
+            s3_src = os.path.join(os.getcwd(), rules_dir, rule_name, 'build', 'distributions', rule_name + ".zip")
+        elif params['SourceRuntime'] in ["dotnetcore1.0", "dotnetcore2.0"]:
+            print("Packaging " + rule_name)
+            working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            commands = [["dotnet", "restore"]]
+
+            app_runtime = "netcoreapp1.0"
+            if params['SourceRuntime'] == "dotnetcore2.0":
+                app_runtime = "netcoreapp2.0"
+
+            commands.append(["dotnet", "lambda", "package", "-c", "Release", "-f", app_runtime])
+
+            for command in commands:
+                subprocess.call(command, cwd=working_dir)
+
+            # Remove old zip file if it already exists
+            package_file_dst = os.path.join(rule_name, rule_name + ".zip")
+            self.__delete_package_file(package_file_dst)
+
+            # Create new package in temp directory, copy to rule directory
+            # This copy avoids the archiver trying to include the output zip in itself
+            s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name, 'bin', 'Release', app_runtime, 'publish')
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+            shutil.copy(tmp_src, package_file_dst)
+            s3_src = os.path.abspath(package_file_dst)
+            self.__delete_package_file(tmp_src)
+
+        else:
+            print("Zipping " + rule_name)
+            # Remove old zip file if it already exists
+            package_file_dst = os.path.join(rule_name, rule_name + ".zip")
+            self.__delete_package_file(package_file_dst)
+
+            # zip rule code files and upload to s3 bucket
+            s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+            shutil.copy(tmp_src, package_file_dst)
+            s3_src = os.path.abspath(package_file_dst)
+            self.__delete_package_file(tmp_src)
+
+        s3_dst = "/".join((rule_name, rule_name + ".zip"))
+
+        print("Zipping complete.")
+
+        return s3_dst
 
     def __populate_params(self):
         #create custom session based on whatever credentials are available to us
