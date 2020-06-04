@@ -5,26 +5,29 @@ phases:
     commands:
       - echo Installing rdk...
       - pip install .
+      - pip install rdklib
   pre_build:
     commands:
       - echo Starting tests
       - rdk init
   build:
     commands:
-      - rdk create LP3-TestRule-P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
-      - rdk create LP3-TestRule-P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
-      - rdk create LP3-TestRule-P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroup
-      - rdk create LP3-TestRule-JS --runtime nodejs4.3 --resource-types AWS::EC2::SecurityGroup
-      - rdk modify LP3-TestRule-P3 --input-parameters '{"TestParameter":"TestValue"}'
-      - rdk create LP3-TestRule-P3-Periodic --runtime python3.6 --maximum-frequency One_Hour
-      - rdk create LP3-TestRule-P37-Periodic --runtime python3.7 --maximum-frequency One_Hour
+      - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_JS --runtime nodejs4.3 --resource-types AWS::EC2::SecurityGroup
+      - rdk modify LP3_TestRule_P3 --input-parameters '{"TestParameter":"TestValue"}'
+      - rdk create LP3_TestRule_P3_Periodic --runtime python3.6 --maximum-frequency One_Hour
+      - rdk create LP3_TestRule_P37_Periodic --runtime python3.7 --maximum-frequency One_Hour
+      - rdk create LP3_TestRule_P36lib_Periodic --runtime python3.6-lib --maximum-frequency One_Hour
       - rdk test-local --all
       - rdk deploy --all
-      - yes | rdk undeploy LP3-TestRule-P3
-      - yes | rdk undeploy LP3-TestRule-P37
-      - yes | rdk undeploy LP3-TestRule-P37-Periodic
+      - yes | rdk undeploy LP3_TestRule_P3
+      - yes | rdk undeploy LP3_TestRule_P37
+      - yes | rdk undeploy LP3_TestRule_P37_Periodic
       - sleep 30
-      - rdk logs LP3-TestRule-P3
+      - rdk logs LP3_TestRule_P3
+      - yes | rdk undeploy -a
   post_build:
     commands:
       - echo Build completed on `date`

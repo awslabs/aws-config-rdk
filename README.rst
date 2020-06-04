@@ -1,7 +1,7 @@
 rdk
 ===
-Rule Development Kit - Version 2
-This tool should be considered in "Open Beta".  I would greatly appreciate feedback and bug reports at sntkum@amazon.com/chauyu@amazon.com! You may also create an issue on this repo.
+Rule Development Kit 
+We are greatly appreciated feedback and bug reports at rdk-maintainers@amazon.com! You may also create an issue on this repo.
 
 The RDK is designed to support a "Compliance-as-Code" workflow that is intuitive and productive.  It abstracts away much of the undifferentiated heavy lifting associated with deploying AWS Config rules backed by custom lambda functions, and provides a streamlined develop-deploy-monitor iterative process.
 
@@ -241,12 +241,14 @@ email me at mborch@amazon.com if you are interested in contributing.  I'm using 
 Authors
 =======
 
-* **Michael Borchert** - *Python version & current maintainer*
+* **Michael Borchert** - *Python version*
 * **Jonathan Rault** - *Design, testing, feedback*
 * **Greg Kim and Chris Gutierrez** - *Initial work and CI definitions*
 * **Henry Huang** - *Original CFN templates and other code*
-
-
+* **Ricky Chau** - *current maintainer*
+* **Santosh Kumar** - *current maintainer*
+* **Jose Obando** - *current maintainer*
+* **Sandeep Batchu** - *current maintainer*
 
 License
 =======

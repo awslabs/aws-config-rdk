@@ -1,4 +1,4 @@
-#    Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#    Copyright 2017-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
 #
@@ -16,16 +16,13 @@ import tempfile
 import boto3
 import json
 import time
-import imp
 import argparse
+import botocore
 from botocore.exceptions import ClientError
 from datetime import datetime
 import base64
-import ast
-import textwrap
 import fileinput
 import subprocess
-from subprocess import call
 import fnmatch
 import unittest
 
@@ -58,25 +55,44 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
-RDKLIB_LAYER_VERSION={'ap-southeast-1':'51', 'ap-south-1':'29', 'us-east-2':'31', 'us-east-1':'31', 'us-west-1':'31', 'us-west-2':'30', 'ap-northeast-2':'29', 'ap-southeast-2':'29', 'ap-northeast-1':'29', 'ca-central-1':'29', 'eu-central-1':'29', 'eu-west-1':'29', 'eu-west-2':'29', 'eu-west-3':'29', 'eu-north-1':'29', 'sa-east-1':'29'}
-RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib:{version}"
+RDKLIB_LAYER_VERSION={'ap-southeast-1':'24', 'ap-south-1':'3', 'us-east-2':'3', 'us-east-1':'3', 'us-west-1':'2', 'us-west-2':'2', 'ap-northeast-2':'3', 'ap-southeast-2':'3', 'ap-northeast-1':'3', 'ca-central-1':'3', 'eu-central-1':'3', 'eu-west-1':'3', 'eu-west-2':'2', 'eu-west-3':'3', 'eu-north-1':'3', 'sa-east-1':'3'}
+RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{version}"
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
 accepted_resource_types = [
-    'AWS::ACM::Certificate', 'AWS::ApiGateway::RestApi', 'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Api', 'AWS::ApiGatewayV2::Stage', 'AWS::AutoScaling::AutoScalingGroup',
-    'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction', 'AWS::CloudFormation::Stack', 'AWS::CloudFront::Distribution',
-    'AWS::CloudFront::StreamingDistribution', 'AWS::CloudTrail::Trail', 'AWS::CloudWatch::Alarm', 'AWS::CodeBuild::Project', 'AWS::CodePipeline::Pipeline', 'AWS::DynamoDB::Table',
-    'AWS::EC2::CustomerGateway', 'AWS::EC2::EIP', 'AWS::EC2::EgressOnlyInternetGateway', 'AWS::EC2::FlowLog', 'AWS::EC2::Host', 'AWS::EC2::Instance', 'AWS::EC2::InternetGateway',
-    'AWS::EC2::NatGateway', 'AWS::EC2::NetworkAcl', 'AWS::EC2::NetworkInterface', 'AWS::EC2::RouteTable', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Subnet', 'AWS::EC2::VPC',
-    'AWS::EC2::VPCEndpoint', 'AWS::EC2::VPCEndpointService', 'AWS::EC2::VPCPeeringConnection', 'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::EC2::Volume',
-    'AWS::ElasticBeanstalk::Application', 'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::ElasticLoadBalancing::LoadBalancer',
-    'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::IAM::Group', 'AWS::IAM::Policy', 'AWS::IAM::Role', 'AWS::IAM::User', 'AWS::Lambda::Function', 'AWS::QLDB::Ledger',
-    'AWS::RDS::DBCluster', 'AWS::RDS::DBClusterSnapshot', 'AWS::RDS::DBInstance', 'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup', 'AWS::RDS::EventSubscription',
-    'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup', 'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
-    'AWS::Redshift::EventSubscription', 'AWS::S3::AccountPublicAccessBlock', 'AWS::S3::Bucket', 'AWS::SSM::AssociationCompliance', 'AWS::SSM::ManagedInstanceInventory',
-    'AWS::SSM::PatchCompliance', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct', 'AWS::ServiceCatalog::Portfolio',
-    'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection', 'AWS::WAF::RateBasedRule', 'AWS::WAF::Rule', 'AWS::WAF::RuleGroup', 'AWS::WAF::WebACL', 'AWS::WAFRegional::RateBasedRule',
-    'AWS::WAFRegional::Rule', 'AWS::WAFRegional::RuleGroup', 'AWS::WAFRegional::WebACL', 'AWS::XRay::EncryptionConfig'
+    'AWS::ACM::Certificate', 'AWS::ApiGateway::DomainName', 'AWS::ApiGateway::Method',
+    'AWS::ApiGateway::RestApi', 'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Api',
+    'AWS::ApiGatewayV2::DomainName', 'AWS::ApiGatewayV2::Stage', 'AWS::AutoScaling::AutoScalingGroup',
+    'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction',
+    'AWS::CloudFormation::Stack', 'AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution',
+    'AWS::CloudTrail::Trail', 'AWS::CloudWatch::Alarm', 'AWS::CodeBuild::Project', 'AWS::CodePipeline::Pipeline',
+    'AWS::Config::ResourceCompliance', 'AWS::DynamoDB::Table', 'AWS::EC2::CustomerGateway',
+    'AWS::EC2::EgressOnlyInternetGateway', 'AWS::EC2::EIP', 'AWS::EC2::FlowLog',
+    'AWS::EC2::Host', 'AWS::EC2::Instance', 'AWS::EC2::InternetGateway', 'AWS::EC2::NatGateway',
+    'AWS::EC2::NetworkAcl', 'AWS::EC2::NetworkInterface', 'AWS::EC2::RegisteredHAInstance',
+    'AWS::EC2::RouteTable', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Subnet',
+    'AWS::EC2::Volume', 'AWS::EC2::VPC', 'AWS::EC2::VPCEndpoint',
+    'AWS::EC2::VPCEndpointService', 'AWS::EC2::VPCPeeringConnection',
+    'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::ElasticBeanstalk::Application',
+    'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::ElasticLoadBalancing::LoadBalancer',
+    'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::Elasticsearch::Domain', 'AWS::IAM::Group',
+    'AWS::IAM::Policy', 'AWS::IAM::Role', 'AWS::IAM::User',
+    'AWS::KMS::Key', 'AWS::Lambda::Alias', 'AWS::Lambda::Function',
+    'AWS::LicenseManager::LicenseConfiguration', 'AWS::MobileHub::Project', 'AWS::QLDB::Ledger',
+    'AWS::RDS::DBCluster', 'AWS::RDS::DBClusterParameterGroup', 'AWS::RDS::DBClusterSnapshot',
+    'AWS::RDS::DBInstance', 'AWS::RDS::DBOptionGroup', 'AWS::RDS::DBParameterGroup',
+    'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup',
+    'AWS::RDS::EventSubscription', 'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup',
+    'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
+    'AWS::Redshift::EventSubscription', 'AWS::S3::AccountPublicAccessBlock', 'AWS::S3::Bucket',
+    'AWS::SecretsManager::Secret', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct',
+    'AWS::ServiceCatalog::Portfolio', 'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection',
+    'AWS::SNS::Topic', 'AWS::SQS::Queue', 'AWS::SSM::AssociationCompliance',
+    'AWS::SSM::ManagedInstanceInventory', 'AWS::SSM::PatchCompliance', 'AWS::WAF::RateBasedRule',
+    'AWS::WAF::Rule', 'AWS::WAF::RuleGroup', 'AWS::WAF::WebACL', 'AWS::WAFRegional::RateBasedRule',
+    'AWS::WAFRegional::Rule', 'AWS::WAFRegional::RuleGroup', 'AWS::WAFRegional::WebACL',
+    'AWS::WAFv2::WebACL', 'AWS::WAFv2::RuleGroup', 'AWS::WAFv2::IPSet',
+    'AWS::WAFv2::RegexPatternSet', 'AWS::WAFv2::ManagedRuleSet', 'AWS::XRay::EncryptionConfig'
 ]
 
 CONFIG_ROLE_ASSUME_ROLE_POLICY_DOCUMENT = {
@@ -138,7 +154,7 @@ def get_command_parser():
     parser.add_argument('-r','--region',help='Select the region to run the command in.')
     #parser.add_argument('--verbose','-v', action='count')
     #Removed for now from command choices: 'test-remote', 'status'
-    parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy'])
+    parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy', 'export'])
     parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
     parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
 
@@ -150,7 +166,7 @@ def get_init_parser():
         description = 'Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.'
     )
 
-    parser.add_argument('--config_bucket_exists_in_another_account', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
+    parser.add_argument('--config-bucket-exists-in-another-account', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
 
     return parser
 
@@ -172,7 +188,7 @@ def get_rule_parser(is_required, command):
     usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--tags <tags JSON>] [--rulesets <RuleSet tags>]"
 
     if is_required:
-        usage_string = "--runtime <runtime> [ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--rulesets <RuleSet tags>]"
+        usage_string = "[ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--runtime <runtime>] [--rulesets <RuleSet tags>]"
 
     parser = argparse.ArgumentParser(
         prog='rdk '+command,
@@ -180,9 +196,10 @@ def get_rule_parser(is_required, command):
         description="Rules are stored in their own directory along with their metadata.  This command is used to " + command + " the Rule and metadata."
     )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
-    runtime_group = parser.add_mutually_exclusive_group(required=is_required)
+    runtime_group = parser.add_mutually_exclusive_group()
     runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'dotnetcore1.0', 'dotnetcore2.0'])
     runtime_group.add_argument('--source-identifier', required=False, help="[optional] Used only for creating Managed Rules.")
+    parser.set_defaults(runtime='python3.6-lib')
     parser.add_argument('-r','--resource-types', required=False, help='[optional] Resource types that will trigger event-based Rule evaluation')
     parser.add_argument('-m','--maximum-frequency', required=False, help='[optional] Maximum execution frequency for scheduled Rules', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
     parser.add_argument('-i','--input-parameters', help="[optional] JSON for required Config parameters.")
@@ -196,9 +213,9 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--auto-remediation-retry-time', required=False, help='[optional] Duration of automated remediation retries.')
     parser.add_argument('--remediation-concurrent-execution-percent', required=False, help='[optional] Concurrent execution rate of the SSM document for remediation.')
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
-    parser.add_argument('--remediation-resource-id-parameter', required=False, help='[optional] Parameter that will be passed to SSM remediation document.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
     parser.add_argument('--automation-document', required=False, help='[optional] JSON-formatted string of the SSM Automation Document.')
+
     return parser
 
 def get_undeploy_parser():
@@ -229,6 +246,27 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
 
     if ForceArgument:
         parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
+    return parser
+
+def get_export_parser(ForceArgument=False, Command="export"):
+
+    parser = argparse.ArgumentParser(
+        prog='rdk '+Command,
+        description="Used to " + Command + " the Config Rule to terraform file."
+    )
+    parser.add_argument('rulename', metavar='<rulename>', nargs='*', help='Rule name(s) to export to a file.')
+    parser.add_argument('-s', '--rulesets', required=False, help='comma-delimited list of RuleSet names')
+    parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be deployed.")
+    parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
+    parser.add_argument('--lambda-subnets', required=False, help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).")
+    parser.add_argument('--lambda-security-groups', required=False, help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).")
+    parser.add_argument('--lambda-role-arn', required=False,
+                        help="[optional] Assign existing iam role to lambda functions. If omitted, new lambda role will be created.")
+    parser.add_argument('--rdklib-layer-arn', required=False,
+                        help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.")
+    parser.add_argument('-v', '--version', required=True, help='Terraform version', choices=['0.11', '0.12'])
+    parser.add_argument('-f', '--format', required=True, help='Export Format', choices=['terraform'])
+    
     return parser
 
 def get_test_parser(command):
@@ -286,6 +324,7 @@ def get_create_rule_template_parser():
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be included in the generated CloudFormation template.")
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names to be included in the generated template.')
     parser.add_argument('-o','--output-file', required=True, default="RDK-Config-Rules", help="filename of generated CloudFormation template")
+    parser.add_argument('-t','--tag-config-rules-script', required=False, help="filename of generated script to tag config rules with the tags in each paramter.json")
     parser.add_argument('--config-role-arn', required=False, help="[optional] Assign existing iam role as config role. If omitted, \"config-role\" will be created.")
     parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
     return parser
@@ -523,7 +562,7 @@ class rdk:
             except Exception as e:
                 print("Error encountered removing Config Role: " + str(e))
         except Exception as e2:
-            print("Error encountered finding Config Role to remove: " + str(e))
+            print("Error encountered finding Config Role to remove: " + str(e2))
 
         config_bucket_names = []
         delivery_channels = my_config.describe_delivery_channels()
@@ -634,14 +673,22 @@ class rdk:
                     shutil.copyfile(src, dst)
                     f = fileinput.input(files=dst, inplace=True)
                     for line in f:
-                        print(line.replace('<%RuleName%>', self.args.rulename), end='')
+                        if self.args.runtime == 'python3.6-lib':
+                            if self.args.resource_types:
+                                applicable_resource_list = ''
+                                for resource_type in self.args.resource_types.split(','):
+                                    applicable_resource_list += "'" + resource_type + "', "
+                                print(line.replace('<%RuleName%>', self.args.rulename).replace('<%ApplicableResources1%>', '\nAPPLICABLE_RESOURCES = [' + applicable_resource_list[:-2] + ']\n').replace('<%ApplicableResources2%>', ', APPLICABLE_RESOURCES'), end='')
+                            else:
+                                print(line.replace('<%RuleName%>', self.args.rulename).replace('<%ApplicableResources1%>', '').replace('<%ApplicableResources2%>', ''), end='')
+                        else:
+                            print(line.replace('<%RuleName%>', self.args.rulename), end='')
                     f.close()
 
                     src = os.path.join(path.dirname(__file__), 'template', 'runtime', self.args.runtime, 'rule_test' + extension_mapping[self.args.runtime])
                     if os.path.exists(src):
                         dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, self.args.rulename+"_test"+extension_mapping[self.args.runtime])
                         shutil.copyfile(src, dst)
-                        #with fileinput.FileInput(dst, inplace=True) as file:
                         f = fileinput.input(files=dst, inplace=True)
                         for line in f:
                             print(line.replace('<%RuleName%>', self.args.rulename), end='')
@@ -705,7 +752,8 @@ class rdk:
                 ssm_controls = execution_controls["SsmControls"]
                 self.args.remediation_concurrent_execution_percent = ssm_controls.get("ConcurrentExecutionRatePercentage", "")
                 self.args.remediation_error_rate_percent = ssm_controls.get("ErrorPercentage", "")
-            self.args.remediation_parameters = json.dumps(params.get("Parameters", ""))
+            self.args.remediation_parameters = json.dumps(params["Parameters"]) if params.get("Parameters") else None
+            self.args.auto_remediation_retry_attempts = params.get("MaximumAutomaticAttempts", "")
             self.args.auto_remediation_retry_time = params.get("RetryAttemptSeconds", "")
             self.args.remediation_action = params.get("TargetId", "")
             self.args.remediation_action_version = params.get("TargetVersion", "")
@@ -822,11 +870,14 @@ class rdk:
                     s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
                     s3_code_objects[rule_name] = s3_dst
 
-            #Check if stack exists.  If it does, update it.  If it doesn't, create it.
             my_cfn = my_session.client('cloudformation')
-            my_template_url_prefix = "https://s3-"
-            if my_session.region_name == "us-east-1":
-                my_template_url_prefix = "https://s3."
+
+            # Generate the template_url regardless of region using the s3 sdk
+            config = my_s3_client._client_config
+            config.signature_version = botocore.UNSIGNED
+            template_url = boto3.client('s3', config=config).generate_presigned_url('get_object', ExpiresIn=0, Params={'Bucket': code_bucket_name, 'Key': self.args.stack_name + ".json"})
+
+            # Check if stack exists.  If it does, update it.  If it doesn't, create it.
 
             try:
                 my_stack = my_cfn.describe_stacks(StackName=self.args.stack_name)
@@ -837,7 +888,7 @@ class rdk:
 
                     cfn_args = {
                         'StackName': self.args.stack_name,
-                        'TemplateURL': my_template_url_prefix + my_session.region_name + ".amazonaws.com/" + code_bucket_name + "/" + self.args.stack_name + ".json",
+                        'TemplateURL': template_url,
                         'Parameters': cfn_params,
                         'Capabilities': [ 'CAPABILITY_IAM' ]
                     }
@@ -885,7 +936,7 @@ class rdk:
 
                 cfn_args = {
                     'StackName': self.args.stack_name,
-                    'TemplateURL': my_template_url_prefix + my_session.region_name + ".amazonaws.com/" + code_bucket_name + "/" + self.args.stack_name + ".json",
+                    'TemplateURL': template_url,
                     'Parameters': cfn_params,
                     'Capabilities': ['CAPABILITY_IAM']
                 }
@@ -957,7 +1008,7 @@ class rdk:
                     }]
                 my_cfn = my_session.client('cloudformation')
                 if "Remediation" in rule_params:
-                    print('Build The CFN Template with Remedation Settings')
+                    print('Build The CFN Template with Remediation Settings')
                     cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemediation.json")
                     template_body = open(cfn_body, "r").read()
                     json_body = json.loads(template_body)
@@ -1040,7 +1091,6 @@ class rdk:
 
                     #wait for changes to propagate.
                     self.__wait_for_cfn_stack(my_cfn, my_stack_name)
-
                     continue
 
                 else:
@@ -1092,7 +1142,11 @@ class rdk:
                     #wait for changes to propagate.
                     self.__wait_for_cfn_stack(my_cfn, my_stack_name)
 
-                    continue
+                #Cloudformation is not supporting tagging config rule currently.
+                if cfn_tags is not None and len(cfn_tags) > 0:
+                    self.__tag_config_rule(rule_name, cfn_tags, my_session)
+
+                continue
 
             print("Found Custom Rule.")
 
@@ -1144,7 +1198,6 @@ class rdk:
 
                 }]
             layers = []
-            rdk_lib_version = "0"
             if 'SourceRuntime' in rule_params:
                 if rule_params['SourceRuntime'] == "python3.6-lib":
                     if self.args.rdklib_layer_arn:
@@ -1272,9 +1325,118 @@ class rdk:
             #wait for changes to propagate.
             self.__wait_for_cfn_stack(my_cfn, my_stack_name)
 
+            #Cloudformation is not supporting tagging config rule currently.
+            if cfn_tags is not None and len(cfn_tags) > 0:
+                self.__tag_config_rule(rule_name, cfn_tags, my_session)
+
         print('Config deploy complete.')
 
         return 0
+
+    def export(self):
+
+        self.__parse_export_args()
+
+        # get the rule names
+        rule_names = self.__get_rule_list_for_command("export")
+
+        # run the export code
+        print("Running export")
+
+        for rule_name in rule_names:
+            rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
+
+            if 'SourceIdentifier' in rule_params:
+                print("Found Managed Rule, Ignored.")
+                print("Export support only Custom Rules.")
+                continue
+
+            source_events = []
+            if 'SourceEvents' in rule_params:
+                source_events = [rule_params['SourceEvents']]
+
+            source_periodic = "NONE"
+            if 'SourcePeriodic' in rule_params:
+                source_periodic = rule_params['SourcePeriodic']
+
+            combined_input_parameters = {}
+            if 'InputParameters' in rule_params:
+                combined_input_parameters.update(json.loads(rule_params['InputParameters']))
+
+            if 'OptionalParameters' in rule_params:
+                # Remove empty parameters
+                keys_to_delete = []
+                optional_parameters_json = json.loads(rule_params['OptionalParameters'])
+                for key, value in optional_parameters_json.items():
+                    if not value:
+                        keys_to_delete.append(key)
+                for key in keys_to_delete:
+                    del optional_parameters_json[key]
+                combined_input_parameters.update(optional_parameters_json)
+
+            print("Found Custom Rule.")
+            s3_src = ""
+            s3_dst = self.__package_function_code(rule_name, rule_params)
+
+            layers = []
+            rdk_lib_version = "0"
+            if 'SourceRuntime' in rule_params:
+                if rule_params['SourceRuntime'] == "python3.6-lib":
+                    if self.args.rdklib_layer_arn:
+                        layers.append(self.args.rdklib_layer_arn)
+                    else:
+                        #create custom session based on whatever credentials are available to us
+                        my_session = self.__get_boto_session()
+                        rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
+                        rdklib_arn = RDKLIB_ARN_STRING.format(region=my_session.region_name, version=rdk_lib_version)
+                        layers.append(rdklib_arn)
+
+            if self.args.lambda_layers:
+                additional_layers = self.args.lambda_layers.split(',')
+                layers.extend(additional_layers)
+
+            subnet_ids = []
+            security_group_ids = []
+            if self.args.lambda_security_groups:
+                security_group_ids = self.args.lambda_security_groups.split(",")
+
+            if self.args.lambda_subnets:
+                subnet_ids = self.args.lambda_subnets.split(",")
+
+            lambda_role_arn = "NONE"
+            if self.args.lambda_role_arn:
+                print("Existing IAM Role provided: " + self.args.lambda_role_arn)
+                lambda_role_arn = self.args.lambda_role_arn
+
+            my_params = {
+                "rule_name": rule_name,
+                "source_runtime": self.__get_runtime_string(rule_params),
+                "source_events": source_events,
+                "source_periodic": source_periodic,
+                "source_input_parameters": json.dumps(combined_input_parameters),
+                "source_handler": self.__get_handler(rule_name, rule_params),
+                "subnet_ids": subnet_ids,
+                "security_group_ids": security_group_ids,
+                "lambda_layers": layers,
+                "lambda_role_arn": lambda_role_arn
+            }
+
+            params_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + ".tfvars.json")
+            parameters_file = open(params_file_path, 'w')
+            json.dump(my_params, parameters_file, indent=4)
+            parameters_file.close()
+            # create json of CFN template
+            print(self.args.format + " version: "+ self.args.version)
+            tf_file_body = os.path.join(path.dirname(__file__), 'template', self.args.format, self.args.version,
+                                    "config_rule.tf")
+            tf_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + "_rule.tf")
+            shutil.copy(tf_file_body, tf_file_path)
+
+            variables_file_body = os.path.join(path.dirname(__file__), 'template', self.args.format, self.args.version,
+                                        "variables.tf")
+            variables_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + "_variables.tf")
+            shutil.copy(variables_file_body, variables_file_path)
+            print("Export completed.This will generate three .tf files.")
 
     def test_local(self):
         print ("Running local test!")
@@ -1294,7 +1456,12 @@ class rdk:
             print("Testing "+rule_name)
             test_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
             print("Looking for tests in " + test_dir)
-            results = unittest.TextTestRunner(buffer=True, verbosity=2).run(self.__create_test_suite(test_dir))
+
+            if args.verbose == True:
+                results = unittest.TextTestRunner(buffer=False, verbosity=2).run(self.__create_test_suite(test_dir))
+            else:
+                results = unittest.TextTestRunner(buffer=True, verbosity=2).run(self.__create_test_suite(test_dir))
+
             print (results)
 
             tests_successful = tests_successful and results.wasSuccessful()
@@ -1467,6 +1634,8 @@ class rdk:
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
+
+        script_for_tag=""
 
         print ("Generating CloudFormation template!")
 
@@ -1700,6 +1869,12 @@ class rdk:
                 resources[self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")] = ssm_automation
 
 
+            if tags:
+                tags_str=""
+                for tag in tags:
+                    tags_str += "Key={},Value={} ".format(tag['Key'], tag['Value'])
+                script_for_tag += "aws configservice tag-resource --resources-arn $(aws configservice describe-config-rules --config-rule-names {} --query 'ConfigRules[0].ConfigRuleArn' | tr -d '\"') --tags {} \n".format(rule_name, tags_str)
+
         template["Resources"] = resources
         template["Conditions"] = conditions
         template["Parameters"] = parameters
@@ -1726,6 +1901,18 @@ class rdk:
         output_file = open(self.args.output_file, 'w')
         output_file.write(json.dumps(template, indent=2))
         print("CloudFormation template written to " + self.args.output_file)
+
+        if script_for_tag:
+            print ("Found tags on config rules. Cloudformation do not support tagging config rule at the moment")
+            print ("Generating script for config rules tags")
+            script_for_tag= "#! /bin/bash \n" + script_for_tag
+            if self.args.tag_config_rules_script:
+                with open (self.args.tag_config_rules_script, 'w') as rsh:
+                    rsh.write(script_for_tag)
+            else:
+                print("=========SCRIPT=========")
+                print(script_for_tag)
+                print("you can use flag [--tag-config-rules-script <file path> ] to output the script")
 
     def __generate_terraform_shell(self, args):
         return ""
@@ -1927,7 +2114,7 @@ class rdk:
 
         return output
 
-    def __get_rule_list_for_command(self):
+    def __get_rule_list_for_command(self, Command="deploy"):
         rule_names = []
         if self.args.all:
             d = '.'
@@ -1963,7 +2150,7 @@ class rdk:
                 if os.path.isdir(cleaned_rule_name):
                     rule_names.append(cleaned_rule_name)
         else:
-            print ('Invalid Option: Specify Rule Name or RuleSet. Run "rdk deploy -h" for more info.')
+            print ('Invalid Option: Specify Rule Name or RuleSet. Run "rdk %s -h" for more info.'%(Command))
             sys.exit(1)
 
         if len(rule_names) == 0:
@@ -2066,6 +2253,8 @@ class rdk:
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
 
+        return self.args
+
     def __parse_deploy_args(self, ForceArgument=False):
 
         self.args = get_deployment_parser(ForceArgument).parse_args(self.args.command_args, self.args)
@@ -2102,6 +2291,74 @@ class rdk:
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
+
+    def __parse_export_args(self, ForceArgument=False):
+
+        self.args = get_export_parser(ForceArgument).parse_args(self.args.command_args, self.args)
+
+        # Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
+        if self.args.rulename:
+            for name in self.args.rulename:
+                if len(name) > 45:
+                    print(
+                        "Error: Found Rule with name over 45 characters: {} \n Recreate the Rule with a shorter name.".format(
+                            name))
+                    sys.exit(1)
+
+    def __package_function_code(self, rule_name, params):
+        if params['SourceRuntime'] == "java8":
+            # Do java build and package.
+            print("Running Gradle Build for " + rule_name)
+            working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            command = ["gradle", "build"]
+            subprocess.call(command, cwd=working_dir)
+
+            # set source as distribution zip
+            s3_src = os.path.join(os.getcwd(), rules_dir, rule_name, 'build', 'distributions', rule_name + ".zip")
+        elif params['SourceRuntime'] in ["dotnetcore1.0", "dotnetcore2.0"]:
+            print("Packaging " + rule_name)
+            working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            commands = [["dotnet", "restore"]]
+
+            app_runtime = "netcoreapp1.0"
+            if params['SourceRuntime'] == "dotnetcore2.0":
+                app_runtime = "netcoreapp2.0"
+
+            commands.append(["dotnet", "lambda", "package", "-c", "Release", "-f", app_runtime])
+
+            for command in commands:
+                subprocess.call(command, cwd=working_dir)
+
+            # Remove old zip file if it already exists
+            package_file_dst = os.path.join(rule_name, rule_name + ".zip")
+            self.__delete_package_file(package_file_dst)
+
+            # Create new package in temp directory, copy to rule directory
+            # This copy avoids the archiver trying to include the output zip in itself
+            s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name, 'bin', 'Release', app_runtime, 'publish')
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+            shutil.copy(tmp_src, package_file_dst)
+            s3_src = os.path.abspath(package_file_dst)
+            self.__delete_package_file(tmp_src)
+
+        else:
+            print("Zipping " + rule_name)
+            # Remove old zip file if it already exists
+            package_file_dst = os.path.join(rule_name, rule_name + ".zip")
+            self.__delete_package_file(package_file_dst)
+
+            # zip rule code files and upload to s3 bucket
+            s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+            shutil.copy(tmp_src, package_file_dst)
+            s3_src = os.path.abspath(package_file_dst)
+            self.__delete_package_file(tmp_src)
+
+        s3_dst = "/".join((rule_name, rule_name + ".zip"))
+
+        print("Zipping complete.")
+
+        return s3_dst
 
     def __populate_params(self):
         #create custom session based on whatever credentials are available to us
@@ -2141,6 +2398,22 @@ class rdk:
                 print("Error parsing optional tags JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and tags string is enclosed in single quotes.")
 
         my_remediation = {}
+        if (
+            any(
+                getattr(self.args, arg) is not None
+                for arg in [
+                    "auto_remediation_retry_attempts",
+                    "auto_remediation_retry_time",
+                    "remediation_action_version",
+                    "remediation_concurrent_execution_percent",
+                    "remediation_error_rate_percent",
+                    "remediation_parameters"
+                ]
+            )
+            and not self.args.remediation_action
+        ):
+            print("Remediation Flags detected but no remeditaion action (--remediation-action) set")
+
         if self.args.remediation_action:
             try:
                 my_remediation = self.__generate_remediation_params()
@@ -2201,7 +2474,7 @@ class rdk:
         if self.args.remediation_parameters:
             params["Parameters"] = json.loads(self.args.remediation_parameters)
 
-        if len(self.args.resource_types.split(",")) == 1:
+        if self.args.resource_types and len(self.args.resource_types.split(",")) == 1:
             params["ResourceType"] = self.args.resource_types
 
         if self.args.auto_remediation_retry_time:
@@ -2400,8 +2673,7 @@ class rdk:
         remediation = {
             "Type" : "AWS::Config::RemediationConfiguration",
             "DependsOn": "rdkConfigRule",
-            "Properties" :
-                remediation_config
+            "Properties" : remediation_config
         }
 
         return remediation
@@ -2644,6 +2916,15 @@ class rdk:
         template['Resources'] = resources
 
         return json.dumps(template, indent=2)
+
+    def __tag_config_rule(self, rule_name, cfn_tags, my_session):
+        config_client=my_session.client('config')
+        config_arn=config_client.describe_config_rules(ConfigRuleNames=[rule_name])['ConfigRules'][0]['ConfigRuleArn']
+        response = config_client.tag_resource(
+            ResourceArn=config_arn,
+            Tags=cfn_tags
+        )
+        return response
 
 class TestCI():
     def __init__(self, ci_type):

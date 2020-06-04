@@ -1,4 +1,4 @@
-# Copyright 2017-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2017-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You may
 # not use this file except in compliance with the License. A copy of the License is located at
@@ -10,7 +10,7 @@
 # the specific language governing permissions and limitations under the License.
 
 from rdklib import Evaluator, Evaluation, ConfigRule, ComplianceType
-
+<%ApplicableResources1%>
 class <%RuleName%>(ConfigRule):
     def evaluate_change(self, event, client_factory, configuration_item, valid_rule_parameters):
         ###############################
@@ -22,7 +22,7 @@ class <%RuleName%>(ConfigRule):
     #def evaluate_periodic(self, event, client_factory, valid_rule_parameters):
     #    pass
 
-    def evaluate_parameters(self, event, client_factory, rule_parameters):
+    def evaluate_parameters(self, rule_parameters):
         valid_rule_parameters = rule_parameters
         return valid_rule_parameters
 
@@ -32,5 +32,5 @@ class <%RuleName%>(ConfigRule):
 ################################
 def lambda_handler(event, context):
     my_rule = <%RuleName%>()
-    evaluator = Evaluator(my_rule)
+    evaluator = Evaluator(my_rule<%ApplicableResources2%>)
     return evaluator.handle(event, context)
