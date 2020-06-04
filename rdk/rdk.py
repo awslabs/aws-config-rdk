@@ -167,6 +167,7 @@ def get_init_parser():
     )
 
     parser.add_argument('--config-bucket-exists-in-another-account', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
+    parser.add_argument('--skip-code-bucket-creation', required=False, action='store_true', help='[optional] If you want to use custom code bucket for rdk, enable this and use flag --custom-code-bucket to "rdk deploy"')
 
     return parser
 
@@ -237,6 +238,7 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited list of RuleSet names')
     parser.add_argument('-f','--functions-only', action='store_true', required=False, help="[optional] Only deploy Lambda functions.  Useful for cross-account deployments.")
     parser.add_argument('--stack-name', required=False, help="[optional] CloudFormation Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
+    parser.add_argument('--custom-code-bucket', required=False, help="[optional] Provide the custom code S3 bucket name, which is not created with rdk init, for generated cloudformation template storage.")
     parser.add_argument('--rdklib-layer-arn', required=False, help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.")
     parser.add_argument('--lambda-role-arn', required=False, help="[optional] Assign existing iam role to lambda functions. If omitted, \"rdkLambdaRole\" will be created.")
     parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
@@ -471,9 +473,10 @@ class rdk:
                 print ("Found code bucket: " + code_bucket_name)
 
         if not bucket_exists:
+            if self.args.skip_code_bucket_creation:
+                print('Skipping Code Bucket creation due to command line args')
+            else:
             print('Creating Code bucket '+code_bucket_name )
-
-            bucket_configuration = {}
 
             #Consideration for us-east-1 S3 API
             if my_session.region_name == 'us-east-1':
@@ -836,7 +839,10 @@ class rdk:
         account_id = identity_details['account_id']
         partition = identity_details['partition']
 
-        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
+        if self.args.custom_code_bucket:
+            code_bucket_name = self.args.custom_code_bucket
+        else:
+            code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
 
         #If we're only deploying the Lambda functions (and role + permissions), branch here.  Someday the "main" execution path should use the same generated CFN templates for single-account deployment.
         if self.args.functions_only:
