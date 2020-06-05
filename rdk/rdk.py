@@ -60,39 +60,37 @@ RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{ve
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
 accepted_resource_types = [
-    'AWS::ACM::Certificate', 'AWS::ApiGateway::DomainName', 'AWS::ApiGateway::Method',
-    'AWS::ApiGateway::RestApi', 'AWS::ApiGateway::Stage', 'AWS::ApiGatewayV2::Api',
-    'AWS::ApiGatewayV2::DomainName', 'AWS::ApiGatewayV2::Stage', 'AWS::AutoScaling::AutoScalingGroup',
-    'AWS::AutoScaling::LaunchConfiguration', 'AWS::AutoScaling::ScalingPolicy', 'AWS::AutoScaling::ScheduledAction',
-    'AWS::CloudFormation::Stack', 'AWS::CloudFront::Distribution', 'AWS::CloudFront::StreamingDistribution',
-    'AWS::CloudTrail::Trail', 'AWS::CloudWatch::Alarm', 'AWS::CodeBuild::Project', 'AWS::CodePipeline::Pipeline',
-    'AWS::Config::ResourceCompliance', 'AWS::DynamoDB::Table', 'AWS::EC2::CustomerGateway',
-    'AWS::EC2::EgressOnlyInternetGateway', 'AWS::EC2::EIP', 'AWS::EC2::FlowLog',
-    'AWS::EC2::Host', 'AWS::EC2::Instance', 'AWS::EC2::InternetGateway', 'AWS::EC2::NatGateway',
-    'AWS::EC2::NetworkAcl', 'AWS::EC2::NetworkInterface', 'AWS::EC2::RegisteredHAInstance',
-    'AWS::EC2::RouteTable', 'AWS::EC2::SecurityGroup', 'AWS::EC2::Subnet',
-    'AWS::EC2::Volume', 'AWS::EC2::VPC', 'AWS::EC2::VPCEndpoint',
-    'AWS::EC2::VPCEndpointService', 'AWS::EC2::VPCPeeringConnection',
-    'AWS::EC2::VPNConnection', 'AWS::EC2::VPNGateway', 'AWS::ElasticBeanstalk::Application',
-    'AWS::ElasticBeanstalk::ApplicationVersion', 'AWS::ElasticBeanstalk::Environment', 'AWS::ElasticLoadBalancing::LoadBalancer',
-    'AWS::ElasticLoadBalancingV2::LoadBalancer', 'AWS::Elasticsearch::Domain', 'AWS::IAM::Group',
-    'AWS::IAM::Policy', 'AWS::IAM::Role', 'AWS::IAM::User',
-    'AWS::KMS::Key', 'AWS::Lambda::Alias', 'AWS::Lambda::Function',
-    'AWS::LicenseManager::LicenseConfiguration', 'AWS::MobileHub::Project', 'AWS::QLDB::Ledger',
-    'AWS::RDS::DBCluster', 'AWS::RDS::DBClusterParameterGroup', 'AWS::RDS::DBClusterSnapshot',
-    'AWS::RDS::DBInstance', 'AWS::RDS::DBOptionGroup', 'AWS::RDS::DBParameterGroup',
-    'AWS::RDS::DBSecurityGroup', 'AWS::RDS::DBSnapshot', 'AWS::RDS::DBSubnetGroup',
-    'AWS::RDS::EventSubscription', 'AWS::Redshift::Cluster', 'AWS::Redshift::ClusterParameterGroup',
-    'AWS::Redshift::ClusterSecurityGroup', 'AWS::Redshift::ClusterSnapshot', 'AWS::Redshift::ClusterSubnetGroup',
-    'AWS::Redshift::EventSubscription', 'AWS::S3::AccountPublicAccessBlock', 'AWS::S3::Bucket',
-    'AWS::SecretsManager::Secret', 'AWS::ServiceCatalog::CloudFormationProduct', 'AWS::ServiceCatalog::CloudFormationProvisionedProduct',
-    'AWS::ServiceCatalog::Portfolio', 'AWS::Shield::Protection', 'AWS::ShieldRegional::Protection',
-    'AWS::SNS::Topic', 'AWS::SQS::Queue', 'AWS::SSM::AssociationCompliance',
-    'AWS::SSM::ManagedInstanceInventory', 'AWS::SSM::PatchCompliance', 'AWS::WAF::RateBasedRule',
-    'AWS::WAF::Rule', 'AWS::WAF::RuleGroup', 'AWS::WAF::WebACL', 'AWS::WAFRegional::RateBasedRule',
-    'AWS::WAFRegional::Rule', 'AWS::WAFRegional::RuleGroup', 'AWS::WAFRegional::WebACL',
-    'AWS::WAFv2::WebACL', 'AWS::WAFv2::RuleGroup', 'AWS::WAFv2::IPSet',
-    'AWS::WAFv2::RegexPatternSet', 'AWS::WAFv2::ManagedRuleSet', 'AWS::XRay::EncryptionConfig'
+    "AWS::EC2::CustomerGateway", "AWS::EC2::EIP", "AWS::EC2::Host",
+    "AWS::EC2::Instance", "AWS::EC2::InternetGateway", "AWS::EC2::NetworkAcl",
+    "AWS::EC2::NetworkInterface", "AWS::EC2::RouteTable", "AWS::EC2::SecurityGroup",
+    "AWS::EC2::Subnet", "AWS::CloudTrail::Trail", "AWS::EC2::Volume",
+    "AWS::EC2::VPC", "AWS::EC2::VPNConnection", "AWS::EC2::VPNGateway",
+    "AWS::EC2::RegisteredHAInstance", "AWS::EC2::NatGateway", "AWS::EC2::EgressOnlyInternetGateway",
+    "AWS::EC2::VPCEndpoint", "AWS::EC2::VPCEndpointService", "AWS::EC2::FlowLog",
+    "AWS::EC2::VPCPeeringConnection", "AWS::Elasticsearch::Domain", "AWS::IAM::Group",
+    "AWS::IAM::Policy", "AWS::IAM::Role", "AWS::IAM::User",
+    "AWS::ElasticLoadBalancingV2::LoadBalancer", "AWS::ACM::Certificate", "AWS::RDS::DBInstance",
+    "AWS::RDS::DBSubnetGroup", "AWS::RDS::DBSecurityGroup", "AWS::RDS::DBSnapshot",
+    "AWS::RDS::DBCluster", "AWS::RDS::DBClusterSnapshot", "AWS::RDS::EventSubscription",
+    "AWS::S3::Bucket", "AWS::S3::AccountPublicAccessBlock", "AWS::Redshift::Cluster",
+    "AWS::Redshift::ClusterSnapshot", "AWS::Redshift::ClusterParameterGroup", "AWS::Redshift::ClusterSecurityGroup",
+    "AWS::Redshift::ClusterSubnetGroup", "AWS::Redshift::EventSubscription", "AWS::SSM::ManagedInstanceInventory",
+    "AWS::CloudWatch::Alarm", "AWS::CloudFormation::Stack", "AWS::ElasticLoadBalancing::LoadBalancer",
+    "AWS::AutoScaling::AutoScalingGroup", "AWS::AutoScaling::LaunchConfiguration", "AWS::AutoScaling::ScalingPolicy",
+    "AWS::AutoScaling::ScheduledAction", "AWS::DynamoDB::Table", "AWS::CodeBuild::Project",
+    "AWS::WAF::RateBasedRule", "AWS::WAF::Rule", "AWS::WAF::RuleGroup",
+    "AWS::WAF::WebACL", "AWS::WAFRegional::RateBasedRule", "AWS::WAFRegional::Rule",
+    "AWS::WAFRegional::RuleGroup", "AWS::WAFRegional::WebACL", "AWS::CloudFront::Distribution",
+    "AWS::CloudFront::StreamingDistribution", "AWS::Lambda::Function", "AWS::ElasticBeanstalk::Application",
+    "AWS::ElasticBeanstalk::ApplicationVersion", "AWS::ElasticBeanstalk::Environment", "AWS::WAFv2::WebACL",
+    "AWS::WAFv2::RuleGroup", "AWS::WAFv2::IPSet", "AWS::WAFv2::RegexPatternSet",
+    "AWS::WAFv2::ManagedRuleSet", "AWS::XRay::EncryptionConfig", "AWS::SSM::AssociationCompliance",
+    "AWS::SSM::PatchCompliance", "AWS::Shield::Protection", "AWS::ShieldRegional::Protection",
+    "AWS::Config::ResourceCompliance", "AWS::ApiGateway::Stage", "AWS::ApiGateway::RestApi",
+    "AWS::ApiGatewayV2::Stage", "AWS::ApiGatewayV2::Api", "AWS::CodePipeline::Pipeline",
+    "AWS::ServiceCatalog::CloudFormationProvisionedProduct", "AWS::ServiceCatalog::CloudFormationProduct", "AWS::ServiceCatalog::Portfolio",
+    "AWS::SQS::Queue", "AWS::KMS::Key", "AWS::QLDB::Ledger",
+    "AWS::SNS::Topic"
 ]
 
 CONFIG_ROLE_ASSUME_ROLE_POLICY_DOCUMENT = {
@@ -167,6 +165,7 @@ def get_init_parser():
     )
 
     parser.add_argument('--config-bucket-exists-in-another-account', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
+    parser.add_argument('--skip-code-bucket-creation', required=False, action='store_true', help='[optional] If you want to use custom code bucket for rdk, enable this and use flag --custom-code-bucket to "rdk deploy"')
 
     return parser
 
@@ -214,6 +213,7 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--remediation-concurrent-execution-percent', required=False, help='[optional] Concurrent execution rate of the SSM document for remediation.')
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
+    parser.add_argument('--automation-document', required=False, help='[optional, beta] JSON-formatted string of the SSM Automation Document.')
 
     return parser
 
@@ -237,6 +237,7 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited list of RuleSet names')
     parser.add_argument('-f','--functions-only', action='store_true', required=False, help="[optional] Only deploy Lambda functions.  Useful for cross-account deployments.")
     parser.add_argument('--stack-name', required=False, help="[optional] CloudFormation Stack name for use with --functions-only option.  If omitted, \"RDK-Config-Rule-Functions\" will be used." )
+    parser.add_argument('--custom-code-bucket', required=False, help="[optional] Provide the custom code S3 bucket name, which is not created with rdk init, for generated cloudformation template storage.")
     parser.add_argument('--rdklib-layer-arn', required=False, help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.")
     parser.add_argument('--lambda-role-arn', required=False, help="[optional] Assign existing iam role to lambda functions. If omitted, \"rdkLambdaRole\" will be created.")
     parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
@@ -471,9 +472,10 @@ class rdk:
                 print ("Found code bucket: " + code_bucket_name)
 
         if not bucket_exists:
-            print('Creating Code bucket '+code_bucket_name )
-
-            bucket_configuration = {}
+            if self.args.skip_code_bucket_creation:
+                print('Skipping Code Bucket creation due to command line args')
+            else:
+                print('Creating Code bucket '+code_bucket_name )
 
             #Consideration for us-east-1 S3 API
             if my_session.region_name == 'us-east-1':
@@ -836,7 +838,10 @@ class rdk:
         account_id = identity_details['account_id']
         partition = identity_details['partition']
 
-        code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
+        if self.args.custom_code_bucket:
+            code_bucket_name = self.args.custom_code_bucket
+        else:
+            code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
 
         #If we're only deploying the Lambda functions (and role + permissions), branch here.  Someday the "main" execution path should use the same generated CFN templates for single-account deployment.
         if self.args.functions_only:
@@ -1005,10 +1010,7 @@ class rdk:
                         'ParameterKey': 'SourceIdentifier',
                         'ParameterValue': rule_params['SourceIdentifier']
                     }]
-                
                 my_cfn = my_session.client('cloudformation')
-                #Check if this managed rule needs to have an assoicated remedation block
-                remediation = ""
                 if "Remediation" in rule_params:
                     print('Build The CFN Template with Remediation Settings')
                     cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleWithRemediation.json")
@@ -1017,6 +1019,26 @@ class rdk:
                     remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
                     json_body["Resources"]["Remediation"] = remediation
                     
+                    if "SSMAutomation" in rule_params:
+                        #Reference the SSM Automation Role Created, if IAM is created
+                        print('Building SSM Automation Section')
+                        ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
+                        json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'RemediationAction')] = ssm_automation
+                        if "IAM" in rule_params['SSMAutomation']:
+                            print('Lets Build IAM Role and Policy')
+                            #TODO Check For IAM Settings
+                            json_body["Resources"]['Remediation']['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Fn::GetAtt":[self.__get_alphanumeric_rule_name(rule_name+"Role"), "Arn"]}]
+                        
+                            ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
+                            json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
+                            json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
+                    
+                            print('Build Supporting SSM Resources')
+                            resource_depends_on = ['rdkConfigRule', self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")]
+                            #Builds SSM Document Before Config RUle
+                            json_body["Resources"]["Remediation"]['DependsOn'] = resource_depends_on
+                            json_body["Resources"]["Remediation"]['Properties']['TargetId'] = {'Ref': self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")}
+
                     try:
                         my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
                         my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
@@ -1026,7 +1048,8 @@ class rdk:
                             cfn_args = {
                                 'StackName': my_stack_name,
                                 'TemplateBody': json.dumps(json_body),
-                                'Parameters': my_params
+                                'Parameters': my_params,
+                                'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'] 
                             }
 
                             # If no tags key is specified, or if the tags dict is empty
@@ -1053,7 +1076,8 @@ class rdk:
                             cfn_args = {
                                 'StackName': my_stack_name,
                                 'TemplateBody': json.dumps(json_body),
-                                'Parameters': my_params
+                                'Parameters': my_params,
+                                'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM']
                             }
 
 
@@ -1071,6 +1095,7 @@ class rdk:
 
                     #wait for changes to propagate.
                     self.__wait_for_cfn_stack(my_cfn, my_stack_name)
+                    continue
 
                 else:
                 #deploy config rule
@@ -1216,6 +1241,27 @@ class rdk:
                 remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
                 json_body["Resources"]["Remediation"] = remediation
 
+                if "SSMAutomation" in rule_params:
+                    ##AWS needs to build the SSM before the Config Rule
+                    resource_depends_on = ['rdkConfigRule', self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")]
+                    remediation["DependsOn"] = resource_depends_on
+                    #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
+                    remediation['Properties']['TargetId'] = {"Ref" : self.__get_alphanumeric_rule_name(rule_name+"RemediationAction") }
+
+            if "SSMAutomation" in rule_params:
+                print('Building SSM Automation Section')
+                
+                ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], rule_name)
+                json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")] = ssm_automation
+                if "IAM" in rule_params['SSMAutomation']:
+                    print('Lets Build IAM Role and Policy')
+                    #TODO Check For IAM Settings
+                    json_body["Resources"]['Remediation']['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Fn::GetAtt":[self.__get_alphanumeric_rule_name(rule_name+"Role"), "Arn"]}]
+                    
+                    ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(rule_params['SSMAutomation'], rule_name)
+                    json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
+                    json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
+                
             #debugging
             #print(json.dumps(json_body, indent=2))
 
@@ -1231,7 +1277,7 @@ class rdk:
                         'StackName': my_stack_name,
                         'TemplateBody': json.dumps(json_body),
                         'Parameters': my_params,
-                        'Capabilities': ['CAPABILITY_IAM']
+                        'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM']
                     }
 
                     # If no tags key is specified, or if the tags dict is empty
@@ -1241,11 +1287,14 @@ class rdk:
                     response = my_cfn.update_stack(**cfn_args)
                 except ClientError as e:
                     if e.response['Error']['Code'] == 'ValidationError':
+                        
                         if 'No updates are to be performed.' in str(e):
                             #No changes made to Config rule definition, so CloudFormation won't do anything.
                             print("No changes to Config Rule.")
                         else:
                             #Something unexpected has gone wrong.  Emit an error and bail.
+                            print('Validation Error on CFN')
+                            print(json.dumps(cfn_args))
                             print(e)
                             return 1
                     else:
@@ -1269,7 +1318,7 @@ class rdk:
                     'StackName': my_stack_name,
                     'TemplateBody': json.dumps(json_body),
                     'Parameters': my_params,
-                    'Capabilities': ['CAPABILITY_IAM']
+                    'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM']
                 }
 
                 if cfn_tags is not None:
@@ -1758,6 +1807,9 @@ class rdk:
             if 'SourceIdentifier' in params:
                 source["Owner"] = "AWS"
                 source["SourceIdentifier"] = params['SourceIdentifier']
+                #Check the frequency of the managed rule if defined
+                if 'SourcePeriodic' in params:
+                    properties['MaximumExecutionFrequency'] = params["SourcePeriodic"]
                 del source["SourceDetails"]
             else:
                 source["Owner"] = "CUSTOM_LAMBDA"
@@ -1792,13 +1844,34 @@ class rdk:
             config_rule_resource_name = self.__get_alphanumeric_rule_name(rule_name)+"ConfigRule"
             resources[config_rule_resource_name] = config_rule
 
+
+            #If Remedation create the remedation section with potential links to the SSM Details
             if "Remediation" in params:
                 remediation = self.__create_remediation_cloudformation_block(params["Remediation"])
                 remediation["DependsOn"] = [config_rule_resource_name]
                 if not self.args.rules_only:
                     remediation["DependsOn"].append("ConfigRole")
+                    
+                if "SSMAutomation" in params:
+                    ssm_automation = self.__create_automation_cloudformation_block(params['SSMAutomation'], rule_name)
+                    #AWS needs to build the SSM before the Config Rule
+                    remediation["DependsOn"].append(self.__get_alphanumeric_rule_name(rule_name+'RemediationAction'))
+                    #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
+                    remediation['Properties']['TargetId'] = {"Ref" : self.__get_alphanumeric_rule_name(rule_name) + 'RemediationAction' }
+                    
+                    if "IAM" in params['SSMAutomation']:
+                        print('Lets Build IAM Role and Policy For the SSM Document')
+                        ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(params['SSMAutomation'], rule_name)
+                        resources[self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
+                        resources[self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
+                        remediation['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Fn::GetAtt":[self.__get_alphanumeric_rule_name(rule_name+"Role"), "Arn"]}]
+                        #Override the placeholder to associate the SSM Document Role with newly crafted role
+
+ 
 
                 resources[self.__get_alphanumeric_rule_name(rule_name)+"Remediation"] = remediation
+                resources[self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")] = ssm_automation
+
 
             if tags:
                 tags_str=""
@@ -2608,6 +2681,83 @@ class rdk:
         }
 
         return remediation
+
+    def __create_automation_cloudformation_block(self, ssm_automation, rule_name):
+        print('Generate SSM Resources')
+        current_working_direcoty = os.getcwd()
+        ssm_json_dir = os.path.join(os.getcwd(), ssm_automation['Document'])
+        print('Reading SSM JSON From -> ' + ssm_json_dir)
+        #params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
+        ssm_automation_content = open(ssm_json_dir, 'r').read()
+        ssm_automation_json = json.loads(ssm_automation_content)
+        ssm_automation_config = {
+                                "Type": "AWS::SSM::Document",
+                                 "Properties": {
+                                    "DocumentType": "Automation",
+                                    "Content" : ssm_automation_json
+                                    }
+                                
+            }
+        
+         
+        return(ssm_automation_config)
+
+    def __create_automation_iam_cloudformation_block(self, ssm_automation, rule_name):
+        
+        print('Generate IAM Role for SSM Document with these actions', str(ssm_automation['IAM']))
+        
+        assume_role_template = {
+                                    "Version": "2012-10-17",
+                                    "Statement": [
+                                        {
+                                        "Effect": "Allow",
+                                        "Principal": {
+                                            "Service": "ssm.amazonaws.com"
+                                        },
+                                        "Action": "sts:AssumeRole"
+                                        }
+                                    ]
+                                    }
+
+        
+        #params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
+        ssm_automation_iam_role = {"Type": "AWS::IAM::Role",
+                                        "Properties": {
+                                            "Description" : "IAM Role to Support Config Remediation for " + rule_name,
+                                            "Path": "/rdk-remediation-role/",
+                                            #"RoleName": {"Fn::Sub": "" + rule_name + "-Remedation-Role-${AWS::Region}"},
+                                            "AssumeRolePolicyDocument" : assume_role_template
+                                            }
+                                
+            }
+
+        ssm_automation_iam_policy = {
+                                        "Type": "AWS::IAM::Policy",
+                                        "Properties": {
+                                            "PolicyDocument": {
+                                            "Statement": [
+                                                {
+                                                    "Action": ssm_automation['IAM'],
+                                                    "Effect": "Allow",
+                                                    "Resource": "*"
+                                                }
+                                            ],
+                                            "Version": "2012-10-17"
+                                            },
+                                            "PolicyName": {"Fn::Sub": "" + rule_name + "-Remedation-Policy-${AWS::Region}"},
+                                            "Roles": [
+                                            {
+                                                "Ref": self.__get_alphanumeric_rule_name(rule_name + 'Role')
+                                            }
+                                            ]
+                                        }
+                                    }
+        
+        
+         
+        return(ssm_automation_iam_role, ssm_automation_iam_policy)                            
+
+
 
     def __create_function_cloudformation_template(self):
         print ("Generating CloudFormation template for Lambda Functions!")
