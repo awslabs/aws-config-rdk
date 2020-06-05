@@ -475,7 +475,7 @@ class rdk:
             if self.args.skip_code_bucket_creation:
                 print('Skipping Code Bucket creation due to command line args')
             else:
-            print('Creating Code bucket '+code_bucket_name )
+                print('Creating Code bucket '+code_bucket_name )
 
             #Consideration for us-east-1 S3 API
             if my_session.region_name == 'us-east-1':
