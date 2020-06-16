@@ -1867,12 +1867,8 @@ class rdk:
                         remediation['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Fn::GetAtt":[self.__get_alphanumeric_rule_name(rule_name+"Role"), "Arn"]}]
                         #Override the placeholder to associate the SSM Document Role with newly crafted role
                         resources[self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")] = ssm_automation
- 
-
                 resources[self.__get_alphanumeric_rule_name(rule_name)+"Remediation"] = remediation
                 
-
-
             if tags:
                 tags_str=""
                 for tag in tags:
