@@ -995,6 +995,10 @@ class rdk:
                         'ParameterValue': rule_name,
                     },
                     {
+                        'ParameterKey': 'Description',
+                        'ParameterValue': rule_params["Description"],
+                    },
+                    {
                         'ParameterKey': 'SourceEvents',
                         'ParameterValue': source_events,
                     },
@@ -1167,6 +1171,10 @@ class rdk:
                 {
                     'ParameterKey': 'RuleName',
                     'ParameterValue': rule_name,
+                },
+                {
+                    'ParameterKey': 'Description',
+                    'ParameterValue': rule_params["Description"],
                 },
                 {
                     'ParameterKey': 'LambdaRoleArn',
@@ -1780,7 +1788,7 @@ class rdk:
             source["SourceDetails"] = []
 
             properties["ConfigRuleName"] = rule_name
-            properties["Description"] = rule_name
+            properties["Description"] = params["Description"]
 
             #Create the SourceDetails stanza.
             if 'SourceEvents' in params:
@@ -2423,6 +2431,7 @@ class rdk:
         #create config file and place in rule directory
         parameters = {
             'RuleName': self.args.rulename,
+            'Description': self.args.rulename,
             'SourceRuntime': self.args.runtime,
             #'CodeBucket': code_bucket_prefix + account_id,
             'CodeKey': self.args.rulename+'.zip',
