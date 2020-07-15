@@ -9,6 +9,12 @@
       "MinLength": "1",
       "MaxLength": "255"
     },
+    "Description": {
+      "Description": "Description of the Rule",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255"
+    },
     "LambdaRoleArn": {
       "Description": "ARN of the existing IAM role that you want to attach to the lambda function.",
       "Type": "String",
@@ -142,7 +148,7 @@
       ],
       "Properties": {
         "ConfigRuleName": { "Ref": "RuleName" },
-        "Description": { "Ref": "RuleName" },
+        "Description": { "Ref": "Description" },
         "Scope": {
           "Fn::If": [ "EventTriggered",
             { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },

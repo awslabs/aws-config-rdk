@@ -990,10 +990,18 @@ class rdk:
                 print("Found Managed Rule.")
                 #create CFN Parameters for Managed Rules
 
+                try:
+                    rule_description = rule_params["Description"]
+                except KeyError:
+                    rule_description = rule_name
                 my_params = [
                     {
                         'ParameterKey': 'RuleName',
                         'ParameterValue': rule_name,
+                    },
+                    {
+                        'ParameterKey': 'Description',
+                        'ParameterValue': rule_description,
                     },
                     {
                         'ParameterKey': 'SourceEvents',
@@ -1168,10 +1176,19 @@ class rdk:
                 print ("Boundary Policy provided: " + self.args.boundary_policy_arn)
                 boundaryPolicyArn = self.args.boundary_policy_arn
 
+            try:
+                rule_description = rule_params["Description"]
+            except KeyError:
+                rule_description = rule_name
+                
             my_params = [
                 {
                     'ParameterKey': 'RuleName',
                     'ParameterValue': rule_name,
+                },
+                {
+                    'ParameterKey': 'Description',
+                    'ParameterValue': rule_description,
                 },
                 {
                     'ParameterKey': 'LambdaRoleArn',
@@ -1789,7 +1806,10 @@ class rdk:
             source["SourceDetails"] = []
 
             properties["ConfigRuleName"] = rule_name
-            properties["Description"] = rule_name
+            try:
+                properties["Description"] = params["Description"]
+            except KeyError:
+                properties["Description"] = rule_name
 
             #Create the SourceDetails stanza.
             if 'SourceEvents' in params:
@@ -2432,6 +2452,7 @@ class rdk:
         #create config file and place in rule directory
         parameters = {
             'RuleName': self.args.rulename,
+            'Description': self.args.rulename,
             'SourceRuntime': self.args.runtime,
             #'CodeBucket': code_bucket_prefix + account_id,
             'CodeKey': self.args.rulename+'.zip',

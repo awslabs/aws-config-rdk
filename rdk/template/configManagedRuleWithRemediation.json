@@ -8,6 +8,12 @@
             "MinLength": "1",
             "MaxLength": "255"
         },
+    "Description": {
+      "Description": "Description of the Rule",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255"
+    },
         "SourceEvents": {
             "Description": "Event Type",
             "Type": "CommaDelimitedList",
@@ -71,7 +77,7 @@
                     "Ref": "RuleName"
                 },
                 "Description": {
-                    "Ref": "RuleName"
+                    "Ref": "Description"
                 },
                 "Scope": {
                     "Fn::If": [
