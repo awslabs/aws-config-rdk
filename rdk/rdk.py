@@ -1175,6 +1175,8 @@ class rdk:
             if self.args.boundary_policy_arn:
                 print ("Boundary Policy provided: " + self.args.boundary_policy_arn)
                 boundaryPolicyArn = self.args.boundary_policy_arn
+            else:
+                boundaryPolicyArn = ""
 
             try:
                 rule_description = rule_params["Description"]
