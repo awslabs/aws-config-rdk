@@ -9,8 +9,19 @@
       "MinLength": "1",
       "MaxLength": "255"
     },
+    "Description": {
+      "Description": "Description of the Rule",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255"
+    },
     "LambdaRoleArn": {
       "Description": "ARN of the existing IAM role that you want to attach to the lambda function.",
+      "Type": "String",
+      "Default": ""
+    },
+    "BoundaryPolicyArn": {
+      "Description": "ARN of a Boundary Policy, will be used only if LambdaRoleArn is NOT set.",
       "Type": "String",
       "Default": ""
     },
@@ -71,6 +82,7 @@
   },
   "Conditions": {
     "CreateNewLambdaRole" : { "Fn::Equals" : [{ "Ref": "LambdaRoleArn" }, ""]},
+    "UseBoundaryPolicyInRole" : {"Fn::Not":[{ "Fn::Equals" : [{ "Ref": "BoundaryPolicyArn" }, ""]}]},
     "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
     "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]},
     "UseAdditionalLayers": {"Fn::Not": [{"Fn::Equals": [{"Ref": "Layers"}, ""]}]},
@@ -136,7 +148,7 @@
       ],
       "Properties": {
         "ConfigRuleName": { "Ref": "RuleName" },
-        "Description": { "Ref": "RuleName" },
+        "Description": { "Ref": "Description" },
         "Scope": {
           "Fn::If": [ "EventTriggered",
             { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },
@@ -172,6 +184,11 @@
       "Type": "AWS::IAM::Role",
       "Properties": {
         "Path": "/rdk/",
+        "PermissionsBoundary": {"Fn::If": [ "UseBoundaryPolicyInRole",
+            { "Ref": "BoundaryPolicyArn" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [ {
