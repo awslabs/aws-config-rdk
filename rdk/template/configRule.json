@@ -20,6 +20,11 @@
       "Type": "String",
       "Default": ""
     },
+    "BoundaryPolicyArn": {
+      "Description": "ARN of a Boundary Policy, will be used only if LambdaRoleArn is NOT set.",
+      "Type": "String",
+      "Default": ""
+    },
     "SourceBucket": {
       "Description": "Name of the S3 bucket that you have stored the rule zip files in.",
       "Type": "String",
@@ -77,6 +82,7 @@
   },
   "Conditions": {
     "CreateNewLambdaRole" : { "Fn::Equals" : [{ "Ref": "LambdaRoleArn" }, ""]},
+    "UseBoundaryPolicyInRole" : {"Fn::Not":[{ "Fn::Equals" : [{ "Ref": "BoundaryPolicyArn" }, ""]}]},
     "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
     "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]},
     "UseAdditionalLayers": {"Fn::Not": [{"Fn::Equals": [{"Ref": "Layers"}, ""]}]},
@@ -178,6 +184,11 @@
       "Type": "AWS::IAM::Role",
       "Properties": {
         "Path": "/rdk/",
+        "PermissionsBoundary": {"Fn::If": [ "UseBoundaryPolicyInRole",
+            { "Ref": "BoundaryPolicyArn" },
+            { "Ref": "AWS::NoValue" }
+          ]
+        },
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [ {

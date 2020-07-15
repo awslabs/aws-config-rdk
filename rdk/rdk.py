@@ -243,6 +243,7 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
     parser.add_argument('--lambda-subnets', required=False, help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).")
     parser.add_argument('--lambda-security-groups', required=False, help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).")
+    parser.add_argument('--boundary-policy-arn', required=False, help="[optional] Boundary Policy ARN that will be added to \"rdkLambdaRole\".")
 
     if ForceArgument:
         parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
@@ -1171,10 +1172,15 @@ class rdk:
                 print ("Existing IAM Role provided: " + self.args.lambda_role_arn)
                 lambdaRoleArn = self.args.lambda_role_arn
 
+            if self.args.boundary_policy_arn:
+                print ("Boundary Policy provided: " + self.args.boundary_policy_arn)
+                boundaryPolicyArn = self.args.boundary_policy_arn
+
             try:
                 rule_description = rule_params["Description"]
             except KeyError:
                 rule_description = rule_name
+                
             my_params = [
                 {
                     'ParameterKey': 'RuleName',
@@ -1187,6 +1193,10 @@ class rdk:
                 {
                     'ParameterKey': 'LambdaRoleArn',
                     'ParameterValue': lambdaRoleArn,
+                },
+                {
+                    'ParameterKey': 'BoundaryPolicyArn',
+                    'ParameterValue': boundaryPolicyArn,
                 },
                 {
                     'ParameterKey': 'SourceBucket',
