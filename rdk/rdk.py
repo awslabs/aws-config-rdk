@@ -989,6 +989,10 @@ class rdk:
                 print("Found Managed Rule.")
                 #create CFN Parameters for Managed Rules
 
+                try:
+                    rule_description = rule_params["Description"]
+                except KeyError:
+                    rule_description = rule_name
                 my_params = [
                     {
                         'ParameterKey': 'RuleName',
@@ -996,7 +1000,7 @@ class rdk:
                     },
                     {
                         'ParameterKey': 'Description',
-                        'ParameterValue': rule_params["Description"],
+                        'ParameterValue': rule_description,
                     },
                     {
                         'ParameterKey': 'SourceEvents',
@@ -1167,6 +1171,10 @@ class rdk:
                 print ("Existing IAM Role provided: " + self.args.lambda_role_arn)
                 lambdaRoleArn = self.args.lambda_role_arn
 
+            try:
+                rule_description = rule_params["Description"]
+            except KeyError:
+                rule_description = rule_name
             my_params = [
                 {
                     'ParameterKey': 'RuleName',
@@ -1174,7 +1182,7 @@ class rdk:
                 },
                 {
                     'ParameterKey': 'Description',
-                    'ParameterValue': rule_params["Description"],
+                    'ParameterValue': rule_description,
                 },
                 {
                     'ParameterKey': 'LambdaRoleArn',
@@ -1788,7 +1796,10 @@ class rdk:
             source["SourceDetails"] = []
 
             properties["ConfigRuleName"] = rule_name
-            properties["Description"] = params["Description"]
+            try:
+                properties["Description"] = params["Description"]
+            except KeyError:
+                properties["Description"] = rule_name
 
             #Create the SourceDetails stanza.
             if 'SourceEvents' in params:
