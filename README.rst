@@ -236,7 +236,7 @@ To do so, create a rule using "rdk create" and provide a valid SourceIdentifier 
 Contributing
 ============
 
-email me at mborch@amazon.com if you are interested in contributing.  I'm using the github issues log as my "to-do" list, and I'm also happy to get PR's if you see something you want to fix.
+email us at rdk-maintainers@amazon.com if you have any questions. We are happy to help and discuss. 
 
 Authors
 =======
