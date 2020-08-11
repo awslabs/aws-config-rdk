@@ -16,6 +16,8 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
     version_string="Python36";
   elif [[ ${python_version} == "37" ]]; then
     version_string="Python37";
+  elif [[ ${python_version} == "38" ]]; then
+    version_string="Python38";
   fi
 
   #Construct powershell script to run test and publish results to S3
@@ -26,6 +28,7 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
     set AWS_DEFAULT_REGION=ap-southeast-1
     Set-DefaultAWSRegion -Region ap-southeast-1
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 init >C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
