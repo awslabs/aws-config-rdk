@@ -10,6 +10,7 @@ include rdk/template/runtime/python2.7/*
 include rdk/template/runtime/python3.6/*
 include rdk/template/runtime/python3.6-lib/*
 include rdk/template/runtime/python3.7/*
+include rdk/template/runtime/python3.8/*
 include rdk/template/runtime/dotnetcore1.0/*
 include rdk/template/runtime/dotnetcore1.0/bin/*
 include rdk/template/runtime/dotnetcore1.0/obj/*
