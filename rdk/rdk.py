@@ -2574,6 +2574,8 @@ class rdk:
                     time.sleep(5)
 
     def __get_handler(self, rule_name, params):
+        if 'SourceHandler' in params:
+            return params['SourceHandler']
         if params['SourceRuntime'] in ['python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.8', 'nodejs4.3', 'nodejs6.10', 'nodejs8.10']:
             return (rule_name+'.lambda_handler')
         elif params['SourceRuntime'] in ['java8']:
