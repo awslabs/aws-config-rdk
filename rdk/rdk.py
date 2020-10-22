@@ -166,6 +166,7 @@ def get_init_parser():
 
     parser.add_argument('--config-bucket-exists-in-another-account', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
     parser.add_argument('--skip-code-bucket-creation', required=False, action='store_true', help='[optional] If you want to use custom code bucket for rdk, enable this and use flag --custom-code-bucket to "rdk deploy"')
+    parser.add_argument('--control-tower', required=False, action='store_true', help='[optional] If your account is part of an AWS Control Tower setup --control-tower will play nicely with it')
 
     return parser
 
@@ -375,6 +376,11 @@ class rdk:
             config_bucket_exists = True
 
         config_bucket_name = config_bucket_prefix + "-" + account_id
+        
+        control_tower = False
+        if self.args.control_tower:
+            print("This account is part of an AWS Control Tower managed organization. Playing nicely with it")
+            control_tower = True
 
         #Check to see if the ConfigRecorder has been created.
         recorders = my_config.describe_configuration_recorders()
@@ -451,17 +457,20 @@ class rdk:
         #create or update config recorder
         if not config_role_arn:
             config_role_arn = "arn:" + partition + ":iam::" + account_id + ":role/rdk/config-role"
+        
+        if (not control_tower):
+            my_config.put_configuration_recorder(ConfigurationRecorder={'name':config_recorder_name, 'roleARN':config_role_arn, 'recordingGroup':{'allSupported':True, 'includeGlobalResourceTypes': True}})
 
-        my_config.put_configuration_recorder(ConfigurationRecorder={'name':config_recorder_name, 'roleARN':config_role_arn, 'recordingGroup':{'allSupported':True, 'includeGlobalResourceTypes': True}})
-
-        if not delivery_channel_exists:
-            #create delivery channel
-            print("Creating delivery channel to bucket " + config_bucket_name)
-            my_config.put_delivery_channel(DeliveryChannel={'name':'default', 's3BucketName':config_bucket_name, 'configSnapshotDeliveryProperties':{'deliveryFrequency':'Six_Hours'}})
-
-        #start config recorder
-        my_config.start_configuration_recorder(ConfigurationRecorderName=config_recorder_name)
-        print('Config Service is ON')
+            if not delivery_channel_exists:
+                #create delivery channel
+                print("Creating delivery channel to bucket " + config_bucket_name)
+                my_config.put_delivery_channel(DeliveryChannel={'name':'default', 's3BucketName':config_bucket_name, 'configSnapshotDeliveryProperties':{'deliveryFrequency':'Six_Hours'}})
+    
+            #start config recorder
+            my_config.start_configuration_recorder(ConfigurationRecorderName=config_recorder_name)
+            print('Config Service is ON')
+        else:
+            print('Skipped put_configuration_recorder, put_delivery_channel & start_configuration_recorder as this is part of a Control Tower managed Organization')
 
         print('Config setup complete.')
 
@@ -1767,10 +1776,10 @@ class rdk:
             for input_param in input_params:
                 cfn_param = {}
                 cfn_param["Description"] = "Pass-through to required Input Parameter " + input_param + " for Config Rule " + rule_name
-                if len(input_params[input_param].strip()) == 0:
+                if len(str(input_params[input_param]).strip()) == 0:
                     default = "<REQUIRED>"
                 else:
-                    default = input_params[input_param]
+                    default = str(input_params[input_param])
                 cfn_param["Default"] = default
                 cfn_param["Type"] = "String"
                 cfn_param["MinLength"] = 1
