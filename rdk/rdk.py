@@ -243,6 +243,7 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
     parser.add_argument('--lambda-subnets', required=False, help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).")
     parser.add_argument('--lambda-security-groups', required=False, help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).")
+    parser.add_argument('--lambda-timeout', required=False, default=60, help="[optional] Timeout (in seconds) for the lambda function", type=str)
     parser.add_argument('--boundary-policy-arn', required=False, help="[optional] Boundary Policy ARN that will be added to \"rdkLambdaRole\".")
 
     if ForceArgument:
@@ -261,6 +262,7 @@ def get_export_parser(ForceArgument=False, Command="export"):
     parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
     parser.add_argument('--lambda-subnets', required=False, help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).")
     parser.add_argument('--lambda-security-groups', required=False, help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).")
+    parser.add_argument('--lambda-timeout', required=False, default=60, help="[optional] Timeout (in seconds) for the lambda function", type=str)
     parser.add_argument('--lambda-role-arn', required=False,
                         help="[optional] Assign existing iam role to lambda functions. If omitted, new lambda role will be created.")
     parser.add_argument('--rdklib-layer-arn', required=False,
@@ -1229,6 +1231,10 @@ class rdk:
                     'ParameterKey': 'SourceHandler',
                     'ParameterValue': self.__get_handler(rule_name, rule_params)
 
+                },
+                {
+                    'ParameterKey': 'Timeout',
+                    'ParameterValue': self.args.lambda_timeout
                 }]
             layers = []
             if 'SourceRuntime' in rule_params:
@@ -1451,7 +1457,8 @@ class rdk:
                 "subnet_ids": subnet_ids,
                 "security_group_ids": security_group_ids,
                 "lambda_layers": layers,
-                "lambda_role_arn": lambda_role_arn
+                "lambda_role_arn": lambda_role_arn,
+                "lambda_timeout": self.args.lambda_timeout
             }
 
             params_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + ".tfvars.json")
@@ -2917,7 +2924,7 @@ class rdk:
                 lambda_function["DependsOn"] = "rdkLambdaRole"
                 properties["Role"] = {"Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]}
             properties["Runtime"] = self.__get_runtime_string(params)
-            properties["Timeout"] = 300
+            properties["Timeout"] = self.args.lambda_timeout
             properties["Tags"] = tags
             if self.args.lambda_subnets and self.args.lambda_security_groups:
                 properties["VpcConfig"] = {

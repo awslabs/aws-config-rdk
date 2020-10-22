@@ -17,5 +17,6 @@ Export
    The ``--lambda-layers`` flag can be used for attaching a comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).
    The ``--lambda-subnets`` flag can be used for attaching a comma-separated list of Subnets to deploy your Lambda function(s).
    The ``--lambda-security-groups`` flag can be used for attaching a comma-separated list of Security Groups to deploy with your Lambda function(s).
+   The ``--lambda-timeout`` flag can be used for specifying the timeout associated to the lambda function
 
    
