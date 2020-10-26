@@ -166,6 +166,7 @@ def get_init_parser():
 
     parser.add_argument('--config-bucket-exists-in-another-account', required=False, action='store_true', help='[optional] If the Config bucket exists in another account, remove the check of the bucket')
     parser.add_argument('--skip-code-bucket-creation', required=False, action='store_true', help='[optional] If you want to use custom code bucket for rdk, enable this and use flag --custom-code-bucket to "rdk deploy"')
+    parser.add_argument('--control-tower', required=False, action='store_true', help='[optional] If your account is part of an AWS Control Tower setup --control-tower will skip the setup of configuration_recorder and delivery_channel')
 
     return parser
 
@@ -243,6 +244,7 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
     parser.add_argument('--lambda-subnets', required=False, help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).")
     parser.add_argument('--lambda-security-groups', required=False, help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).")
+    parser.add_argument('--lambda-timeout', required=False, default=60, help="[optional] Timeout (in seconds) for the lambda function", type=str)
     parser.add_argument('--boundary-policy-arn', required=False, help="[optional] Boundary Policy ARN that will be added to \"rdkLambdaRole\".")
 
     if ForceArgument:
@@ -261,6 +263,7 @@ def get_export_parser(ForceArgument=False, Command="export"):
     parser.add_argument('--lambda-layers', required=False, help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).")
     parser.add_argument('--lambda-subnets', required=False, help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).")
     parser.add_argument('--lambda-security-groups', required=False, help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).")
+    parser.add_argument('--lambda-timeout', required=False, default=60, help="[optional] Timeout (in seconds) for the lambda function", type=str)
     parser.add_argument('--lambda-role-arn', required=False,
                         help="[optional] Assign existing iam role to lambda functions. If omitted, new lambda role will be created.")
     parser.add_argument('--rdklib-layer-arn', required=False,
@@ -373,6 +376,11 @@ class rdk:
             config_bucket_exists = True
 
         config_bucket_name = config_bucket_prefix + "-" + account_id
+        
+        control_tower = False
+        if self.args.control_tower:
+            print("This account is part of an AWS Control Tower managed organization. Playing nicely with it")
+            control_tower = True
 
         #Check to see if the ConfigRecorder has been created.
         recorders = my_config.describe_configuration_recorders()
@@ -449,17 +457,20 @@ class rdk:
         #create or update config recorder
         if not config_role_arn:
             config_role_arn = "arn:" + partition + ":iam::" + account_id + ":role/rdk/config-role"
+        
+        if (not control_tower):
+            my_config.put_configuration_recorder(ConfigurationRecorder={'name':config_recorder_name, 'roleARN':config_role_arn, 'recordingGroup':{'allSupported':True, 'includeGlobalResourceTypes': True}})
 
-        my_config.put_configuration_recorder(ConfigurationRecorder={'name':config_recorder_name, 'roleARN':config_role_arn, 'recordingGroup':{'allSupported':True, 'includeGlobalResourceTypes': True}})
-
-        if not delivery_channel_exists:
-            #create delivery channel
-            print("Creating delivery channel to bucket " + config_bucket_name)
-            my_config.put_delivery_channel(DeliveryChannel={'name':'default', 's3BucketName':config_bucket_name, 'configSnapshotDeliveryProperties':{'deliveryFrequency':'Six_Hours'}})
-
-        #start config recorder
-        my_config.start_configuration_recorder(ConfigurationRecorderName=config_recorder_name)
-        print('Config Service is ON')
+            if not delivery_channel_exists:
+                #create delivery channel
+                print("Creating delivery channel to bucket " + config_bucket_name)
+                my_config.put_delivery_channel(DeliveryChannel={'name':'default', 's3BucketName':config_bucket_name, 'configSnapshotDeliveryProperties':{'deliveryFrequency':'Six_Hours'}})
+    
+            #start config recorder
+            my_config.start_configuration_recorder(ConfigurationRecorderName=config_recorder_name)
+            print('Config Service is ON')
+        else:
+            print('Skipped put_configuration_recorder, put_delivery_channel & start_configuration_recorder as this is part of a Control Tower managed Organization')
 
         print('Config setup complete.')
 
@@ -1229,6 +1240,10 @@ class rdk:
                     'ParameterKey': 'SourceHandler',
                     'ParameterValue': self.__get_handler(rule_name, rule_params)
 
+                },
+                {
+                    'ParameterKey': 'Timeout',
+                    'ParameterValue': str(self.args.lambda_timeout)
                 }]
             layers = []
             if 'SourceRuntime' in rule_params:
@@ -1279,18 +1294,18 @@ class rdk:
 
             if "SSMAutomation" in rule_params:
                 print('Building SSM Automation Section')
-                
+
                 ssm_automation = self.__create_automation_cloudformation_block(rule_params['SSMAutomation'], rule_name)
                 json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")] = ssm_automation
                 if "IAM" in rule_params['SSMAutomation']:
                     print('Lets Build IAM Role and Policy')
                     #TODO Check For IAM Settings
                     json_body["Resources"]['Remediation']['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Fn::GetAtt":[self.__get_alphanumeric_rule_name(rule_name+"Role"), "Arn"]}]
-                    
+
                     ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(rule_params['SSMAutomation'], rule_name)
                     json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
                     json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
-                
+
             #debugging
             #print(json.dumps(json_body, indent=2))
 
@@ -1316,7 +1331,7 @@ class rdk:
                     response = my_cfn.update_stack(**cfn_args)
                 except ClientError as e:
                     if e.response['Error']['Code'] == 'ValidationError':
-                        
+
                         if 'No updates are to be performed.' in str(e):
                             #No changes made to Config rule definition, so CloudFormation won't do anything.
                             print("No changes to Config Rule.")
@@ -1451,7 +1466,8 @@ class rdk:
                 "subnet_ids": subnet_ids,
                 "security_group_ids": security_group_ids,
                 "lambda_layers": layers,
-                "lambda_role_arn": lambda_role_arn
+                "lambda_role_arn": lambda_role_arn,
+                "lambda_timeout": str(self.args.lambda_timeout)
             }
 
             params_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + ".tfvars.json")
@@ -1760,10 +1776,10 @@ class rdk:
             for input_param in input_params:
                 cfn_param = {}
                 cfn_param["Description"] = "Pass-through to required Input Parameter " + input_param + " for Config Rule " + rule_name
-                if len(input_params[input_param].strip()) == 0:
+                if len(str(input_params[input_param]).strip()) == 0:
                     default = "<REQUIRED>"
                 else:
-                    default = input_params[input_param]
+                    default = str(input_params[input_param])
                 cfn_param["Default"] = default
                 cfn_param["Type"] = "String"
                 cfn_param["MinLength"] = 1
@@ -1883,14 +1899,14 @@ class rdk:
                 remediation["DependsOn"] = [config_rule_resource_name]
                 if not self.args.rules_only:
                     remediation["DependsOn"].append("ConfigRole")
-                    
+
                 if "SSMAutomation" in params:
                     ssm_automation = self.__create_automation_cloudformation_block(params['SSMAutomation'], rule_name)
                     #AWS needs to build the SSM before the Config Rule
                     remediation["DependsOn"].append(self.__get_alphanumeric_rule_name(rule_name+'RemediationAction'))
                     #Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
                     remediation['Properties']['TargetId'] = {"Ref" : self.__get_alphanumeric_rule_name(rule_name) + 'RemediationAction' }
-                    
+
                     if "IAM" in params['SSMAutomation']:
                         print('Lets Build IAM Role and Policy For the SSM Document')
                         ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(params['SSMAutomation'], rule_name)
@@ -1900,7 +1916,7 @@ class rdk:
                         #Override the placeholder to associate the SSM Document Role with newly crafted role
                         resources[self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")] = ssm_automation
                 resources[self.__get_alphanumeric_rule_name(rule_name)+"Remediation"] = remediation
-                
+
             if tags:
                 tags_str=""
                 for tag in tags:
@@ -2574,6 +2590,8 @@ class rdk:
                     time.sleep(5)
 
     def __get_handler(self, rule_name, params):
+        if 'SourceHandler' in params:
+            return params['SourceHandler']
         if params['SourceRuntime'] in ['python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.8', 'nodejs4.3', 'nodejs6.10', 'nodejs8.10']:
             return (rule_name+'.lambda_handler')
         elif params['SourceRuntime'] in ['java8']:
@@ -2725,16 +2743,16 @@ class rdk:
                                     "DocumentType": "Automation",
                                     "Content" : ssm_automation_json
                                     }
-                                
+
             }
-        
-         
+
+
         return(ssm_automation_config)
 
     def __create_automation_iam_cloudformation_block(self, ssm_automation, rule_name):
-        
+
         print('Generate IAM Role for SSM Document with these actions', str(ssm_automation['IAM']))
-        
+
         assume_role_template = {
                                     "Version": "2012-10-17",
                                     "Statement": [
@@ -2748,7 +2766,7 @@ class rdk:
                                     ]
                                     }
 
-        
+
         #params_file_path = os.path.join(os.getcwd(), rules_dir, rulename, parameter_file_name)
         ssm_automation_iam_role = {"Type": "AWS::IAM::Role",
                                         "Properties": {
@@ -2757,7 +2775,7 @@ class rdk:
                                             #"RoleName": {"Fn::Sub": "" + rule_name + "-Remedation-Role-${AWS::Region}"},
                                             "AssumeRolePolicyDocument" : assume_role_template
                                             }
-                                
+
             }
 
         ssm_automation_iam_policy = {
@@ -2781,10 +2799,10 @@ class rdk:
                                             ]
                                         }
                                     }
-        
-        
-         
-        return(ssm_automation_iam_role, ssm_automation_iam_policy)                            
+
+
+
+        return(ssm_automation_iam_role, ssm_automation_iam_policy)
 
 
 
@@ -2917,7 +2935,7 @@ class rdk:
                 lambda_function["DependsOn"] = "rdkLambdaRole"
                 properties["Role"] = {"Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]}
             properties["Runtime"] = self.__get_runtime_string(params)
-            properties["Timeout"] = 300
+            properties["Timeout"] = str(self.args.lambda_timeout)
             properties["Tags"] = tags
             if self.args.lambda_subnets and self.args.lambda_security_groups:
                 properties["VpcConfig"] = {

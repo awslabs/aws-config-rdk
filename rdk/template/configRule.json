@@ -78,6 +78,11 @@
       "Description": "Comma-separated list of Subnet Ids for Lambda Function deployment",
       "Type": "String",
       "Default": ""
+    },
+    "Timeout":{
+      "Description": "Lambda Function timeout",
+      "Type": "String",
+      "Default": 60
     }
   },
   "Conditions": {
@@ -112,7 +117,7 @@
             ]
           },
         "Runtime": { "Ref": "SourceRuntime"},
-        "Timeout": 60,
+        "Timeout": { "Ref": "Timeout"},
         "Layers":
           {"Fn::If":
             [ "UseAdditionalLayers",

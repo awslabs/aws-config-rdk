@@ -65,6 +65,11 @@ variable "lambda_role_arn" {
 	type = string
 }
 
+variable "lambda_timeout" {
+    description = "Lambda function timeout"
+    type = string
+}
+
 locals {
   event_triggered = (length(var.source_events)>0 ? true : false)
   periodic_triggered = var.source_periodic != "NONE" ? true : false

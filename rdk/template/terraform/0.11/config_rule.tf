@@ -72,7 +72,7 @@ resource "aws_lambda_function" "rdk_rule" {
   handler                     = "${var.source_handler}"
   role                        = "${ local.create_new_lambda_role ? "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${lower(var.rule_name)}-awsconfig-role" : var.lambda_role_arn}"
 
-  timeout                     = "60"
+  timeout                     = "${var.lambda_timeout}"
   s3_bucket                   = "${var.source_bucket}"
   s3_key                      = "${var.rule_name}.zip"
   memory_size                 = "256"
