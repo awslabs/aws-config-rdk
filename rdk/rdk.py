@@ -2207,8 +2207,8 @@ class rdk:
 
         #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
         for name in rule_names:
-            if len(name) > 45:
-                print("Error: Found Rule with name over 45 characters: {} \n Recreate the Rule with a shorter name.".format(name))
+            if len(name) > 128:
+                print("Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(name))
                 sys.exit(1)
 
         return rule_names
@@ -2257,8 +2257,8 @@ class rdk:
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
 
         if self.args.rulename:
-            if len(self.args.rulename) > 45:
-                print("Rule names must be 45 characters or fewer.")
+            if len(self.args.rulename) > 128:
+                print("Rule names must be 128 characters or fewer.")
                 sys.exit(1)
 
         resource_type_error = ""
@@ -2330,8 +2330,8 @@ class rdk:
         #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
         if self.args.rulename:
             for name in self.args.rulename:
-                if len(name) > 45:
-                    print("Error: Found Rule with name over 45 characters: {} \n Recreate the Rule with a shorter name.".format(name))
+                if len(name) > 128:
+                    print("Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(name))
                     sys.exit(1)
 
         if self.args.functions_only and not self.args.stack_name:
@@ -2347,9 +2347,9 @@ class rdk:
         # Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
         if self.args.rulename:
             for name in self.args.rulename:
-                if len(name) > 45:
+                if len(name) > 128:
                     print(
-                        "Error: Found Rule with name over 45 characters: {} \n Recreate the Rule with a shorter name.".format(
+                        "Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(
                             name))
                     sys.exit(1)
 
