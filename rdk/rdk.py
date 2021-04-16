@@ -55,42 +55,109 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
-RDKLIB_LAYER_VERSION={'ap-southeast-1':'24', 'ap-south-1':'3', 'us-east-2':'3', 'us-east-1':'3', 'us-west-1':'2', 'us-west-2':'2', 'ap-northeast-2':'3', 'ap-southeast-2':'3', 'ap-northeast-1':'3', 'ca-central-1':'3', 'eu-central-1':'3', 'eu-west-1':'3', 'eu-west-2':'2', 'eu-west-3':'3', 'eu-north-1':'3', 'sa-east-1':'3'}
+RDKLIB_LAYER_VERSION={'ap-southeast-1':'26', 'ap-south-1':'4', 'us-east-2':'4', 'us-east-1':'4', 'us-west-1':'3', 'us-west-2':'3', 'ap-northeast-2':'4', 'ap-southeast-2':'4', 'ap-northeast-1':'4', 'ca-central-1':'4', 'eu-central-1':'4', 'eu-west-1':'4', 'eu-west-2':'3', 'eu-west-3':'4', 'eu-north-1':'4', 'sa-east-1':'4'}
 RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{version}"
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
-accepted_resource_types = [
-    "AWS::EC2::CustomerGateway", "AWS::EC2::EIP", "AWS::EC2::Host",
-    "AWS::EC2::Instance", "AWS::EC2::InternetGateway", "AWS::EC2::NetworkAcl",
-    "AWS::EC2::NetworkInterface", "AWS::EC2::RouteTable", "AWS::EC2::SecurityGroup",
-    "AWS::EC2::Subnet", "AWS::CloudTrail::Trail", "AWS::EC2::Volume",
-    "AWS::EC2::VPC", "AWS::EC2::VPNConnection", "AWS::EC2::VPNGateway",
-    "AWS::EC2::RegisteredHAInstance", "AWS::EC2::NatGateway", "AWS::EC2::EgressOnlyInternetGateway",
-    "AWS::EC2::VPCEndpoint", "AWS::EC2::VPCEndpointService", "AWS::EC2::FlowLog",
-    "AWS::EC2::VPCPeeringConnection", "AWS::Elasticsearch::Domain", "AWS::IAM::Group",
-    "AWS::IAM::Policy", "AWS::IAM::Role", "AWS::IAM::User",
-    "AWS::ElasticLoadBalancingV2::LoadBalancer", "AWS::ACM::Certificate", "AWS::RDS::DBInstance",
-    "AWS::RDS::DBSubnetGroup", "AWS::RDS::DBSecurityGroup", "AWS::RDS::DBSnapshot",
-    "AWS::RDS::DBCluster", "AWS::RDS::DBClusterSnapshot", "AWS::RDS::EventSubscription",
-    "AWS::S3::Bucket", "AWS::S3::AccountPublicAccessBlock", "AWS::Redshift::Cluster",
-    "AWS::Redshift::ClusterSnapshot", "AWS::Redshift::ClusterParameterGroup", "AWS::Redshift::ClusterSecurityGroup",
-    "AWS::Redshift::ClusterSubnetGroup", "AWS::Redshift::EventSubscription", "AWS::SSM::ManagedInstanceInventory",
-    "AWS::CloudWatch::Alarm", "AWS::CloudFormation::Stack", "AWS::ElasticLoadBalancing::LoadBalancer",
-    "AWS::AutoScaling::AutoScalingGroup", "AWS::AutoScaling::LaunchConfiguration", "AWS::AutoScaling::ScalingPolicy",
-    "AWS::AutoScaling::ScheduledAction", "AWS::DynamoDB::Table", "AWS::CodeBuild::Project",
-    "AWS::WAF::RateBasedRule", "AWS::WAF::Rule", "AWS::WAF::RuleGroup",
-    "AWS::WAF::WebACL", "AWS::WAFRegional::RateBasedRule", "AWS::WAFRegional::Rule",
-    "AWS::WAFRegional::RuleGroup", "AWS::WAFRegional::WebACL", "AWS::CloudFront::Distribution",
-    "AWS::CloudFront::StreamingDistribution", "AWS::Lambda::Function", "AWS::ElasticBeanstalk::Application",
-    "AWS::ElasticBeanstalk::ApplicationVersion", "AWS::ElasticBeanstalk::Environment", "AWS::WAFv2::WebACL",
-    "AWS::WAFv2::RuleGroup", "AWS::WAFv2::IPSet", "AWS::WAFv2::RegexPatternSet",
-    "AWS::WAFv2::ManagedRuleSet", "AWS::XRay::EncryptionConfig", "AWS::SSM::AssociationCompliance",
-    "AWS::SSM::PatchCompliance", "AWS::Shield::Protection", "AWS::ShieldRegional::Protection",
-    "AWS::Config::ResourceCompliance", "AWS::ApiGateway::Stage", "AWS::ApiGateway::RestApi",
-    "AWS::ApiGatewayV2::Stage", "AWS::ApiGatewayV2::Api", "AWS::CodePipeline::Pipeline",
-    "AWS::ServiceCatalog::CloudFormationProvisionedProduct", "AWS::ServiceCatalog::CloudFormationProduct", "AWS::ServiceCatalog::Portfolio",
-    "AWS::SQS::Queue", "AWS::KMS::Key", "AWS::QLDB::Ledger",
-    "AWS::SNS::Topic"
+accepted_resource_types    = [
+    "AWS::ApiGateway::Stage",
+    "AWS::ApiGatewayV2::Stage",
+    "AWS::ApiGateway::RestApi",
+    "AWS::ApiGatewayV2::Api",
+    "AWS::CloudFront::Distribution",
+    "AWS::CloudFront::StreamingDistribution",
+    "AWS::CloudWatch::Alarm",
+    "AWS::DynamoDB::Table",
+    "AWS::EC2::Volume",
+    "AWS::EC2::Host",
+    "AWS::EC2::EIP",
+    "AWS::EC2::Instance",
+    "AWS::EC2::NetworkInterface",
+    "AWS::EC2::SecurityGroup",
+    "AWS::EC2::NatGateway",
+    "AWS::EC2::EgressOnlyInternetGateway",
+    "AWS::EC2::FlowLog",
+    "AWS::EC2::VPCEndpoint",
+    "AWS::EC2::VPCEndpointService",
+    "AWS::EC2::VPCPeeringConnection",
+    "AWS::Elasticsearch::Domain",
+    "AWS::QLDB::Ledger",
+    "AWS::Redshift::Cluster",
+    "AWS::Redshift::ClusterParameterGroup",
+    "AWS::Redshift::ClusterSecurityGroup",
+    "AWS::Redshift::ClusterSnapshot",
+    "AWS::Redshift::ClusterSubnetGroup",
+    "AWS::Redshift::EventSubscription",
+    "AWS::RDS::DBInstance",
+    "AWS::RDS::DBSecurityGroup",
+    "AWS::RDS::DBSnapshot",
+    "AWS::RDS::DBSubnetGroup",
+    "AWS::RDS::EventSubscription",
+    "AWS::RDS::DBCluster",
+    "AWS::RDS::DBClusterSnapshot",
+    "AWS::SNS::Topic",
+    "AWS::SQS::Queue",
+    "AWS::S3::Bucket",
+    "AWS::S3::AccountPublicAccessBlock",
+    "AWS::EC2::CustomerGateway",
+    "AWS::EC2::InternetGateway",
+    "AWS::EC2::NetworkAcl",
+    "AWS::EC2::RouteTable",
+    "AWS::EC2::Subnet",
+    "AWS::EC2::VPC",
+    "AWS::EC2::VPNConnection",
+    "AWS::EC2::VPNGateway",
+    "AWS::AutoScaling::AutoScalingGroup",
+    "AWS::AutoScaling::LaunchConfiguration",
+    "AWS::AutoScaling::ScalingPolicy",
+    "AWS::AutoScaling::ScheduledAction",
+    "AWS::ACM::Certificate",
+    "AWS::CloudFormation::Stack",
+    "AWS::CloudTrail::Trail",
+    "AWS::CodeBuild::Project",
+    "AWS::CodePipeline::Pipeline",
+    "AWS::ElasticBeanstalk::Application",
+    "AWS::ElasticBeanstalk::ApplicationVersion",
+    "AWS::ElasticBeanstalk::Environment",
+    "AWS::IAM::User",
+    "AWS::IAM::Group",
+    "AWS::IAM::Role",
+    "AWS::IAM::Policy",
+    "AWS::KMS::Key",
+    "AWS::Lambda::Function",
+    "AWS::NetworkFirewall::Firewall",
+    "AWS::NetworkFirewall::FirewallPolicy",
+    "AWS::NetworkFirewall::RuleGroup",
+    "AWS::SecretsManager::Secret",
+    "AWS::ServiceCatalog::CloudFormationProduct",
+    "AWS::ServiceCatalog::CloudFormationProvisionedProduct",
+    "AWS::ServiceCatalog::Portfolio",
+    "AWS::Shield::Protection",
+    "AWS::ShieldRegional::Protection",
+    "AWS::Shield::Protection",
+    "AWS::ShieldRegional::Protection",
+    "AWS::SSM::ManagedInstanceInventory",
+    "AWS::SSM::PatchCompliance",
+    "AWS::SSM::AssociationCompliance",
+    "AWS::SSM::FileData",
+    "AWS::WAF::RateBasedRule",
+    "AWS::WAF::Rule",
+    "AWS::WAF::WebACL",
+    "AWS::WAF::RuleGroup",
+    "AWS::WAFRegional::RateBasedRule",
+    "AWS::WAFRegional::Rule",
+    "AWS::WAFRegional::WebACL",
+    "AWS::WAFRegional::RuleGroup",
+    "AWS::WAFRegional::RateBasedRule",
+    "AWS::WAFRegional::Rule",
+    "AWS::WAFRegional::WebACL",
+    "AWS::WAFRegional::RuleGroup",
+    "AWS::WAFv2::WebACL",
+    "AWS::WAFv2::RuleGroup",
+    "AWS::WAFv2::ManagedRuleSet",
+    "AWS::XRay::EncryptionConfig",
+    "AWS::ElasticLoadBalancingV2::LoadBalancer",
+    "AWS::ElasticLoadBalancing::LoadBalancer"
 ]
 
 CONFIG_ROLE_ASSUME_ROLE_POLICY_DOCUMENT = {
@@ -2207,8 +2274,8 @@ class rdk:
 
         #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
         for name in rule_names:
-            if len(name) > 45:
-                print("Error: Found Rule with name over 45 characters: {} \n Recreate the Rule with a shorter name.".format(name))
+            if len(name) > 128:
+                print("Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(name))
                 sys.exit(1)
 
         return rule_names
@@ -2257,8 +2324,8 @@ class rdk:
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
 
         if self.args.rulename:
-            if len(self.args.rulename) > 45:
-                print("Rule names must be 45 characters or fewer.")
+            if len(self.args.rulename) > 128:
+                print("Rule names must be 128 characters or fewer.")
                 sys.exit(1)
 
         resource_type_error = ""
@@ -2330,8 +2397,8 @@ class rdk:
         #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
         if self.args.rulename:
             for name in self.args.rulename:
-                if len(name) > 45:
-                    print("Error: Found Rule with name over 45 characters: {} \n Recreate the Rule with a shorter name.".format(name))
+                if len(name) > 128:
+                    print("Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(name))
                     sys.exit(1)
 
         if self.args.functions_only and not self.args.stack_name:
@@ -2347,9 +2414,9 @@ class rdk:
         # Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
         if self.args.rulename:
             for name in self.args.rulename:
-                if len(name) > 45:
+                if len(name) > 128:
                     print(
-                        "Error: Found Rule with name over 45 characters: {} \n Recreate the Rule with a shorter name.".format(
+                        "Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(
                             name))
                     sys.exit(1)
 
