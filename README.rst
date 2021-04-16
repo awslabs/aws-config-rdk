@@ -55,6 +55,16 @@ To use the RDK, it's recommended to create a directory that will be your working
 
 Running ``init`` subsequent times will validate your AWS Config setup and re-create any S3 buckets or IAM resources that are needed.
 
+- If you have config delievery bucket already present in some other AWS account then use **--config-bucket-exists-in-another-account** as argument:::
+
+  $ rdk init --config-bucket-exists-in-another-account
+- If you have AWS Organizations/ControlTower Setup in your AWS environment then additionally, use **--control-tower** as argument:::
+
+  $ rdk init --control-tower --config-bucket-exists-in-another-account
+- If bucket for custom lambda code is already present in current account then use **--skip-code-bucket-creation** argument:::
+
+  $ rdk init --skip-code-bucket-creation
+
 Create Rules
 ------------
 In your working directory, use the ``create`` command to start creating a new custom rule.  You must specify the runtime for the lambda function that will back the Rule, and you can also specify a resource type (or comma-separated list of types) that the Rule will evaluate or a maximum frequency for a periodic rule.  This will add a new directory for the rule and populate it with several files, including a skeleton of your Lambda code.
