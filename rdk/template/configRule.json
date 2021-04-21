@@ -102,14 +102,14 @@
     "rdkRuleCodeLambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-        "FunctionName": { "Fn::Join" : [ "", [ "RDK-Rule-Function-", { "Ref": "RuleName" }]]},
+        "FunctionName": { "Fn::Join" : [ "", [ "RDK-", { "Ref": "RuleName" }]]},
         "Code": {
           "S3Bucket": { "Ref": "SourceBucket" },
           "S3Key": { "Fn::Join" : [ "", [ { "Ref": "RuleName" }, "/", { "Ref": "RuleName" }, ".zip"]]}
         },
         "Description": "Create a new AWS lambda function for rule code",
         "Handler": { "Ref": "SourceHandler"},
-        "MemorySize": "256",
+        "MemorySize": 256,
         "Role": {
           "Fn::If": [ "CreateNewLambdaRole",
               { "Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]},
