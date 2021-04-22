@@ -102,7 +102,7 @@
     "rdkRuleCodeLambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-        "FunctionName": { "Fn::Join" : [ "", [ "RDK-Rule-Function-", { "Ref": "RuleName" }]]},
+        "FunctionName": { "Fn::Join" : [ "", [ "RDK-", { "Ref": "RuleName" }]]},
         "Code": {
           "S3Bucket": { "Ref": "SourceBucket" },
           "S3Key": { "Fn::Join" : [ "", [ { "Ref": "RuleName" }, "/", { "Ref": "RuleName" }, ".zip"]]}
