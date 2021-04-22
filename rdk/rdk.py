@@ -420,6 +420,7 @@ class rdk:
         """
         self.args = get_init_parser().parse_args(self.args.command_args, self.args)
         print ("Running init!")
+        print ("testing changes")
 
         #create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
