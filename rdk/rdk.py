@@ -1046,6 +1046,10 @@ class rdk:
             if 'SourceEvents' in rule_params:
                 source_events = rule_params['SourceEvents']
 
+            rule_name_passed = "NONE"
+            if 'RuleName' in rule_params:
+                rule_name_passed = rule_params['RuleName']
+
             source_periodic = "NONE"
             if 'SourcePeriodic' in rule_params:
                 source_periodic = rule_params['SourcePeriodic']
@@ -1076,7 +1080,7 @@ class rdk:
                 my_params = [
                     {
                         'ParameterKey': 'RuleName',
-                        'ParameterValue': rule_name,
+                        'ParameterValue': rule_name_passed,
                     },
                     {
                         'ParameterKey': 'Description',
@@ -1265,7 +1269,7 @@ class rdk:
             my_params = [
                 {
                     'ParameterKey': 'RuleName',
-                    'ParameterValue': rule_name,
+                    'ParameterValue': rule_name_passed,
                 },
                 {
                     'ParameterKey': 'Description',
@@ -2274,8 +2278,8 @@ class rdk:
 
         #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
         for name in rule_names:
-            if len(name) > 128:
-                print("Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(name))
+            if len(name) > 60:
+                print("Error: Found Rule with name over 60 characters: {} \n Recreate the Rule with a shorter name.".format(name))
                 sys.exit(1)
 
         return rule_names
@@ -2324,8 +2328,8 @@ class rdk:
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
 
         if self.args.rulename:
-            if len(self.args.rulename) > 128:
-                print("Rule names must be 128 characters or fewer.")
+            if len(self.args.rulename) > 60:
+                print("Rule names must be 60 characters or fewer.")
                 sys.exit(1)
 
         resource_type_error = ""
@@ -2397,8 +2401,8 @@ class rdk:
         #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
         if self.args.rulename:
             for name in self.args.rulename:
-                if len(name) > 128:
-                    print("Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(name))
+                if len(name) > 60:
+                    print("Error: Found Rule with name over 60 characters: {} \n Recreate the Rule with a shorter name.".format(name))
                     sys.exit(1)
 
         if self.args.functions_only and not self.args.stack_name:
@@ -2414,9 +2418,9 @@ class rdk:
         # Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
         if self.args.rulename:
             for name in self.args.rulename:
-                if len(name) > 128:
+                if len(name) > 60:
                     print(
-                        "Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(
+                        "Error: Found Rule with name over 60 characters: {} \n Recreate the Rule with a shorter name.".format(
                             name))
                     sys.exit(1)
 
@@ -2538,6 +2542,7 @@ class rdk:
         #create config file and place in rule directory
         parameters = {
             'RuleName': self.args.rulename,
+            'LambdaFunctionName': self.args.rulename,
             'Description': self.args.rulename,
             'SourceRuntime': self.args.runtime,
             #'CodeBucket': code_bucket_prefix + account_id,
