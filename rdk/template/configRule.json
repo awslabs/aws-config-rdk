@@ -109,7 +109,7 @@
         },
         "Description": "Create a new AWS lambda function for rule code",
         "Handler": { "Ref": "SourceHandler"},
-        "MemorySize": "256",
+        "MemorySize": 256,
         "Role": {
           "Fn::If": [ "CreateNewLambdaRole",
               { "Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]},
