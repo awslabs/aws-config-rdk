@@ -1046,6 +1046,10 @@ class rdk:
             source_events = "NONE"
             if 'SourceEvents' in rule_params:
                 source_events = rule_params['SourceEvents']
+                
+            lambda_function_name = "NONE"
+            if 'LambdaFunctionName' in rule_params:
+                lambda_function_name = rule_params['LambdaFunctionName']
 
             rule_name_passed = "NONE"
             if 'RuleName' in rule_params:
@@ -1082,6 +1086,10 @@ class rdk:
                     {
                         'ParameterKey': 'RuleName',
                         'ParameterValue': rule_name_passed,
+                    },
+                    {
+                        'ParameterKey': 'LambdaFunctionName',
+                        'ParameterValue': lambda_function_name,
                     },
                     {
                         'ParameterKey': 'Description',
@@ -1271,6 +1279,10 @@ class rdk:
                 {
                     'ParameterKey': 'RuleName',
                     'ParameterValue': rule_name_passed,
+                },
+                {
+                        'ParameterKey': 'LambdaFunctionName',
+                        'ParameterValue': lambda_function_name,
                 },
                 {
                     'ParameterKey': 'Description',
