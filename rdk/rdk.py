@@ -282,6 +282,7 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
     parser.add_argument('--automation-document', required=False, help='[optional, beta] JSON-formatted string of the SSM Automation Document.')
+    parser.add_argument('--shorter-lambda-prefix', required=False, help='[optional] Use a shorter prefix for naming the lambda function. "RDK-" instead of "RDK-Rule-Function-"')
 
     return parser
 
@@ -1046,6 +1047,10 @@ class rdk:
             if 'SourceEvents' in rule_params:
                 source_events = rule_params['SourceEvents']
 
+            lambda_function_name = "NONE"
+            if 'LambdaFunctionName' in rule_params:
+                lambda_function_name = rule_params['LambdaFunctionName']
+
             source_periodic = "NONE"
             if 'SourcePeriodic' in rule_params:
                 source_periodic = rule_params['SourcePeriodic']
@@ -1077,6 +1082,10 @@ class rdk:
                     {
                         'ParameterKey': 'RuleName',
                         'ParameterValue': rule_name,
+                    },
+                    {
+                        'ParameterKey': 'LambdaFunctionName',
+                        'ParameterValue': lambda_function_name,
                     },
                     {
                         'ParameterKey': 'Description',
@@ -1266,6 +1275,10 @@ class rdk:
                 {
                     'ParameterKey': 'RuleName',
                     'ParameterValue': rule_name,
+                },
+                {
+                    'ParameterKey': 'LambdaFunctionName',
+                    'ParameterValue': lambda_function_name,
                 },
                 {
                     'ParameterKey': 'Description',
@@ -2341,11 +2354,9 @@ class rdk:
             print("You must specify either a resource type trigger or a maximum frequency.")
             sys.exit(1)
 
-        if self.args.input_parameters:
-            try:
-                input_params_dict = json.loads(self.args.input_parameters, strict=False)
-            except Exception as e:
-                print("Failed to parse input parameters.")
+        if is_required and self.args.shorter_lambda_prefix:
+            if self.args.shorter_lambda_prefix != "yes":
+                print("Error: Only 'yes' is supported as an argument")
                 sys.exit(1)
 
         if self.args.optional_parameters:
@@ -2534,10 +2545,15 @@ class rdk:
                 my_remediation = self.__generate_remediation_params()
             except Exception as e:
                 print("Error parsing remediation configuration.")
+        
+        my_lambda_function_name = "RDK-Rule-Function-"+self.args.rulename
+        if self.args.shorter_lambda_prefix:
+            my_lambda_function_name = "RDK-"+self.args.rulename
 
         #create config file and place in rule directory
         parameters = {
             'RuleName': self.args.rulename,
+            'LambdaFunctionName': my_lambda_function_name,
             'Description': self.args.rulename,
             'SourceRuntime': self.args.runtime,
             #'CodeBucket': code_bucket_prefix + account_id,
