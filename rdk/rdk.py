@@ -2356,7 +2356,7 @@ class rdk:
 
         if is_required and self.args.shorter_lambda_prefix:
             if self.args.shorter_lambda_prefix != "yes":
-                print("Error: Only 'yes' is supported as an argument")
+                print("Error: Only 'yes' is supported as an argument for --shorter-lambda-prefix")
                 sys.exit(1)
 
         if self.args.optional_parameters:
