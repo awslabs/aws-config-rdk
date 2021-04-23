@@ -2353,6 +2353,13 @@ class rdk:
         if is_required and not self.args.resource_types and not self.args.maximum_frequency:
             print("You must specify either a resource type trigger or a maximum frequency.")
             sys.exit(1)
+            
+        if self.args.input_parameters:
+            try:
+                input_params_dict = json.loads(self.args.input_parameters, strict=False)
+            except Exception as e:
+                print("Failed to parse input parameters.")
+                sys.exit(1)
 
         if is_required and self.args.shorter_lambda_prefix:
             if self.args.shorter_lambda_prefix != "yes":
