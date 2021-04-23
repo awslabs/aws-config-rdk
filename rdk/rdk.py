@@ -369,7 +369,7 @@ def get_sample_ci_parser():
 def get_logs_parser():
     parser = argparse.ArgumentParser(
         prog='rdk logs',
-        usage="rdk logs <rulename> [-n/--number NUMBER] [-f/--follow]"
+        usage="rdk logs <rulename> [-n/--number NUMBER] [-f/--follow]",
         description="Displays CloudWatch logs for the Lambda Function for the specified Rule."
     )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule whose logs will be displayed')
