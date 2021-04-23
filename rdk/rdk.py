@@ -282,7 +282,7 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
     parser.add_argument('--automation-document', required=False, help='[optional, beta] JSON-formatted string of the SSM Automation Document.')
-    parser.add_argument('--shorter-lambda-prefix', required=False, help='[optional] Use a shorter prefix for naming the lambda function. "RDK-" instead of "RDK-Rule-Function-"')
+    parser.add_argument('--shorter-lambda-prefix', required=False, help='[optional] Pass "yes" as an argument to use a shorter prefix for naming the lambda function. "RDK-" instead of "RDK-Rule-Function-"')
 
     return parser
 
@@ -314,6 +314,7 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument('--lambda-security-groups', required=False, help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).")
     parser.add_argument('--lambda-timeout', required=False, default=60, help="[optional] Timeout (in seconds) for the lambda function", type=str)
     parser.add_argument('--boundary-policy-arn', required=False, help="[optional] Boundary Policy ARN that will be added to \"rdkLambdaRole\".")
+    parser.add_argument('--shorter-lambda-prefix', required=False, help='[optional] Pass "yes" as an argument to use a shorter prefix for naming the lambda function. "RDK-" instead of "RDK-Rule-Function-"')
 
     if ForceArgument:
         parser.add_argument("--force", required=False, action='store_true', help='[optional] Remove selected Rules from account without prompting for confirmation.')
@@ -368,12 +369,13 @@ def get_sample_ci_parser():
 def get_logs_parser():
     parser = argparse.ArgumentParser(
         prog='rdk logs',
-        usage="rdk logs <rulename> [-n/--number NUMBER] [-f/--follow]",
+        usage="rdk logs <rulename> [-n/--number NUMBER] [-f/--follow]"
         description="Displays CloudWatch logs for the Lambda Function for the specified Rule."
     )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule whose logs will be displayed')
     parser.add_argument('-f','--follow',  action='store_true', help='[optional] Continuously poll Lambda logs and write to stdout.')
     parser.add_argument('-n','--number',  default=3, help='[optional] Number of previous logged events to display.')
+    parser.add_argument('-s','--shorter-lambda-prefix', required=False, help='[optional] Pass "yes" as an argument if you opted to use prefix "RDK-" instead of "RDK-Rule-Function-" for naming the lambda function')
     return parser
 
 def get_rulesets_parser():
@@ -399,6 +401,7 @@ def get_create_rule_template_parser():
     parser.add_argument('-t','--tag-config-rules-script', required=False, help="filename of generated script to tag config rules with the tags in each paramter.json")
     parser.add_argument('--config-role-arn', required=False, help="[optional] Assign existing iam role as config role. If omitted, \"config-role\" will be created.")
     parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
+    parser.add_argument('--shorter-lambda-prefix', required=False, help='[optional] Use a shorter prefix for naming the lambda function. "RDK-" instead of "RDK-Rule-Function-"')
     return parser
 
 class rdk:
@@ -1941,8 +1944,10 @@ class rdk:
                 del source["SourceDetails"]
             else:
                 source["Owner"] = "CUSTOM_LAMBDA"
+                if self.args.shorter_lambda_prefix:
+                    source["SourceIdentifier"] = { "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-"+self.__get_stack_name_from_rule_name(rule_name) }
                 source["SourceIdentifier"] = { "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_stack_name_from_rule_name(rule_name) }
-
+            
             properties["Source"] = source
 
             properties["InputParameters"] = {}
@@ -2205,6 +2210,8 @@ class rdk:
         return log_events
 
     def __get_log_group_name(self):
+        if self.args.shorter_lambda_prefix:
+            return '/aws/lambda/RDK-' + self.args.rulename
         return '/aws/lambda/RDK-Rule-Function-' + self.args.rulename
 
     def __get_boto_session(self):
@@ -2418,6 +2425,11 @@ class rdk:
                 if len(name) > 128:
                     print("Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(name))
                     sys.exit(1)
+        
+        if self.args.shorter_lambda_prefix:
+            if self.args.shorter_lambda_prefix != "yes":
+                print("Error: Only 'yes' is supported as an argument for --shorter-lambda-prefix")
+                sys.exit(1)
 
         if self.args.functions_only and not self.args.stack_name:
             self.args.stack_name = "RDK-Config-Rule-Functions"
@@ -2743,6 +2755,8 @@ class rdk:
         return my_lambda_arn
 
     def __get_lambda_arn_for_rule(self, rule_name, partition, region, account):
+        if self.args.shorter_lambda_prefix:
+            return "arn:{}:lambda:{}:{}:function:RDK-{}".format(partition, region, account, self.__get_stack_name_from_rule_name(rule_name))
         return "arn:{}:lambda:{}:{}:function:RDK-Rule-Function-{}".format(partition, region, account, self.__get_stack_name_from_rule_name(rule_name))
 
     def __delete_package_file(self, file):
@@ -3014,7 +3028,10 @@ class rdk:
             lambda_function = {}
             lambda_function["Type"] = "AWS::Lambda::Function"
             properties = {}
-            properties["FunctionName"] = "RDK-Rule-Function-" + stack_name
+            if self.args.shorter_lambda_prefix:
+                properties["FunctionName"] = "RDK-" + stack_name
+            else:
+                properties["FunctionName"] = "RDK-Rule-Function-" + stack_name
             properties["Code"] = {"S3Bucket": { "Ref": "SourceBucket"}, "S3Key": rule_name+"/"+rule_name+".zip"}
             properties["Description"] = "Function for AWS Config Rule " + rule_name
             properties["Handler"] = self.__get_handler(rule_name, params)
