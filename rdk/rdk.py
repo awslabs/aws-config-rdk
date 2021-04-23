@@ -401,7 +401,7 @@ def get_create_rule_template_parser():
     parser.add_argument('-t','--tag-config-rules-script', required=False, help="filename of generated script to tag config rules with the tags in each paramter.json")
     parser.add_argument('--config-role-arn', required=False, help="[optional] Assign existing iam role as config role. If omitted, \"config-role\" will be created.")
     parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
-    parser.add_argument('--shorter-lambda-prefix', required=False, help='[optional] Use a shorter prefix for naming the lambda function. "RDK-" instead of "RDK-Rule-Function-"')
+    parser.add_argument('--shorter-lambda-prefix', required=False, help='[optional] Pass "yes" as an argument to use a shorter prefix for naming the lambda function. "RDK-" instead of "RDK-Rule-Function-"')
     return parser
 
 class rdk:
