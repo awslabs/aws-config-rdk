@@ -1667,11 +1667,6 @@ class rdk:
 
         self.args.rulename = self.__clean_rule_name(self.args.rulename)
 
-        if self.args.custom_lambda_prefix:
-            if self.args.custom_lambda_prefix is None:
-                print("Error: Custom Lambda Prefix needs to be assigned with a non empty string value")
-                sys.exit(1)
-
         my_session = self.__get_boto_session()
         cw_logs = my_session.client('logs')
         log_group_name = self.__get_log_group_name()
@@ -1771,11 +1766,6 @@ class rdk:
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
-
-        if self.args.custom_lambda_prefix:
-            if self.args.custom_lambda_prefix is None:
-                print("Error: Custom Lambda Prefix needs to be assigned with a non empty string value")
-                sys.exit(1)
 
         script_for_tag=""
 
@@ -2378,11 +2368,6 @@ class rdk:
                 print("Failed to parse input parameters.")
                 sys.exit(1)
 
-        if is_required and self.args.custom_lambda_prefix:
-            if self.args.custom_lambda_prefix is None:
-                print("Error: Custom Lambda Prefix needs to be assigned with a non empty string value")
-                sys.exit(1)
-
         if self.args.optional_parameters:
             try:
                 optional_params_dict = json.loads(self.args.optional_parameters, strict=False)
@@ -2435,11 +2420,6 @@ class rdk:
                 if len(name) > 128:
                     print("Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(name))
                     sys.exit(1)
-        
-        if self.args.custom_lambda_prefix:
-            if self.args.custom_lambda_prefix is None:
-                print("Error: Custom Lambda Prefix needs to be assigned with a non empty string value")
-                sys.exit(1)
 
         if self.args.functions_only and not self.args.stack_name:
             self.args.stack_name = "RDK-Config-Rule-Functions"
