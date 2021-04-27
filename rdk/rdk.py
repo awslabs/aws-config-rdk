@@ -350,7 +350,7 @@ def get_test_parser(command):
     parser.add_argument('--test-ci-json', '-j', help="[optional] JSON for test CI for testing.")
     parser.add_argument('--test-ci-types', '-t', help="[optional] CI type to use for testing.")
     parser.add_argument('--verbose', '-v', action='store_true', help='[optional] Enable full log output')
-    parser.add_argument('-s','--rulesets', required=False, help='[p[tional] comma-delimited list of RuleSet names')
+    parser.add_argument('-s','--rulesets', required=False, help='[optional] comma-delimited list of RuleSet names')
     return parser
 
 def get_test_local_parser():
