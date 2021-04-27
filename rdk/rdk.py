@@ -2208,6 +2208,11 @@ class rdk:
         return log_events
 
     def __get_log_group_name(self):
+        params_file_path = os.path.join(os.getcwd(), rules_dir, self.args.rulename, parameter_file_name)
+        if os.path.exists(params_file_path):
+            rule_params, cfn_tags = self.__get_rule_parameters(self.args.rulename)
+            lambda_function_name = rule_params['CustomLambdaName']
+            return 'aws/lambda/' + lambda_function_name
         return '/aws/lambda/RDK-Rule-Function-' + self.args.rulename
 
     def __get_boto_session(self):
