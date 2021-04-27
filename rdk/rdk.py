@@ -999,8 +999,9 @@ class rdk:
 
                 #Push lambda code to functions.
                 for rule_name in rule_names:
-                    my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name, partition, my_session.region_name, account_id)
                     rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
+                    lambda_function_name = rule_params['CustomLambdaName']
+                    my_lambda_arn = self.__get_lambda_arn_for_rule(lambda_function_name, partition, my_session.region_name, account_id)                   
                     if 'SourceIdentifier' in rule_params:
                         print("Skipping Lambda upload for Managed Rule.")
                         continue
@@ -1042,6 +1043,14 @@ class rdk:
             rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
 
             #create CFN Parameters common for Managed and Custom
+            custom_lambda_name = "NONE"
+	        if 'CustomLambdaName' in rule_params:
+	            custom_lambda_name = rule_params['CustomLambdaName']
+	
+	        custom_rule_name = "NONE"
+	        if 'RuleName' in rule_params:
+	            custom_rule_name = rule_params['RuleName']
+            
             source_events = "NONE"
             if 'SourceEvents' in rule_params:
                 source_events = rule_params['SourceEvents']
@@ -1076,8 +1085,12 @@ class rdk:
                 my_params = [
                     {
                         'ParameterKey': 'RuleName',
-                        'ParameterValue': rule_name,
+                        'ParameterValue': custom_rule_name,
                     },
+                    {
+	                    'ParameterKey': 'CustomLambdaName',
+	                    'ParameterValue': custom_lambda_name,
+	                },
                     {
                         'ParameterKey': 'Description',
                         'ParameterValue': rule_description,
@@ -1265,8 +1278,12 @@ class rdk:
             my_params = [
                 {
                     'ParameterKey': 'RuleName',
-                    'ParameterValue': rule_name,
+                    'ParameterValue': custom_rule_name,
                 },
+                {
+	                'ParameterKey': 'CustomLambdaName',
+	                'ParameterValue': custom_lambda_name,
+	            },
                 {
                     'ParameterKey': 'Description',
                     'ParameterValue': rule_description,
@@ -1449,8 +1466,6 @@ class rdk:
         return 0
 
     def export(self):
-
-        self.__parse_export_args()
 
         # get the rule names
         rule_names = self.__get_rule_list_for_command("export")
@@ -1839,6 +1854,7 @@ class rdk:
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             params, tags = self.__get_rule_parameters(rule_name)
+            lambda_function_name = params['CustomLambdaName']
             input_params = json.loads(params["InputParameters"])
             for input_param in input_params:
                 cfn_param = {}
@@ -1928,7 +1944,7 @@ class rdk:
                 del source["SourceDetails"]
             else:
                 source["Owner"] = "CUSTOM_LAMBDA"
-                source["SourceIdentifier"] = { "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_stack_name_from_rule_name(rule_name) }
+                source["SourceIdentifier"] = { "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${LambdaAccountId}:function:" + lambda_function_name }
 
             properties["Source"] = source
 
@@ -2272,12 +2288,6 @@ class rdk:
             print("No matching rule directories found.")
             sys.exit(1)
 
-        #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
-        for name in rule_names:
-            if len(name) > 128:
-                print("Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(name))
-                sys.exit(1)
-
         return rule_names
 
     def __get_rule_parameters(self, rule_name):
@@ -2322,11 +2332,6 @@ class rdk:
 
     def __parse_rule_args(self, is_required):
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
-
-        if self.args.rulename:
-            if len(self.args.rulename) > 128:
-                print("Rule names must be 128 characters or fewer.")
-                sys.exit(1)
 
         resource_type_error = ""
         if self.args.resource_types:
@@ -2394,31 +2399,11 @@ class rdk:
             print("Specify EITHER an RDK Lib version to use the official release OR a specific Layer ARN to use a custom implementation.")
             sys.exit(1)
 
-        #Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
-        if self.args.rulename:
-            for name in self.args.rulename:
-                if len(name) > 128:
-                    print("Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(name))
-                    sys.exit(1)
-
         if self.args.functions_only and not self.args.stack_name:
             self.args.stack_name = "RDK-Config-Rule-Functions"
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(',')
-
-    def __parse_export_args(self, ForceArgument=False):
-
-        self.args = get_export_parser(ForceArgument).parse_args(self.args.command_args, self.args)
-
-        # Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
-        if self.args.rulename:
-            for name in self.args.rulename:
-                if len(name) > 128:
-                    print(
-                        "Error: Found Rule with name over 128 characters: {} \n Recreate the Rule with a shorter name.".format(
-                            name))
-                    sys.exit(1)
 
     def __package_function_code(self, rule_name, params):
         if params['SourceRuntime'] == "java8":
@@ -2538,6 +2523,7 @@ class rdk:
         #create config file and place in rule directory
         parameters = {
             'RuleName': self.args.rulename,
+            'CustomLambdaName': 'RDK-Rule-Function-'+self.args.rulename,
             'Description': self.args.rulename,
             'SourceRuntime': self.args.runtime,
             #'CodeBucket': code_bucket_prefix + account_id,
@@ -2719,8 +2705,8 @@ class rdk:
 
         return my_lambda_arn
 
-    def __get_lambda_arn_for_rule(self, rule_name, partition, region, account):
-        return "arn:{}:lambda:{}:{}:function:RDK-Rule-Function-{}".format(partition, region, account, self.__get_stack_name_from_rule_name(rule_name))
+    def __get_lambda_arn_for_rule(self, lambda_function_name, partition, region, account):
+        return "arn:{}:lambda:{}:{}:function:{}".format(partition, region, account, lambda_function_name)
 
     def __delete_package_file(self, file):
         try:
@@ -2981,8 +2967,8 @@ class rdk:
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             alphanum_rule_name = self.__get_alphanumeric_rule_name(rule_name)
-            stack_name = self.__get_stack_name_from_rule_name(rule_name)
             params, tags = self.__get_rule_parameters(rule_name)
+            lambda_function_name = params['CustomLambdaName']
 
             if 'SourceIdentifier' in params:
                 print("Skipping Managed Rule.")
@@ -2991,11 +2977,11 @@ class rdk:
             lambda_function = {}
             lambda_function["Type"] = "AWS::Lambda::Function"
             properties = {}
-            properties["FunctionName"] = "RDK-Rule-Function-" + stack_name
+            properties["FunctionName"] = lambda_function_name
             properties["Code"] = {"S3Bucket": { "Ref": "SourceBucket"}, "S3Key": rule_name+"/"+rule_name+".zip"}
             properties["Description"] = "Function for AWS Config Rule " + rule_name
             properties["Handler"] = self.__get_handler(rule_name, params)
-            properties["MemorySize"] = "256"
+            properties["MemorySize"] = 256
             if self.args.lambda_role_arn:
                 properties["Role"] = self.args.lambda_role_arn
             else:
