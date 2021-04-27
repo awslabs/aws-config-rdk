@@ -2212,7 +2212,7 @@ class rdk:
         if os.path.exists(params_file_path):
             rule_params, cfn_tags = self.__get_rule_parameters(self.args.rulename)
             lambda_function_name = rule_params['CustomLambdaName']
-            return 'aws/lambda/' + lambda_function_name
+            return '/aws/lambda/' + lambda_function_name
         return '/aws/lambda/RDK-Rule-Function-' + self.args.rulename
 
     def __get_boto_session(self):
