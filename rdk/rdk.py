@@ -1044,12 +1044,12 @@ class rdk:
 
             #create CFN Parameters common for Managed and Custom
             custom_lambda_name = "NONE"
-	        if 'CustomLambdaName' in rule_params:
-	            custom_lambda_name = rule_params['CustomLambdaName']
-	
-	        custom_rule_name = "NONE"
-	        if 'RuleName' in rule_params:
-	            custom_rule_name = rule_params['RuleName']
+            if 'CustomLambdaName' in rule_params:
+                custom_lambda_name = rule_params['CustomLambdaName']
+                
+            custom_rule_name = "NONE"
+            if 'RuleName' in rule_params:
+                custom_rule_name = rule_params['RuleName']
             
             source_events = "NONE"
             if 'SourceEvents' in rule_params:
@@ -1088,9 +1088,9 @@ class rdk:
                         'ParameterValue': custom_rule_name,
                     },
                     {
-	                    'ParameterKey': 'CustomLambdaName',
-	                    'ParameterValue': custom_lambda_name,
-	                },
+                        'ParameterKey': 'CustomLambdaName',
+                        'ParameterValue': custom_lambda_name,
+                    },
                     {
                         'ParameterKey': 'Description',
                         'ParameterValue': rule_description,
@@ -1281,9 +1281,9 @@ class rdk:
                     'ParameterValue': custom_rule_name,
                 },
                 {
-	                'ParameterKey': 'CustomLambdaName',
-	                'ParameterValue': custom_lambda_name,
-	            },
+                    'ParameterKey': 'CustomLambdaName',
+                    'ParameterValue': custom_lambda_name,
+                },
                 {
                     'ParameterKey': 'Description',
                     'ParameterValue': rule_description,
