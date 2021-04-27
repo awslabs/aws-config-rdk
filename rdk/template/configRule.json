@@ -7,13 +7,13 @@
       "Description": "Name of the Rule",
       "Type": "String",
       "MinLength": "1",
-      "MaxLength": "255"
+      "MaxLength": "128"
     },
     "LambdaFunctionName":{
       "Description": "Name of the Lambda Function",
       "Type": "String",
       "MinLength": "1",
-      "MaxLength": "255"
+      "MaxLength": "64"
     },
     "Description": {
       "Description": "Description of the Rule",
@@ -111,7 +111,7 @@
         "FunctionName": { "Ref": "LambdaFunctionName"},
         "Code": {
           "S3Bucket": { "Ref": "SourceBucket" },
-          "S3Key": { "Fn::Join" : [ "", [ { "Ref": "RuleName" }, "/", { "Ref": "RuleName" }, ".zip"]]}
+          "S3Key": { "Ref": "SourcePath" }
         },
         "Description": "Create a new AWS lambda function for rule code",
         "Handler": { "Ref": "SourceHandler"},
