@@ -67,7 +67,7 @@ resource "aws_s3_bucket_object" "rule_code" {
 
 resource "aws_lambda_function" "rdk_rule" {
 
-  function_name               = format("RDK-Rule-Function-%s", var.rule_name)
+  function_name               = var.rule_lambda_name
   description                 = "Create a new AWS lambda function for rule code"
   runtime                     = var.source_runtime
   handler                     = var.source_handler

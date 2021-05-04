@@ -3,6 +3,10 @@ variable "rule_name" {
 	description = "Rule name to export."
 }
 
+variable "rule_lambda_name" {
+	type = string
+	description = "Lambda function name for the Config Rule to export."
+}
 
 variable "source_runtime" {
 	type = string

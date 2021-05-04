@@ -266,6 +266,7 @@ def get_rule_parser(is_required, command):
     runtime_group = parser.add_mutually_exclusive_group()
     runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.8', 'dotnetcore1.0', 'dotnetcore2.0'])
     runtime_group.add_argument('--source-identifier', required=False, help="[optional] Used only for creating Managed Rules.")
+    parser.add_argument('-l','--custom-lambda-name', required=False, help='[optional] Provide custom lambda name')
     parser.set_defaults(runtime='python3.6-lib')
     parser.add_argument('-r','--resource-types', required=False, help='[optional] Resource types that will trigger event-based Rule evaluation')
     parser.add_argument('-m','--maximum-frequency', required=False, help='[optional] Maximum execution frequency for scheduled Rules', choices=['One_Hour','Three_Hours','Six_Hours','Twelve_Hours','TwentyFour_Hours'])
@@ -350,7 +351,7 @@ def get_test_parser(command):
     parser.add_argument('--test-ci-json', '-j', help="[optional] JSON for test CI for testing.")
     parser.add_argument('--test-ci-types', '-t', help="[optional] CI type to use for testing.")
     parser.add_argument('--verbose', '-v', action='store_true', help='[optional] Enable full log output')
-    parser.add_argument('-s','--rulesets', required=False, help='[p[tional] comma-delimited list of RuleSet names')
+    parser.add_argument('-s','--rulesets', required=False, help='[optional] comma-delimited list of RuleSet names')
     return parser
 
 def get_test_local_parser():
@@ -804,6 +805,9 @@ class rdk:
         #Get existing parameters
         old_params, tags = self.__get_rule_parameters(self.args.rulename)
 
+        if not self.args.custom_lambda_name and 'CustomLambdaName' in old_params:
+            self.args.custom_lambda_name = old_params['CustomLambdaName']
+
         if not self.args.resource_types and 'SourceEvents' in old_params:
             self.args.resource_types = old_params['SourceEvents']
 
@@ -999,8 +1003,8 @@ class rdk:
 
                 #Push lambda code to functions.
                 for rule_name in rule_names:
-                    my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name, partition, my_session.region_name, account_id)
                     rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
+                    my_lambda_arn = self.__get_lambda_arn_for_rule(rule_name, partition, my_session.region_name, account_id, rule_params)
                     if 'SourceIdentifier' in rule_params:
                         print("Skipping Lambda upload for Managed Rule.")
                         continue
@@ -1077,6 +1081,10 @@ class rdk:
                     {
                         'ParameterKey': 'RuleName',
                         'ParameterValue': rule_name,
+                    },
+                    {
+                        'ParameterKey': 'RuleLambdaName',
+                        'ParameterValue': self.__get_lambda_name(rule_name, rule_params),
                     },
                     {
                         'ParameterKey': 'Description',
@@ -1266,6 +1274,10 @@ class rdk:
                 {
                     'ParameterKey': 'RuleName',
                     'ParameterValue': rule_name,
+                },
+                {
+                    'ParameterKey': 'RuleLambdaName',
+                    'ParameterValue': self.__get_lambda_name(rule_name, rule_params),
                 },
                 {
                     'ParameterKey': 'Description',
@@ -1525,6 +1537,7 @@ class rdk:
 
             my_params = {
                 "rule_name": rule_name,
+                "rule_lambda_name": self.__get_lambda_name(rule_name, rule_params),
                 "source_runtime": self.__get_runtime_string(rule_params),
                 "source_events": source_events,
                 "source_periodic": source_periodic,
@@ -1616,8 +1629,8 @@ class rdk:
                 test_event['ruleParameters'] = json.dumps(my_parameters)
 
                 #Get the Lambda function associated with the Rule
-                my_lambda_name = self.__get_stack_name_from_rule_name(rule_name)
-                my_lambda_arn = self.__get_lambda_arn_for_stack(my_lambda_name)
+                stack_name = self.__get_stack_name_from_rule_name(rule_name)
+                my_lambda_arn = self.__get_lambda_arn_for_stack(stack_name)
 
                 #Call Lambda function with test event.
                 result = my_lambda_client.invoke(
@@ -1928,7 +1941,7 @@ class rdk:
                 del source["SourceDetails"]
             else:
                 source["Owner"] = "CUSTOM_LAMBDA"
-                source["SourceIdentifier"] = { "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${LambdaAccountId}:function:RDK-Rule-Function-"+self.__get_stack_name_from_rule_name(rule_name) }
+                source["SourceIdentifier"] = { "Fn::Sub": "arn:${AWS::Partition}:lambda:${AWS::Region}:${LambdaAccountId}:function:" + self.__get_lambda_name(rule_name, params) }
 
             properties["Source"] = source
 
@@ -2192,7 +2205,9 @@ class rdk:
         return log_events
 
     def __get_log_group_name(self):
-        return '/aws/lambda/RDK-Rule-Function-' + self.args.rulename
+        params, cfn_tags = self.__get_rule_parameters(self.args.rulename)
+
+        return '/aws/lambda/' + self.__get_lambda_name(self.args.rulename, params)
 
     def __get_boto_session(self):
         session_args = {}
@@ -2546,6 +2561,9 @@ class rdk:
             'OptionalParameters': json.dumps(my_optional_params)
         }
 
+        if self.args.custom_lambda_name:
+            parameters['CustomLambdaName'] = self.args.custom_lambda_name
+
         tags = json.dumps(my_tags)
 
         if self.args.resource_types:
@@ -2719,8 +2737,22 @@ class rdk:
 
         return my_lambda_arn
 
-    def __get_lambda_arn_for_rule(self, rule_name, partition, region, account):
-        return "arn:{}:lambda:{}:{}:function:RDK-Rule-Function-{}".format(partition, region, account, self.__get_stack_name_from_rule_name(rule_name))
+    def __get_lambda_name(self, rule_name, params):
+        if "CustomLambdaName" in params:
+            lambda_name = params['CustomLambdaName']
+            if len(lambda_name) > 64:
+                print("Error: Found Rule's Lambda function with name over 64 characters: {} \n Recreate the lambda name with a shorter name.".format(lambda_name))
+            sys.exit(1)
+            return lambda_name
+        else:
+            lambda_name = "RDK-Rule-Function-" + self.__get_stack_name_from_rule_name(rule_name)
+            if len(lambda_name) > 64:
+                print("Error: Found Rule's Lambda function with name over 64 characters: {} \n Recreate the rule with a shorter name or with CustomLambdaName attribute in parameter.json. If you are using 'rdk create', you can add '--custom-lambda-name <your lambda name>' to create your RDK rules".format(lambda_name))
+            sys.exit(1)
+            return lambda_name
+
+    def __get_lambda_arn_for_rule(self, rule_name, partition, region, account, params):
+        return "arn:{}:lambda:{}:{}:function:{}".format(partition, region, account, self.__get_lambda_name(rule_name, params))
 
     def __delete_package_file(self, file):
         try:
@@ -2981,7 +3013,6 @@ class rdk:
         rule_names = self.__get_rule_list_for_command()
         for rule_name in rule_names:
             alphanum_rule_name = self.__get_alphanumeric_rule_name(rule_name)
-            stack_name = self.__get_stack_name_from_rule_name(rule_name)
             params, tags = self.__get_rule_parameters(rule_name)
 
             if 'SourceIdentifier' in params:
@@ -2991,7 +3022,7 @@ class rdk:
             lambda_function = {}
             lambda_function["Type"] = "AWS::Lambda::Function"
             properties = {}
-            properties["FunctionName"] = "RDK-Rule-Function-" + stack_name
+            properties["FunctionName"] = self.__get_lambda_name(rule_name, params)
             properties["Code"] = {"S3Bucket": { "Ref": "SourceBucket"}, "S3Key": rule_name+"/"+rule_name+".zip"}
             properties["Description"] = "Function for AWS Config Rule " + rule_name
             properties["Handler"] = self.__get_handler(rule_name, params)
