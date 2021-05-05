@@ -2742,13 +2742,13 @@ class rdk:
             lambda_name = params['CustomLambdaName']
             if len(lambda_name) > 64:
                 print("Error: Found Rule's Lambda function with name over 64 characters: {} \n Recreate the lambda name with a shorter name.".format(lambda_name))
-            sys.exit(1)
+                sys.exit(1)
             return lambda_name
         else:
             lambda_name = "RDK-Rule-Function-" + self.__get_stack_name_from_rule_name(rule_name)
             if len(lambda_name) > 64:
                 print("Error: Found Rule's Lambda function with name over 64 characters: {} \n Recreate the rule with a shorter name or with CustomLambdaName attribute in parameter.json. If you are using 'rdk create', you can add '--custom-lambda-name <your lambda name>' to create your RDK rules".format(lambda_name))
-            sys.exit(1)
+                sys.exit(1)
             return lambda_name
 
     def __get_lambda_arn_for_rule(self, rule_name, partition, region, account, params):
