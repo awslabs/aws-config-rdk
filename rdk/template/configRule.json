@@ -7,13 +7,19 @@
       "Description": "Name of the Rule",
       "Type": "String",
       "MinLength": "1",
-      "MaxLength": "255"
+      "MaxLength": "128"
     },
     "Description": {
       "Description": "Description of the Rule",
       "Type": "String",
       "MinLength": "1",
       "MaxLength": "255"
+    },
+    "RuleLambdaName": {
+      "Description": "Name of the Rule's Lambda function",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "64"
     },
     "LambdaRoleArn": {
       "Description": "ARN of the existing IAM role that you want to attach to the lambda function.",
@@ -102,7 +108,7 @@
     "rdkRuleCodeLambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-        "FunctionName": { "Fn::Join" : [ "", [ "RDK-Rule-Function-", { "Ref": "RuleName" }]]},
+        "FunctionName": { "Ref": "RuleLambdaName" },
         "Code": {
           "S3Bucket": { "Ref": "SourceBucket" },
           "S3Key": { "Fn::Join" : [ "", [ { "Ref": "RuleName" }, "/", { "Ref": "RuleName" }, ".zip"]]}
