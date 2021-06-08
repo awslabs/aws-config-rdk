@@ -511,7 +511,7 @@ class rdk:
 
             if not role_exists:
                 print('Creating IAM role config-role')
-                if partition == "aws":
+                if partition in ["aws","aws-us-gov"]:
                     partition_url = ".com"
                 elif partition == "aws-cn":
                     partition_url = ".com.cn"
