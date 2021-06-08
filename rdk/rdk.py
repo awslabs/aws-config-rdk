@@ -511,10 +511,12 @@ class rdk:
 
             if not role_exists:
                 print('Creating IAM role config-role')
-                partition_url = partition.replace("aws",".com")
-                partition_url = partition_url.replace("cn",".cn")
-                assume_role_policy_template = json.loads(open(os.path.join(path.dirname(__file__), 'template', assume_role_policy_file), 'r').read())
-                assume_role_policy = assume_role_policy_template.replace('PARTITIONURL',partition_url)
+                if partition == "aws":
+                    partition_url = ".com"
+                elif partition == "aws-cn":
+                    partition_url = ".com.cn"
+                assume_role_policy_template = open(os.path.join(path.dirname(__file__), 'template', assume_role_policy_file), 'r').read()
+                assume_role_policy = json.loads(assume_role_policy_template.replace('PARTITIONURL',partition_url))
                 assume_role_policy['Statement'].append({
                     "Effect": "Allow",
                     "Principal": {
