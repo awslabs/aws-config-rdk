@@ -36,6 +36,7 @@ phases:
       - sleep 30
       - rdk logs LP3_TestRule_P3
       - yes | rdk undeploy -a
+      - regional_test.sh
   post_build:
     commands:
       - echo Build completed on `date`
