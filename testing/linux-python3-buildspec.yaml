@@ -13,7 +13,7 @@ phases:
   build:
     commands:
 
-      - python3 regional_test.py
+      - python3 testing/regional_test.py
   post_build:
     commands:
       - echo Build completed on `date`
