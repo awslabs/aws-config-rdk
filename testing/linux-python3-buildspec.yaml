@@ -10,6 +10,7 @@ phases:
     commands:
       - echo Starting tests
       - rdk init
+      - python3 testing/partition_test.py
   build:
     commands:
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
@@ -36,7 +37,6 @@ phases:
       - sleep 30
       - rdk logs LP3_TestRule_P3
       - yes | rdk undeploy -a
-      - python3 testing/partition_test.py
   post_build:
     commands:
       - echo Build completed on `date`
