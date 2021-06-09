@@ -8,7 +8,12 @@ testing_regions = {
     "aws-us-gov": ["us-gov-west-1", "us-gov-east-1"],
 }
 sts_client = boto3.client("sts")
-partition = sts_client.get_caller_identity()["Arn"].split(":")[1]
+arn_array = sts_client.get_caller_identity()["Arn"].split(":")
+partition = arn_array[1]
+region = arn_array[3]
+
+if(region not in testing_regions[partition]):
+    testing_regions[partition].append(region)
 
 subprocesses = [
     subprocess.Popen(["rdk", "-r", region, "init"])

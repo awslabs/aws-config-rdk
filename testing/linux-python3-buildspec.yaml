@@ -9,7 +9,6 @@ phases:
   pre_build:
     commands:
       - echo Starting tests
-      - rdk init
       - python3 testing/partition_test.py
   build:
     commands:
