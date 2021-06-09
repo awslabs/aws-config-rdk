@@ -12,8 +12,31 @@ phases:
       - rdk init
   build:
     commands:
-
-      - python3 testing/regional_test.py
+      - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_JS --runtime nodejs4.3 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_CREC --runtime python3.8 --resource-types AWS::Config::ResourceCompliance
+      - rdk create LP3_TestRule_ECSTD --runtime python3.7 --resource-types AWS::ECS::TaskDefinition
+      - rdk create LP3_TestRule_ECSS --runtime python3.6 --resource-types AWS::ECS::Service
+      - rdk create LP3_TestRule_EFSFS --runtime python2.7 --resource-types AWS::EFS::FileSystem
+      - rdk modify LP3_TestRule_P3 --input-parameters '{"TestParameter":"TestValue"}'
+      - rdk create LP3_TestRule_P3_Periodic --runtime python3.6 --maximum-frequency One_Hour
+      - rdk create LP3_TestRule_P36lib_Periodic --runtime python3.6-lib --maximum-frequency One_Hour
+      - rdk create LP3_TestRule_P37_Periodic --runtime python3.7 --maximum-frequency One_Hour
+      - rdk create LP3_TestRule_P38_Periodic --runtime python3.8 --maximum-frequency One_Hour
+      - rdk test-local --all
+      - rdk deploy --all
+      - yes | rdk undeploy LP3_TestRule_P3
+      - yes | rdk undeploy LP3_TestRule_P37
+      - yes | rdk undeploy LP3_TestRule_P37_Periodic
+      - yes | rdk undeploy LP3_TestRule_P38
+      - yes | rdk undeploy LP3_TestRule_P38_Periodic
+      - sleep 30
+      - rdk logs LP3_TestRule_P3
+      - yes | rdk undeploy -a
+      - python3 testing/partition_test.py
   post_build:
     commands:
       - echo Build completed on `date`
