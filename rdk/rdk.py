@@ -2348,7 +2348,7 @@ class rdk:
                 if not self.args.skip_supported_resource_check:
                     sys.exit(1)
                 else:
-                    print('Skip-Resource-Check Flag set (--skip-resource-check), ignoring missing resource type error.')
+                    print('Skip-Supported-Resource-Check Flag set (--skip-supported-resource-check), ignoring missing resource type error.')
 
         if is_required and not self.args.resource_types and not self.args.maximum_frequency:
             print("You must specify either a resource type trigger or a maximum frequency.")

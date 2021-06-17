@@ -205,6 +205,33 @@ This command generates a CloudFormation template that defines the AWS Config rul
   CloudFormation template written to remote-rule-template.json
 
 
+Disable the supported resource types check
+------------------------------------------
+It is now possible to define a resource type that is not yet supported by rdk. To disable the supported resource check use the optional flag '--skip-supported-resource-check' during the create command.
+
+::
+
+  $ rdk create MyRule --runtime python3.8 --resource-types AWS::New::ResourceType --skip-supported-resource-check
+  'AWS::New::ResourceType' not found in list of accepted resource types.
+  Skip-Supported-Resource-Check Flag set (--skip-supported-resource-check), ignoring missing resource type error.
+  Running create!
+  Local Rule files created.
+  
+Custom Lambda Function Name
+---------------------------
+As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Rule-Function-<RULE_NAME>' it is possible to customize the name for lambda function to any 64 characters string as per lambda naming standrds using the optional '--custom-lambda-name' flag while performing rdk create. This opens up new features like : 
+
+1. Longer config rule name.
+2. Custom lambda function naming as per personal or enterprise standards.
+
+::
+
+  $ rdk create MyLongerRuleName --runtime python3.8 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
+  Running create!
+  Local Rule files created.
+  
+The above example would create files with config rule name as 'MyLongerRuleName' and lambda function with the name 'custom-prefix-for-MyLongerRuleName' instead of 'RDK-Rule-Function-MyLongerRuleName'
+
 RuleSets
 --------
 New as of version 0.3.11, it is possible to add RuleSet tags to rules that can be used to deploy and test groups of rules together.  Rules can belong to multiple RuleSets, and RuleSet membership is stored only in the parameters.json metadata.  The `deploy`, `create-rule-template`, and `test-local` commands are RuleSet-aware such that a RuleSet can be passed in as the target instead of `--all` or a specific named Rule.
