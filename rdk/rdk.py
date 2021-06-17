@@ -257,7 +257,7 @@ def get_rule_parser(is_required, command):
     )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
     runtime_group = parser.add_mutually_exclusive_group()
-    runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib', 'dotnetcore1.0', 'dotnetcore2.0'])
+    runtime_group.add_argument('-R', '--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib', 'dotnetcore1.0', 'dotnetcore2.0'], metavar="")
     runtime_group.add_argument('--source-identifier', required=False, help="[optional] Used only for creating Managed Rules.")
     parser.add_argument('-l','--custom-lambda-name', required=False, help='[optional] Provide custom lambda name')
     parser.set_defaults(runtime='python3.6-lib')
@@ -2332,10 +2332,6 @@ class rdk:
 
     def __parse_rule_args(self, is_required):
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
-
-        if self.args.runtime == "python2.7":
-            print("Python 2.7 is no longer supported. Please migrate to Python 3.6+.")
-            sys.exit(1)
 
         if self.args.rulename:
             if len(self.args.rulename) > 128:
