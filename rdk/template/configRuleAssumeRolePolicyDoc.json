@@ -6,7 +6,7 @@
         "Effect": "Allow",
         "Principal": {
           "Service": [
-            "config.amazonawsPARTITIONURL"
+            "config.amazonaws${PARTITIONURL}"
           ]
         },
         "Action": "sts:AssumeRole"        }    ]
