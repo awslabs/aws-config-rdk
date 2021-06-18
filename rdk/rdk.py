@@ -1,30 +1,29 @@
-#    Copyright 2017-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#    Copyright 2017-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
 #
 #        http://aws.amazon.com/apache2.0/
 #
 #    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-from __future__ import print_function
-from builtins import input
-from past.builtins import basestring
-import os
-from os import path
-import sys
-import shutil
-import tempfile
-import boto3
-import json
-import time
 import argparse
-import botocore
-from botocore.exceptions import ClientError
-from datetime import datetime
 import base64
 import fileinput
-import subprocess
 import fnmatch
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
 import unittest
+from builtins import input
+from datetime import datetime
+from os import path
+
+import boto3
+import botocore
+from botocore.exceptions import ClientError
 
 #sphinx-argparse is a delight.
 try:
@@ -32,12 +31,6 @@ try:
 except ImportError:
     MY_VERSION = "<version>"
     pass
-
-try:
-    from unittest.mock import MagicMock, patch, ANY
-except ImportError:
-    import mock
-    from mock import MagicMock, patch, ANY
 
 rdk_dir = '.rdk'
 rules_dir = ''
@@ -55,11 +48,11 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
-RDKLIB_LAYER_VERSION={'ap-southeast-1':'26', 'ap-south-1':'4', 'us-east-2':'4', 'us-east-1':'4', 'us-west-1':'3', 'us-west-2':'3', 'ap-northeast-2':'4', 'ap-southeast-2':'4', 'ap-northeast-1':'4', 'ca-central-1':'4', 'eu-central-1':'4', 'eu-west-1':'4', 'eu-west-2':'3', 'eu-west-3':'4', 'eu-north-1':'4', 'sa-east-1':'4'}
+RDKLIB_LAYER_VERSION={'ap-southeast-1':'26', 'ap-south-1':'4', 'us-east-2':'4', 'us-east-1':'4', 'us-west-1':'3', 'us-west-2':'3', 'ap-northeast-2':'4', 'ap-southeast-2':'4', 'ap-northeast-1':'4', 'ca-central-1':'4', 'eu-central-1':'4', 'eu-west-1':'4', 'eu-west-2':'3', 'eu-west-3':'4', 'eu-north-1':'4', 'sa-east-1':'4', 'cn-north-1': '1', 'cn-northwest-1': '1'}
 RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{version}"
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
-accepted_resource_types    = [
+accepted_resource_types = [
     "AWS::ApiGateway::Stage",
     "AWS::ApiGatewayV2::Stage",
     "AWS::ApiGateway::RestApi",
@@ -80,6 +73,14 @@ accepted_resource_types    = [
     "AWS::EC2::VPCEndpoint",
     "AWS::EC2::VPCEndpointService",
     "AWS::EC2::VPCPeeringConnection",
+    "AWS::ECR::Repository",
+    "AWS::ECS::Cluster",
+    "AWS::ECS::TaskDefinition",
+    "AWS::ECS::Service",
+    "AWS::ECS::TaskSet",
+    "AWS::EFS::FileSystem",
+    "AWS::EFS::AccessPoint",
+    "AWS::EKS::Cluster",
     "AWS::Elasticsearch::Domain",
     "AWS::QLDB::Ledger",
     "AWS::Redshift::Cluster",
@@ -116,6 +117,8 @@ accepted_resource_types    = [
     "AWS::CloudTrail::Trail",
     "AWS::CodeBuild::Project",
     "AWS::CodePipeline::Pipeline",
+    "AWS::Config::ResourceCompliance",
+    "AWS::Config::ConformancePackCompliance",
     "AWS::ElasticBeanstalk::Application",
     "AWS::ElasticBeanstalk::ApplicationVersion",
     "AWS::ElasticBeanstalk::Environment",
@@ -264,7 +267,7 @@ def get_rule_parser(is_required, command):
     )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
     runtime_group = parser.add_mutually_exclusive_group()
-    runtime_group.add_argument('-R','--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.8', 'dotnetcore1.0', 'dotnetcore2.0'])
+    runtime_group.add_argument('-R', '--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib', 'dotnetcore1.0', 'dotnetcore2.0'], metavar="")
     runtime_group.add_argument('--source-identifier', required=False, help="[optional] Used only for creating Managed Rules.")
     parser.add_argument('-l','--custom-lambda-name', required=False, help='[optional] Provide custom lambda name')
     parser.set_defaults(runtime='python3.6-lib')
@@ -283,6 +286,7 @@ def get_rule_parser(is_required, command):
     parser.add_argument('--remediation-error-rate-percent', required=False, help='[optional] Error rate that will mark the batch as "failed" for SSM remediation execution.')
     parser.add_argument('--remediation-parameters', required=False, help='[optional] JSON-formatted string of additional parameters required by the SSM document.')
     parser.add_argument('--automation-document', required=False, help='[optional, beta] JSON-formatted string of the SSM Automation Document.')
+    parser.add_argument('--skip-supported-resource-check', required=False, action='store_true', help='[optional] Skip the check for whether the resource type is supported or not.')
 
     return parser
 
@@ -338,7 +342,7 @@ def get_export_parser(ForceArgument=False, Command="export"):
                         help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.")
     parser.add_argument('-v', '--version', required=True, help='Terraform version', choices=['0.11', '0.12'])
     parser.add_argument('-f', '--format', required=True, help='Export Format', choices=['terraform'])
-    
+
     return parser
 
 def get_test_parser(command):
@@ -396,7 +400,7 @@ def get_create_rule_template_parser():
     parser.add_argument('--all','-a', action='store_true', help="All rules in the working directory will be included in the generated CloudFormation template.")
     parser.add_argument('-s','--rulesets', required=False, help='comma-delimited RuleSet names to be included in the generated template.')
     parser.add_argument('-o','--output-file', required=True, default="RDK-Config-Rules", help="filename of generated CloudFormation template")
-    parser.add_argument('-t','--tag-config-rules-script', required=False, help="filename of generated script to tag config rules with the tags in each paramter.json")
+    parser.add_argument('-t','--tag-config-rules-script', required=False, help="filename of generated script to tag config rules with the tags in each parameter.json")
     parser.add_argument('--config-role-arn', required=False, help="[optional] Assign existing iam role as config role. If omitted, \"config-role\" will be created.")
     parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
     return parser
@@ -444,7 +448,7 @@ class rdk:
             config_bucket_exists = True
 
         config_bucket_name = config_bucket_prefix + "-" + account_id
-        
+
         control_tower = False
         if self.args.control_tower:
             print("This account is part of an AWS Control Tower managed organization. Playing nicely with it")
@@ -501,7 +505,12 @@ class rdk:
 
             if not role_exists:
                 print('Creating IAM role config-role')
-                assume_role_policy = json.loads(open(os.path.join(path.dirname(__file__), 'template', assume_role_policy_file), 'r').read())
+                if partition in ["aws","aws-us-gov"]:
+                    partition_url = ".com"
+                elif partition == "aws-cn":
+                    partition_url = ".com.cn"
+                assume_role_policy_template = open(os.path.join(path.dirname(__file__), 'template', assume_role_policy_file), 'r').read()
+                assume_role_policy = json.loads(assume_role_policy_template.replace('${PARTITIONURL}',partition_url))
                 assume_role_policy['Statement'].append({
                     "Effect": "Allow",
                     "Principal": {
@@ -515,7 +524,7 @@ class rdk:
             my_iam.attach_role_policy(RoleName=config_role_name, PolicyArn='arn:' + partition + ':iam::aws:policy/service-role/AWSConfigRole')
             my_iam.attach_role_policy(RoleName=config_role_name, PolicyArn='arn:' + partition + ':iam::aws:policy/ReadOnlyAccess')
             policy_template = open(os.path.join(path.dirname(__file__), 'template', delivery_permission_policy_file), 'r').read()
-            delivery_permissions_policy = policy_template.replace('ACCOUNTID', account_id)
+            delivery_permissions_policy = policy_template.replace('${ACCOUNTID}', account_id).replace('${PARTITION}', partition)
             my_iam.put_role_policy(RoleName=config_role_name, PolicyName='ConfigDeliveryPermissions', PolicyDocument=delivery_permissions_policy)
 
             #wait for changes to propagate.
@@ -525,7 +534,7 @@ class rdk:
         #create or update config recorder
         if not config_role_arn:
             config_role_arn = "arn:" + partition + ":iam::" + account_id + ":role/rdk/config-role"
-        
+
         if (not control_tower):
             my_config.put_configuration_recorder(ConfigurationRecorder={'name':config_recorder_name, 'roleARN':config_role_arn, 'recordingGroup':{'allSupported':True, 'includeGlobalResourceTypes': True}})
 
@@ -533,7 +542,7 @@ class rdk:
                 #create delivery channel
                 print("Creating delivery channel to bucket " + config_bucket_name)
                 my_config.put_delivery_channel(DeliveryChannel={'name':'default', 's3BucketName':config_bucket_name, 'configSnapshotDeliveryProperties':{'deliveryFrequency':'Six_Hours'}})
-    
+
             #start config recorder
             my_config.start_configuration_recorder(ConfigurationRecorderName=config_recorder_name)
             print('Config Service is ON')
@@ -716,12 +725,13 @@ class rdk:
 
             extension_mapping = {
                 'java8': '.java',
-                'python2.7': '.py',
                 'python3.6': '.py',
                 'python3.6-managed':'.py',
                 'python3.6-lib':'.py',
                 'python3.7': '.py',
+                'python3.7-lib':'.py',
                 'python3.8': '.py',
+                'python3.8-lib':'.py',
                 'nodejs4.3': '.js',
                 'dotnetcore1.0': 'cs',
                 'dotnetcore2.0': 'cs',
@@ -755,7 +765,7 @@ class rdk:
                     shutil.copyfile(src, dst)
                     f = fileinput.input(files=dst, inplace=True)
                     for line in f:
-                        if self.args.runtime == 'python3.6-lib':
+                        if self.args.runtime in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib']:
                             if self.args.resource_types:
                                 applicable_resource_list = ''
                                 for resource_type in self.args.resource_types.split(','):
@@ -858,7 +868,7 @@ class rdk:
         if not self.args.force:
             confirmation = False
             while not confirmation:
-                my_input = input("Delete specified Rules and Lamdba Functions from your AWS Account? (y/N): ")
+                my_input = input("Delete specified Rules and Lambda Functions from your AWS Account? (y/N): ")
                 if my_input.lower() == "y":
                     confirmation = True
                 if my_input.lower() == "n" or my_input == "":
@@ -1114,7 +1124,7 @@ class rdk:
                     json_body = json.loads(template_body)
                     remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
                     json_body["Resources"]["Remediation"] = remediation
-                    
+
                     if "SSMAutomation" in rule_params:
                         #Reference the SSM Automation Role Created, if IAM is created
                         print('Building SSM Automation Section')
@@ -1124,11 +1134,11 @@ class rdk:
                             print('Lets Build IAM Role and Policy')
                             #TODO Check For IAM Settings
                             json_body["Resources"]['Remediation']['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Fn::GetAtt":[self.__get_alphanumeric_rule_name(rule_name+"Role"), "Arn"]}]
-                        
+
                             ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
                             json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
                             json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
-                    
+
                             print('Build Supporting SSM Resources')
                             resource_depends_on = ['rdkConfigRule', self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")]
                             #Builds SSM Document Before Config RUle
@@ -1145,7 +1155,7 @@ class rdk:
                                 'StackName': my_stack_name,
                                 'TemplateBody': json.dumps(json_body),
                                 'Parameters': my_params,
-                                'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'] 
+                                'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM']
                             }
 
                             # If no tags key is specified, or if the tags dict is empty
@@ -1167,7 +1177,7 @@ class rdk:
                     except ClientError as e:
                         #If we're in the exception, the stack does not exist and we should create it.
                         print ("Creating CloudFormation Stack for " + rule_name)
-                        
+
                         if "Remediation" in rule_params:
                             cfn_args = {
                                 'StackName': my_stack_name,
@@ -1269,7 +1279,7 @@ class rdk:
                 rule_description = rule_params["Description"]
             except KeyError:
                 rule_description = rule_name
-                
+
             my_params = [
                 {
                     'ParameterKey': 'RuleName',
@@ -1326,7 +1336,7 @@ class rdk:
                 }]
             layers = []
             if 'SourceRuntime' in rule_params:
-                if rule_params['SourceRuntime'] == "python3.6-lib":
+                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib']:
                     if self.args.rdklib_layer_arn:
                         layers.append(self.args.rdklib_layer_arn)
                     else:
@@ -1508,7 +1518,7 @@ class rdk:
             layers = []
             rdk_lib_version = "0"
             if 'SourceRuntime' in rule_params:
-                if rule_params['SourceRuntime'] == "python3.6-lib":
+                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib']:
                     if self.args.rdklib_layer_arn:
                         layers.append(self.args.rdklib_layer_arn)
                     else:
@@ -1578,7 +1588,7 @@ class rdk:
 
         for rule_name in rule_names:
             rule_params, rule_tags = self.__get_rule_parameters(rule_name)
-            if rule_params['SourceRuntime'] not in ('python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.8'):
+            if rule_params['SourceRuntime'] not in ('python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib'):
                 print ("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
 
@@ -1744,7 +1754,7 @@ class rdk:
 
         print ("Generating Terraform template!")
 
-        template = self.__generate_terraform_shell(args)
+        template = self.__generate_terraform_shell(self.args)
 
         rule_names = self.__get_rule_list_for_command()
 
@@ -1973,7 +1983,7 @@ class rdk:
             resources[config_rule_resource_name] = config_rule
 
 
-            #If Remedation create the remedation section with potential links to the SSM Details
+            #If Remediation create the remediation section with potential links to the SSM Details
             if "Remediation" in params:
                 remediation = self.__create_remediation_cloudformation_block(params["Remediation"])
                 remediation["DependsOn"] = [config_rule_resource_name]
@@ -2330,7 +2340,7 @@ class rdk:
             my_json['Parameters']['Tags'] = my_tags
 
         #as my_tags was returned as a string in earlier versions, convert it back to a list
-        if isinstance(my_tags, basestring):
+        if isinstance(my_tags, str):
             my_tags = json.loads(my_tags)
 
         return my_json['Parameters'], my_tags
@@ -2347,10 +2357,13 @@ class rdk:
         if self.args.resource_types:
             for resource_type in self.args.resource_types.split(','):
                 if resource_type not in accepted_resource_types:
-                    resource_type_error = resource_type_error + ' "' + resource_type + '" not found in list of accepted resource types.\n'
+                    resource_type_error = resource_type_error + ' "' + resource_type + '" not found in list of accepted resource types.'
             if resource_type_error:
                 print(resource_type_error)
-                sys.exit(1)
+                if not self.args.skip_supported_resource_check:
+                    sys.exit(1)
+                else:
+                    print('Skip-Supported-Resource-Check Flag set (--skip-supported-resource-check), ignoring missing resource type error.')
 
         if is_required and not self.args.resource_types and not self.args.maximum_frequency:
             print("You must specify either a resource type trigger or a maximum frequency.")
@@ -2542,7 +2555,7 @@ class rdk:
             )
             and not self.args.remediation_action
         ):
-            print("Remediation Flags detected but no remeditaion action (--remediation-action) set")
+            print("Remediation Flags detected but no remediation action (--remediation-action) set")
 
         if self.args.remediation_action:
             try:
@@ -2677,7 +2690,7 @@ class rdk:
     def __get_handler(self, rule_name, params):
         if 'SourceHandler' in params:
             return params['SourceHandler']
-        if params['SourceRuntime'] in ['python2.7', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.8', 'nodejs4.3', 'nodejs6.10', 'nodejs8.10']:
+        if params['SourceRuntime'] in ['python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib', 'nodejs4.3', 'nodejs6.10', 'nodejs8.10']:
             return (rule_name+'.lambda_handler')
         elif params['SourceRuntime'] in ['java8']:
             return ('com.rdk.RuleUtil::handler')
@@ -2685,9 +2698,10 @@ class rdk:
             return ('csharp7.0::Rdk.CustomConfigHandler::FunctionHandler')
 
     def __get_runtime_string(self, params):
-        if params['SourceRuntime'] in ['python3.6-lib', 'python3.6-managed']:
-            return 'python3.6'
-
+        if params['SourceRuntime'] in ['python3.6-lib', 'python3.6-managed', 'python3.7-lib', 'python3.8-lib']:
+            runtime = params['SourceRuntime'].split('-')
+            return runtime[0]
+        
         return params['SourceRuntime']
 
     def __get_test_CIs(self, rulename):
@@ -2723,7 +2737,7 @@ class rdk:
         #Since CFN won't detect changes to the lambda code stored in S3 as a reason to update the stack, we need to manually update the code reference in Lambda once the CFN has run.
         self.__wait_for_cfn_stack(my_cfn, stack_name)
 
-        #Lamba function is an output of the stack.
+        # Lambda function is an output of the stack.
         my_updated_stack = my_cfn.describe_stacks(StackName=stack_name)
         cfn_outputs = my_updated_stack['Stacks'][0]['Outputs']
         my_lambda_arn = 'NOTFOUND'
@@ -2871,7 +2885,7 @@ class rdk:
                                         "Properties": {
                                             "Description" : "IAM Role to Support Config Remediation for " + rule_name,
                                             "Path": "/rdk-remediation-role/",
-                                            #"RoleName": {"Fn::Sub": "" + rule_name + "-Remedation-Role-${AWS::Region}"},
+                                            #"RoleName": {"Fn::Sub": "" + rule_name + "-Remediation-Role-${AWS::Region}"},
                                             "AssumeRolePolicyDocument" : assume_role_template
                                             }
 
@@ -2890,7 +2904,7 @@ class rdk:
                                             ],
                                             "Version": "2012-10-17"
                                             },
-                                            "PolicyName": {"Fn::Sub": "" + rule_name + "-Remedation-Policy-${AWS::Region}"},
+                                            "PolicyName": {"Fn::Sub": "" + rule_name + "-Remediation-Policy-${AWS::Region}"},
                                             "Roles": [
                                             {
                                                 "Ref": self.__get_alphanumeric_rule_name(rule_name + 'Role')
@@ -2911,7 +2925,7 @@ class rdk:
         #First add the common elements - description, parameters, and resource section header
         template = {}
         template["AWSTemplateFormatVersion"] = "2010-09-09"
-        template["Description"] = "AWS CloudFormation template to create Lamdba functions for backing custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template."
+        template["Description"] = "AWS CloudFormation template to create Lambda functions for backing custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template."
 
         parameters = {}
         parameters["SourceBucket"] = {}

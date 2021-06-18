@@ -9,7 +9,7 @@ For complete documentation, including command reference, check out the `ReadTheD
 
 Getting Started
 ===============
-Uses python 2.7/3.6/3.7/3.8 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
+Uses python 3.6/3.7/3.8 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
 
 Under the hood, rdk uses boto3 to make API calls to AWS, so you can set your credentials any way that boto3 recognizes (options 3 through 8 here: http://boto3.readthedocs.io/en/latest/guide/configuration.html) or pass them in with the command-line parameters --profile, --region, --access-key-id, or --secret-access-key
 
@@ -132,7 +132,7 @@ If you need to change the parameters of a Config rule in your working directory 
 
 ::
 
-  $ rdk modify MyRule --runtime python2.7 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
+  $ rdk modify MyRule --runtime python3.6 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
   Running modify!
   Modified Rule 'MyRule'.  Use the `deploy` command to push your changes to AWS.
 
@@ -181,7 +181,7 @@ You can use the ``-n`` and ``-f`` command line flags just like the UNIX ``tail``
 Running the tests
 =================
 
-The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environemnts (currently Ubuntu linux running python2.7, Ubuntu linux running python 3.6/3.7/3.8, and Windows Server running python2.7).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
+The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environemnts (currently Ubuntu linux running python 3.6/3.7/3.8, and Windows Server running python3.6).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
 
 
 Advanced Features
@@ -204,6 +204,33 @@ This command generates a CloudFormation template that defines the AWS Config rul
   Generating CloudFormation template!
   CloudFormation template written to remote-rule-template.json
 
+
+Disable the supported resource types check
+------------------------------------------
+It is now possible to define a resource type that is not yet supported by rdk. To disable the supported resource check use the optional flag '--skip-supported-resource-check' during the create command.
+
+::
+
+  $ rdk create MyRule --runtime python3.8 --resource-types AWS::New::ResourceType --skip-supported-resource-check
+  'AWS::New::ResourceType' not found in list of accepted resource types.
+  Skip-Supported-Resource-Check Flag set (--skip-supported-resource-check), ignoring missing resource type error.
+  Running create!
+  Local Rule files created.
+  
+Custom Lambda Function Name
+---------------------------
+As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Rule-Function-<RULE_NAME>' it is possible to customize the name for lambda function to any 64 characters string as per lambda naming standrds using the optional '--custom-lambda-name' flag while performing rdk create. This opens up new features like : 
+
+1. Longer config rule name.
+2. Custom lambda function naming as per personal or enterprise standards.
+
+::
+
+  $ rdk create MyLongerRuleName --runtime python3.8 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
+  Running create!
+  Local Rule files created.
+  
+The above example would create files with config rule name as 'MyLongerRuleName' and lambda function with the name 'custom-prefix-for-MyLongerRuleName' instead of 'RDK-Rule-Function-MyLongerRuleName'
 
 RuleSets
 --------
