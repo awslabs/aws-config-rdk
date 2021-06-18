@@ -6,7 +6,7 @@ Let's get started using the RDK!
 Prerequisites
 -------------
 
-RDK uses python 2.7/3.6+.  You will need to have an AWS account and sufficient permissions to manage the Config service, and to create and manage S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found `here <https://github.com/awslabs/aws-config-rdk/blob/master/policy/rdk-minimum-permissions.json>`_ on github.
+RDK uses python 3.6+.  You will need to have an AWS account and sufficient permissions to manage the Config service, and to create and manage S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found `here <https://github.com/awslabs/aws-config-rdk/blob/master/policy/rdk-minimum-permissions.json>`_ on github.
 
 Under the hood, rdk uses boto3 to make API calls to AWS, so you can set your credentials any way that boto3 recognizes (options 3 through 8 in the `boto docs here <https://boto3.readthedocs.io/en/latest/guide/configuration.html>`_ ) or pass them in with the command-line parameters --profile, --region, --access-key-id, or --secret-access-key
 
@@ -124,7 +124,7 @@ If you need to change the parameters of a Config rule in your working directory 
 
 ::
 
-  $ rdk modify MyRule --runtime python2.7 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
+  $ rdk modify MyRule --runtime python3.6 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
   Running modify!
   Modified Rule 'MyRule'.  Use the `deploy` command to push your changes to AWS.
 

@@ -1,9 +1,10 @@
-{    "Version": "2012-10-17",
+{
+    "Version": "2012-10-17",
    "Statement": [
      {
        "Effect": "Allow",
        "Action": "s3:PutObject*",
-       "Resource": "arn:aws:s3:::config-bucket-ACCOUNTID/AWSLogs/ACCOUNTID/*",
+       "Resource": "arn:${PARTITION}:s3:::config-bucket-${ACCOUNTID}/AWSLogs/${ACCOUNTID}/*",
        "Condition": {
          "StringLike": {
            "s3:x-amz-acl": "bucket-owner-full-control"
@@ -13,5 +14,7 @@
            {
              "Effect": "Allow",
              "Action": "s3:GetBucketAcl",
-             "Resource": "arn:aws:s3:::config-bucket-ACCOUNTID"
-             }    ]}
+             "Resource": "arn:${PARTITION}:s3:::config-bucket-${ACCOUNTID}"
+             }
+    ]
+}
