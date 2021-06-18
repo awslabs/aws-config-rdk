@@ -9,13 +9,17 @@ phases:
   pre_build:
     commands:
       - echo Starting tests
-      - rdk init
+      - python3 testing/partition_test.py
   build:
     commands:
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_JS --runtime nodejs4.3 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_CREC --runtime python3.8 --resource-types AWS::Config::ResourceCompliance
+      - rdk create LP3_TestRule_ECSTD --runtime python3.7 --resource-types AWS::ECS::TaskDefinition
+      - rdk create LP3_TestRule_ECSS --runtime python3.6 --resource-types AWS::ECS::Service
+      - rdk create LP3_TestRule_EFSFS --runtime python2.7 --resource-types AWS::EFS::FileSystem
       - rdk modify LP3_TestRule_P3 --input-parameters '{"TestParameter":"TestValue"}'
       - rdk create LP3_TestRule_P3_Periodic --runtime python3.6 --maximum-frequency One_Hour
       - rdk create LP3_TestRule_P36lib_Periodic --runtime python3.6-lib --maximum-frequency One_Hour

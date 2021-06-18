@@ -48,7 +48,7 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
-RDKLIB_LAYER_VERSION={'ap-southeast-1':'26', 'ap-south-1':'4', 'us-east-2':'4', 'us-east-1':'4', 'us-west-1':'3', 'us-west-2':'3', 'ap-northeast-2':'4', 'ap-southeast-2':'4', 'ap-northeast-1':'4', 'ca-central-1':'4', 'eu-central-1':'4', 'eu-west-1':'4', 'eu-west-2':'3', 'eu-west-3':'4', 'eu-north-1':'4', 'sa-east-1':'4'}
+RDKLIB_LAYER_VERSION={'ap-southeast-1':'26', 'ap-south-1':'4', 'us-east-2':'4', 'us-east-1':'4', 'us-west-1':'3', 'us-west-2':'3', 'ap-northeast-2':'4', 'ap-southeast-2':'4', 'ap-northeast-1':'4', 'ca-central-1':'4', 'eu-central-1':'4', 'eu-west-1':'4', 'eu-west-2':'3', 'eu-west-3':'4', 'eu-north-1':'4', 'sa-east-1':'4', 'cn-north-1': '1', 'cn-northwest-1': '1'}
 RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{version}"
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
@@ -73,6 +73,14 @@ accepted_resource_types = [
     "AWS::EC2::VPCEndpoint",
     "AWS::EC2::VPCEndpointService",
     "AWS::EC2::VPCPeeringConnection",
+    "AWS::ECR::Repository",
+    "AWS::ECS::Cluster",
+    "AWS::ECS::TaskDefinition",
+    "AWS::ECS::Service",
+    "AWS::ECS::TaskSet",
+    "AWS::EFS::FileSystem",
+    "AWS::EFS::AccessPoint",
+    "AWS::EKS::Cluster",
     "AWS::Elasticsearch::Domain",
     "AWS::QLDB::Ledger",
     "AWS::Redshift::Cluster",
@@ -109,6 +117,8 @@ accepted_resource_types = [
     "AWS::CloudTrail::Trail",
     "AWS::CodeBuild::Project",
     "AWS::CodePipeline::Pipeline",
+    "AWS::Config::ResourceCompliance",
+    "AWS::Config::ConformancePackCompliance",
     "AWS::ElasticBeanstalk::Application",
     "AWS::ElasticBeanstalk::ApplicationVersion",
     "AWS::ElasticBeanstalk::Environment",
@@ -332,7 +342,7 @@ def get_export_parser(ForceArgument=False, Command="export"):
                         help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.")
     parser.add_argument('-v', '--version', required=True, help='Terraform version', choices=['0.11', '0.12'])
     parser.add_argument('-f', '--format', required=True, help='Export Format', choices=['terraform'])
-    
+
     return parser
 
 def get_test_parser(command):
@@ -438,7 +448,7 @@ class rdk:
             config_bucket_exists = True
 
         config_bucket_name = config_bucket_prefix + "-" + account_id
-        
+
         control_tower = False
         if self.args.control_tower:
             print("This account is part of an AWS Control Tower managed organization. Playing nicely with it")
@@ -495,7 +505,12 @@ class rdk:
 
             if not role_exists:
                 print('Creating IAM role config-role')
-                assume_role_policy = json.loads(open(os.path.join(path.dirname(__file__), 'template', assume_role_policy_file), 'r').read())
+                if partition in ["aws","aws-us-gov"]:
+                    partition_url = ".com"
+                elif partition == "aws-cn":
+                    partition_url = ".com.cn"
+                assume_role_policy_template = open(os.path.join(path.dirname(__file__), 'template', assume_role_policy_file), 'r').read()
+                assume_role_policy = json.loads(assume_role_policy_template.replace('PARTITIONURL',partition_url))
                 assume_role_policy['Statement'].append({
                     "Effect": "Allow",
                     "Principal": {
@@ -510,6 +525,7 @@ class rdk:
             my_iam.attach_role_policy(RoleName=config_role_name, PolicyArn='arn:' + partition + ':iam::aws:policy/ReadOnlyAccess')
             policy_template = open(os.path.join(path.dirname(__file__), 'template', delivery_permission_policy_file), 'r').read()
             delivery_permissions_policy = policy_template.replace('ACCOUNTID', account_id)
+            delivery_permissions_policy = delivery_permissions_policy.replace('PARTITION', partition)
             my_iam.put_role_policy(RoleName=config_role_name, PolicyName='ConfigDeliveryPermissions', PolicyDocument=delivery_permissions_policy)
 
             #wait for changes to propagate.
@@ -519,7 +535,7 @@ class rdk:
         #create or update config recorder
         if not config_role_arn:
             config_role_arn = "arn:" + partition + ":iam::" + account_id + ":role/rdk/config-role"
-        
+
         if (not control_tower):
             my_config.put_configuration_recorder(ConfigurationRecorder={'name':config_recorder_name, 'roleARN':config_role_arn, 'recordingGroup':{'allSupported':True, 'includeGlobalResourceTypes': True}})
 
@@ -527,7 +543,7 @@ class rdk:
                 #create delivery channel
                 print("Creating delivery channel to bucket " + config_bucket_name)
                 my_config.put_delivery_channel(DeliveryChannel={'name':'default', 's3BucketName':config_bucket_name, 'configSnapshotDeliveryProperties':{'deliveryFrequency':'Six_Hours'}})
-    
+
             #start config recorder
             my_config.start_configuration_recorder(ConfigurationRecorderName=config_recorder_name)
             print('Config Service is ON')
@@ -1109,7 +1125,7 @@ class rdk:
                     json_body = json.loads(template_body)
                     remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
                     json_body["Resources"]["Remediation"] = remediation
-                    
+
                     if "SSMAutomation" in rule_params:
                         #Reference the SSM Automation Role Created, if IAM is created
                         print('Building SSM Automation Section')
@@ -1119,11 +1135,11 @@ class rdk:
                             print('Lets Build IAM Role and Policy')
                             #TODO Check For IAM Settings
                             json_body["Resources"]['Remediation']['Properties']['Parameters']['AutomationAssumeRole']['StaticValue']['Values'] = [{"Fn::GetAtt":[self.__get_alphanumeric_rule_name(rule_name+"Role"), "Arn"]}]
-                        
+
                             ssm_iam_role, ssm_iam_policy = self.__create_automation_iam_cloudformation_block(rule_params['SSMAutomation'], self.__get_alphanumeric_rule_name(rule_name))
                             json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Role')] = ssm_iam_role
                             json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
-                    
+
                             print('Build Supporting SSM Resources')
                             resource_depends_on = ['rdkConfigRule', self.__get_alphanumeric_rule_name(rule_name+"RemediationAction")]
                             #Builds SSM Document Before Config RUle
@@ -1140,7 +1156,7 @@ class rdk:
                                 'StackName': my_stack_name,
                                 'TemplateBody': json.dumps(json_body),
                                 'Parameters': my_params,
-                                'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'] 
+                                'Capabilities': ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM']
                             }
 
                             # If no tags key is specified, or if the tags dict is empty
@@ -1162,7 +1178,7 @@ class rdk:
                     except ClientError as e:
                         #If we're in the exception, the stack does not exist and we should create it.
                         print ("Creating CloudFormation Stack for " + rule_name)
-                        
+
                         if "Remediation" in rule_params:
                             cfn_args = {
                                 'StackName': my_stack_name,
@@ -1264,7 +1280,7 @@ class rdk:
                 rule_description = rule_params["Description"]
             except KeyError:
                 rule_description = rule_name
-                
+
             my_params = [
                 {
                     'ParameterKey': 'RuleName',
