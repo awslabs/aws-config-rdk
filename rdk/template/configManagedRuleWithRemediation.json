@@ -9,10 +9,10 @@
             "MaxLength": "128"
         },
         "Description": {
-          "Description": "Description of the Rule",
-          "Type": "String",
-          "MinLength": "1",
-          "MaxLength": "255"
+            "Description": "Description of the Rule",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "255"
         },
         "SourceEvents": {
             "Description": "Event Type",
