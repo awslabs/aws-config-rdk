@@ -222,7 +222,7 @@ def get_command_parser():
     parser.add_argument('-r','--region',help='Select the region to run the command in.')
     #parser.add_argument('--verbose','-v', action='count')
     #Removed for now from command choices: 'test-remote', 'status'
-    parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy', 'export'])
+    parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'deploy-organization', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy', 'undeploy-organization', 'export'])
     parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
     parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
 
@@ -1833,6 +1833,7 @@ class rdk:
                         if cfn_tags is not None:
                             cfn_args['Tags'] = cfn_tags
 
+                        print(json.dumps(cfn_args, indent=4))
                         response = my_cfn.create_stack(**cfn_args)
 
                     #wait for changes to propagate.
@@ -1951,7 +1952,7 @@ class rdk:
                 })
 
             #create json of CFN template
-            cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRule.json")
+            cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRuleOrganization.json")
             template_body = open(cfn_body, "r").read()
             json_body = json.loads(template_body)
 
@@ -2042,7 +2043,8 @@ class rdk:
 
                 if cfn_tags is not None:
                     cfn_args['Tags'] = cfn_tags
-
+                
+                print(json.dumps(cfn_args, indent=4))
                 response = my_cfn.create_stack(**cfn_args)
 
             #wait for changes to propagate.

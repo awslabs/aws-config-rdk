@@ -163,14 +163,9 @@
           "Description": { "Ref": "Description" },
           "InputParameters": { "Ref": "SourceInputParameters" },
           "LambdaFunctionArn": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
-          "ResourceTypesScope": { "Ref": "SourceEvents" }
-          { "Fn::If": [ "PeriodicTriggered",
-              {
-                "MaximumExecutionFrequency": { "Ref": "SourcePeriodic" }
-              },
-              { "Ref": "AWS::NoValue"} ]
-            }
-          },
+          "ResourceTypesScope": { "Ref": "SourceEvents" },
+          "OrganizationConfigRuleTriggerTypes": [ "ScheduledNotification" ],
+          "MaximumExecutionFrequency": { "Ref": "SourcePeriodic" }
         }
       }
     },
