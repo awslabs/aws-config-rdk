@@ -50,6 +50,7 @@ event_template_filename = 'test_event_template.json'
 
 RDKLIB_LAYER_VERSION={'ap-southeast-1':'26', 'ap-south-1':'4', 'us-east-2':'4', 'us-east-1':'4', 'us-west-1':'3', 'us-west-2':'3', 'ap-northeast-2':'4', 'ap-southeast-2':'4', 'ap-northeast-1':'4', 'ca-central-1':'4', 'eu-central-1':'4', 'eu-west-1':'4', 'eu-west-2':'3', 'eu-west-3':'4', 'eu-north-1':'4', 'sa-east-1':'4', 'cn-north-1': '1', 'cn-northwest-1': '1'}
 RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{version}"
+PARALLEL_COMMAND_THROTTLE_PERIOD = 2  # 2 seconds, used in running commands in parallel over multiple regions
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
 accepted_resource_types = [
@@ -219,7 +220,8 @@ def get_command_parser():
     parser.add_argument('-p','--profile', help="[optional] indicate which Profile to use.")
     parser.add_argument('-k','--access-key-id', help="[optional] Access Key ID to use.")
     parser.add_argument('-s','--secret-access-key', help="[optional] Secret Access Key to use.")
-    parser.add_argument('-r','--region',help='Select the region to run the command in.')
+    parser.add_argument('-r','--region', help='Select the region to run the command in.')
+    parser.add_argument('-f', '--region-file','[optional] File to specify which regions to run the command in parallel. Supported for init, deploy, and undeploy.')
     #parser.add_argument('--verbose','-v', action='count')
     #Removed for now from command choices: 'test-remote', 'status'
     parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy', 'export'])
@@ -418,6 +420,16 @@ class rdk:
         exit_code = method_to_call()
 
         return(exit_code)
+
+    def run_multi_region(self):
+        regions = self.parse_region_file(self.args.region_file)
+        for region in regions:
+            vars(self.args)['region'] = region
+            # now should be able to multiprocess by calling... process_command?
+            pass
+
+    def parse_region_file(self, file):
+        return []
 
     def init(self):
         """

@@ -19,5 +19,15 @@ def main():
     my_parser = rdk.get_command_parser()
     args = my_parser.parse_args()
     my_rdk = rdk.rdk(args)
+
+    if args.region_file:
+        if args.command in ['init', 'deploy', 'undeploy']:
+            my_rdk.run_multi_region()
+            exit(0)
+        else:
+            pass
+            # raise error: command must be "init", "deploy", or "undeploy"
+            exit(1)
+
     return_val = my_rdk.process_command()
     exit(return_val)
