@@ -292,6 +292,9 @@ def get_rule_parser(is_required, command):
 
 def get_undeploy_parser():
     return get_deployment_parser(ForceArgument=True, Command="undeploy")
+    
+def get_undeploy_organization_parser():
+    return get_deployment_organization_parser(ForceArgument=True, Command="undeploy")
 
 def get_deploy_parser():
     return get_deployment_parser()
@@ -941,6 +944,59 @@ class rdk:
 
         print("Rule removal complete, but local files have been preserved.")
         print("To re-deploy, use the 'deploy' command.")
+
+    def undeploy_organization(self):
+        self.__parse_deploy_args(ForceArgument=True)
+
+        if not self.args.force:
+            confirmation = False
+            while not confirmation:
+                my_input = input("Delete specified Rules and Lambda Functions from your Organization? (y/N): ")
+                if my_input.lower() == "y":
+                    confirmation = True
+                if my_input.lower() == "n" or my_input == "":
+                    sys.exit(0)
+
+        #get the rule names
+        rule_names = self.__get_rule_list_for_command()
+
+        print("Running Organization un-deploy!")
+
+        #create custom session based on whatever credentials are available to us.
+        my_session = self.__get_boto_session()
+
+        #Collect a list of all of the CloudFormation templates that we delete.  We'll need it at the end to make sure everything worked.
+        deleted_stacks = []
+
+        cfn_client = my_session.client('cloudformation')
+
+        if self.args.functions_only:
+            try:
+                cfn_client.delete_stack(StackName=self.args.stack_name)
+                deleted_stacks.append(self.args.stack_name)
+            except ClientError as ce:
+                print("Client Error encountered attempting to delete CloudFormation stack for Lambda Functions: " + str(ce))
+            except Exception as e:
+                print("Exception encountered attempting to delete CloudFormation stack for Lambda Functions: " + str(e))
+
+            return
+
+        for rule_name in rule_names:
+            try:
+                cfn_client.delete_stack(StackName=self.__get_stack_name_from_rule_name(rule_name))
+                deleted_stacks.append(self.__get_stack_name_from_rule_name(rule_name))
+            except ClientError as ce:
+                print("Client Error encountered attempting to delete CloudFormation stack for Rule: " + str(ce))
+            except Exception as e:
+                print("Exception encountered attempting to delete CloudFormation stack for Rule: " + str(e))
+
+        print("Rule removal initiated. Waiting for Stack Deletion to complete.")
+
+        for stack_name in deleted_stacks:
+            self.__wait_for_cfn_stack(cfn_client, stack_name)
+
+        print("Rule removal complete, but local files have been preserved.")
+        print("To re-deploy, use the 'deploy-organization' command.")
 
     def deploy(self):
         self.__parse_deploy_args()
@@ -1833,7 +1889,6 @@ class rdk:
                         if cfn_tags is not None:
                             cfn_args['Tags'] = cfn_tags
 
-                        print(json.dumps(cfn_args, indent=4))
                         response = my_cfn.create_stack(**cfn_args)
 
                     #wait for changes to propagate.
@@ -2044,7 +2099,6 @@ class rdk:
                 if cfn_tags is not None:
                     cfn_args['Tags'] = cfn_tags
                 
-                print(json.dumps(cfn_args, indent=4))
                 response = my_cfn.create_stack(**cfn_args)
 
             #wait for changes to propagate.
