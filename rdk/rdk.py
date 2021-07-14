@@ -407,6 +407,15 @@ def get_create_rule_template_parser():
     parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
     return parser
 
+def parse_region_file(file):
+    return []
+
+def run_multi_region(args):
+    my_rdk = rdk.rdk(args)
+    return_val = my_rdk.process_command()
+    return return_val
+
+
 class rdk:
     def __init__(self, args):
         self.args = args
@@ -420,16 +429,6 @@ class rdk:
         exit_code = method_to_call()
 
         return(exit_code)
-
-    def run_multi_region(self):
-        regions = self.parse_region_file(self.args.region_file)
-        for region in regions:
-            vars(self.args)['region'] = region
-            # now should be able to multiprocess by calling... process_command?
-            pass
-
-    def parse_region_file(self, file):
-        return []
 
     def init(self):
         """
