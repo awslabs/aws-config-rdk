@@ -25,6 +25,18 @@ def main():
     if args.region_file:
         if args.command in ['init', 'deploy', 'undeploy']:
             regions = rdk.parse_region_file(args)
+            # import pdb
+            # pdb.set_trace()
+            print(f"Deleting rules in the following regions: {regions}.")
+            if "--force" not in args.command_args:
+                confirmation = False
+                while not confirmation:
+                    my_input = input("Delete specified Rules and Lambda Functions from your AWS Account? (y/N): ")
+                    if my_input.lower() == "y":
+                        confirmation = True
+                        vars(args)["command_args"].append("--force")
+                    if my_input.lower() == "n" or my_input == "":
+                        exit(0)
 
             args_list = []
             for region in regions:
