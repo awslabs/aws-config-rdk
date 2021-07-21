@@ -17,6 +17,7 @@ import sys
 import tempfile
 import time
 import unittest
+import yaml
 from builtins import input
 from datetime import datetime
 from os import path
@@ -221,7 +222,8 @@ def get_command_parser():
     parser.add_argument('-k','--access-key-id', help="[optional] Access Key ID to use.")
     parser.add_argument('-s','--secret-access-key', help="[optional] Secret Access Key to use.")
     parser.add_argument('-r','--region', help='Select the region to run the command in.')
-    parser.add_argument('-f', '--region-file','[optional] File to specify which regions to run the command in parallel. Supported for init, deploy, and undeploy.')
+    parser.add_argument('-f', '--region-file',"[optional] File to specify which regions to run the command in parallel. Supported for init, deploy, and undeploy.")
+    parser.add_argument('-i', '--region-set', "[optional] Set of regions within the region file with which to run the command in parallel. Looks for a 'default' region set if not specified.")
     #parser.add_argument('--verbose','-v', action='count')
     #Removed for now from command choices: 'test-remote', 'status'
     parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy', 'export'])
@@ -407,8 +409,15 @@ def get_create_rule_template_parser():
     parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
     return parser
 
-def parse_region_file(file):
-    return []
+def parse_region_file(args):
+    region_set = "default"
+    if args.region_set:
+        region_set = args.region_set
+    try:
+        region_text = yaml.load(open(args.region_file, "r"), Loader=yaml.Loader)
+        return region_text[region_set]
+    except Exception:
+        raise SyntaxError(f"Error reading regions: {region_set} in file: {args.region_file}")
 
 def run_multi_region(args):
     my_rdk = rdk.rdk(args)
