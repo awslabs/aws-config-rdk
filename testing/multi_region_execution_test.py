@@ -18,7 +18,7 @@ test-commercial:
   - us-west-1
 """
 
-with open("region.yaml") as f:
+with open("region.yaml", "w+") as f:
     f.write(test_file)
 
 # run rdk init in default region
