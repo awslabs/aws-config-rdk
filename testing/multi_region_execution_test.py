@@ -23,7 +23,7 @@ with open(test_file_name, "w+") as f:
 
 # run rdk init in default region
 print("Multi-region test: running init...")
-init_command = f"rdk -f {test_file} init"
+init_command = f"rdk -f {test_file_name} init"
 init_return_code = os.system(init_command)
 
 if init_return_code != 0:
