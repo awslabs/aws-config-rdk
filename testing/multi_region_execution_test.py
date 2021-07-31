@@ -7,7 +7,7 @@ cwd = os.getcwd()
 test_dir = os.path.join(cwd, "multi_region_test")
 os.mkdir(test_dir)
 os.chdir(test_dir)
-test_file_name = "region.yaml"
+test_file_name = "test-region.yaml"
 # create region file
 test_file = """
 default:
@@ -46,7 +46,7 @@ if deploy_return_code != 0:
 
 # rdk undeploy in test-commercial
 print("Multi-region test: trying undeploy...")
-undeploy_command = f"rdk -f {test_file} -i test-commercial undeploy --force MFA_ENABLED_RULE"
+undeploy_command = f"rdk -f {test_file_name} -i test-commercial undeploy --force MFA_ENABLED_RULE"
 undeploy_return_code = os.system(undeploy_command)
 
 if undeploy_return_code != 0:
