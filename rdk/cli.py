@@ -9,6 +9,7 @@
 import concurrent.futures
 import copy
 import six
+import time
 
 if six.PY2:
     import rdk
@@ -25,8 +26,6 @@ def main():
     if args.region_file:
         if args.command in ['init', 'deploy', 'undeploy']:
             regions = rdk.parse_region_file(args)
-            # import pdb
-            # pdb.set_trace()
             print(f"Deleting rules in the following regions: {regions}.")
             if "--force" not in args.command_args:
                 confirmation = False
