@@ -40,7 +40,6 @@
     },
   },
   "Conditions": {
-    "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
     "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]}
   },
   "Resources": {
@@ -50,15 +49,17 @@
         "OrganizationConfigRuleName": { "Ref": "RuleName" },
         "OrganizationManagedRuleMetadata": {
           "Description": { "Ref": "Description" },
-          "RuleIdentifier": { "Ref": "SourceIdentifier" },
+          "RuleIdentifier" : { "Ref": "SourceIdentifier" },
           "InputParameters": { "Ref": "SourceInputParameters" },
           "ResourceTypesScope": { "Ref": "SourceEvents" },
-          "MaximumExecutionFrequency": {"Fn::If": [
-            "PeriodicTriggered",
-            { "Ref": "SourcePeriodic" },
-            { "Ref": "AWS::NoValue"}]}
+          "MaximumExecutionFrequency": {
+            "Fn::If": [ "PeriodicTriggered",
+              { "Ref": "SourcePeriodic" },
+              { "Ref": "AWS::NoValue" }
+            ]
+          }
         }
       }
-    },
+    }
   }
 }
