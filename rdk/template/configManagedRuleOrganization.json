@@ -53,7 +53,7 @@
     "rdkConfigRule": {
       "Type": "AWS::Config::OrganizationConfigRule",
       "Properties": {
-        "ConfigRuleName": { "Ref": "RuleName" },
+        "OrganizationConfigRuleName": { "Ref": "RuleName" },
         "Description": { "Ref": "Description" },
         "Scope": {
           "Fn::If": [ "EventTriggered",
