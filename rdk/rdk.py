@@ -1622,10 +1622,6 @@ class rdk:
                         'ParameterValue': rule_name,
                     },
                     {
-                        'ParameterKey': 'RuleLambdaName',
-                        'ParameterValue': self.__get_lambda_name(rule_name, rule_params),
-                    },
-                    {
                         'ParameterKey': 'Description',
                         'ParameterValue': rule_description,
                     },
