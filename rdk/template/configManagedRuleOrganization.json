@@ -48,7 +48,7 @@
       "Type": "AWS::Config::OrganizationConfigRule",
       "Properties": {
         "OrganizationConfigRuleName": { "Ref": "RuleName" },
-        "OrganizationCustomRuleMetadata": {
+        "OrganizationManagedRuleMetadata": {
           "Description": { "Ref": "Description" },
           "RuleIdentifier": { "Ref": "SourceIdentifier" },
           "InputParameters": { "Ref": "SourceInputParameters" },
