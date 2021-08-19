@@ -1652,7 +1652,7 @@ class rdk:
 
                 else:
                 #deploy config rule
-                    cfn_body = os.path.join(path.dirname(__file__), 'template',  "configRuleOrganization.json")
+                    cfn_body = os.path.join(path.dirname(__file__), 'template',  "configManagedRuleOrganization.json")
 
                     try:
                         my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
