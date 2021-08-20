@@ -48,7 +48,8 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
-RDKLIB_LAYER_VERSION={'ap-southeast-1':'26', 'ap-south-1':'4', 'us-east-2':'4', 'us-east-1':'4', 'us-west-1':'3', 'us-west-2':'3', 'ap-northeast-2':'4', 'ap-southeast-2':'4', 'ap-northeast-1':'4', 'ca-central-1':'4', 'eu-central-1':'4', 'eu-west-1':'4', 'eu-west-2':'3', 'eu-west-3':'4', 'eu-north-1':'4', 'sa-east-1':'4', 'cn-north-1': '1', 'cn-northwest-1': '1'}
+RDKLIB_LAYER_VERSION={'ap-southeast-1':'28', 'ap-south-1':'5', 'us-east-2':'5', 'us-east-1':'5', 'us-west-1':'4', 'us-west-2':'4', 'ap-northeast-2':'5', 'ap-southeast-2':'5', 'ap-northeast-1':'5', 'ca-central-1':'5', 'eu-central-1':'5', 'eu-west-1':'5', 'eu-west-2':'4', 'eu-west-3':'5', 'eu-north-1':'5', 'sa-east-1':'5', 'cn-north-1': '1', 'cn-northwest-1': '1'}
+
 RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{version}"
 
 #this need to be update whenever config service supports more resource types : https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
