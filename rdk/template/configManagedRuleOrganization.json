@@ -1,0 +1,65 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS CloudFormation template to create Managed AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template.",
+
+  "Parameters": {
+    "RuleName": {
+      "Description": "Name of the Rule",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "128"
+    },
+    "Description": {
+      "Description": "Description of the Rule",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255"
+    },
+    "SourceEvents": {
+      "Description": "Event Type",
+      "Type": "CommaDelimitedList",
+      "Default": "NONE"
+    },
+    "SourcePeriodic": {
+      "Description": "Execution Frequency",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "Default": "NONE"
+    },
+    "SourceIdentifier": {
+      "Description": "Source Identifier of Managed Rule",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255"
+    },
+    "SourceInputParameters": {
+      "Description": "Input Parameters",
+      "Type": "String",
+      "Default": "{}"
+    },
+  },
+  "Conditions": {
+    "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]}
+  },
+  "Resources": {
+    "rdkConfigRule": {
+      "Type": "AWS::Config::OrganizationConfigRule",
+      "Properties": {
+        "OrganizationConfigRuleName": { "Ref": "RuleName" },
+        "OrganizationManagedRuleMetadata": {
+          "Description": { "Ref": "Description" },
+          "RuleIdentifier" : { "Ref": "SourceIdentifier" },
+          "InputParameters": { "Ref": "SourceInputParameters" },
+          "ResourceTypesScope": { "Ref": "SourceEvents" },
+          "MaximumExecutionFrequency": {
+            "Fn::If": [ "PeriodicTriggered",
+              { "Ref": "SourcePeriodic" },
+              { "Ref": "AWS::NoValue" }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
