@@ -9,10 +9,21 @@ phases:
   pre_build:
     commands:
       - echo Starting tests
-      - python3 testing/partition_test.py
-      - python3 testing/multi_region_execution_test.py
   build:
     commands:
+      - python3 testing/multi_region_execution_test.py
+      - python3 testing/partition_test.py
+      - rdk init --generate-lambda-layer
+      - rdk create LP3_TestRule_P38_lib --runtime python3.8-lib --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_P37_lib --runtime python3.7-lib --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_P36_lib --runtime python3.6-lib --resource-types AWS::EC2::SecurityGroup
+      - rdk -f test-region.yaml deploy LP3_TestRule_P38_lib --generated-lambda-layer
+      - rdk -f test-region.yaml deploy LP3_TestRule_P37_lib --generated-lambda-layer
+      - rdk -f test-region.yaml --region-set test-commercial deploy LP3_TestRule_P36_lib --generated-lambda-layer
+      - python3 testing/check_generated_lambda_layers_test.py
+      - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P38_lib
+      - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P37_lib
+      - yes | rdk -f test-region.yaml --region-set test-commercial undeploy LP3_TestRule_P36_lib
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
@@ -20,7 +31,7 @@ phases:
       - rdk create LP3_TestRule_CREC --runtime python3.8 --resource-types AWS::Config::ResourceCompliance
       - rdk create LP3_TestRule_ECSTD --runtime python3.7 --resource-types AWS::ECS::TaskDefinition
       - rdk create LP3_TestRule_ECSS --runtime python3.6 --resource-types AWS::ECS::Service
-#      - rdk create LP3_TestRule_EFSFS --runtime python2.7 --resource-types AWS::EFS::FileSystem
+      - rdk create LP3_TestRule_EFSFS --runtime python3.7 --resource-types AWS::EFS::FileSystem
       - rdk modify LP3_TestRule_P3 --input-parameters '{"TestParameter":"TestValue"}'
       - rdk create LP3_TestRule_P3_Periodic --runtime python3.6 --maximum-frequency One_Hour
       - rdk create LP3_TestRule_P36lib_Periodic --runtime python3.6-lib --maximum-frequency One_Hour

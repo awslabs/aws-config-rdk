@@ -26,7 +26,7 @@ def main():
     if args.region_file:
         if args.command in ['init', 'deploy', 'undeploy']:
             regions = rdk.parse_region_file(args)
-            print(f"Deleting rules in the following regions: {regions}.")
+            print(f"{args.command.capitalize()}ing rules in the following regions: {regions}.")
             if args.command == 'undeploy' and "--force" not in args.command_args:
                 my_input = input("Delete specified Rules and Lambda Functions from your AWS Account? (y/N): ")
                 while my_input.lower() not in ["y", "n"]:
@@ -42,7 +42,7 @@ def main():
                 args_list.append(copy.copy(args))
 
             data = []
-            with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
+            with concurrent.futures.ProcessPoolExecutor(max_workers=16) as executor:
                 future_run_multi_region = {executor.submit(rdk.run_multi_region, args): args for args in args_list}
                 for future in concurrent.futures.as_completed(future_run_multi_region):
                     data.append(future.result())

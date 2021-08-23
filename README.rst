@@ -1,6 +1,6 @@
 rdk
 ===
-Rule Development Kit 
+Rule Development Kit
 We are greatly appreciated feedback and bug reports at rdk-maintainers@amazon.com! You may also create an issue on this repo.
 
 The RDK is designed to support a "Compliance-as-Code" workflow that is intuitive and productive.  It abstracts away much of the undifferentiated heavy lifting associated with deploying AWS Config rules backed by custom lambda functions, and provides a streamlined develop-deploy-monitor iterative process.
@@ -55,13 +55,17 @@ To use the RDK, it's recommended to create a directory that will be your working
 
 Running ``init`` subsequent times will validate your AWS Config setup and re-create any S3 buckets or IAM resources that are needed.
 
-- If you have config delievery bucket already present in some other AWS account then use **--config-bucket-exists-in-another-account** as argument:::
+- If you have config delivery bucket already present in some other AWS account then use **--config-bucket-exists-in-another-account** as argument:::
 
   $ rdk init --config-bucket-exists-in-another-account
 - If you have AWS Organizations/ControlTower Setup in your AWS environment then additionally, use **--control-tower** as argument:::
 
   $ rdk init --control-tower --config-bucket-exists-in-another-account
 - If bucket for custom lambda code is already present in current account then use **--skip-code-bucket-creation** argument:::
+
+  $ rdk init --skip-code-bucket-creation
+
+- If you want rdk to create/update and upload the rdklib-layer for you, then use **--generate-lambda-layer** argument:::
 
   $ rdk init --skip-code-bucket-creation
 
@@ -158,7 +162,7 @@ Once you have completed your compliance validation code and set your Rule's conf
   Waiting for CloudFormation stack operation to complete...
   Config deploy complete.
 
-The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.
+The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.  If you used the --generate-lambda-layer flag in rdk init, use the --generated-lambda-layer flag for rdk deploy.
 
 Deploy Organization Rule
 ------------------------
@@ -239,10 +243,10 @@ It is now possible to define a resource type that is not yet supported by rdk. T
   Skip-Supported-Resource-Check Flag set (--skip-supported-resource-check), ignoring missing resource type error.
   Running create!
   Local Rule files created.
-  
+
 Custom Lambda Function Name
 ---------------------------
-As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Rule-Function-<RULE_NAME>' it is possible to customize the name for lambda function to any 64 characters string as per lambda naming standrds using the optional '--custom-lambda-name' flag while performing rdk create. This opens up new features like : 
+As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Rule-Function-<RULE_NAME>' it is possible to customize the name for lambda function to any 64 characters string as per lambda naming standrds using the optional '--custom-lambda-name' flag while performing rdk create. This opens up new features like :
 
 1. Longer config rule name.
 2. Custom lambda function naming as per personal or enterprise standards.
@@ -252,7 +256,7 @@ As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Ru
   $ rdk create MyLongerRuleName --runtime python3.8 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
   Running create!
   Local Rule files created.
-  
+
 The above example would create files with config rule name as 'MyLongerRuleName' and lambda function with the name 'custom-prefix-for-MyLongerRuleName' instead of 'RDK-Rule-Function-MyLongerRuleName'
 
 RuleSets
@@ -296,7 +300,7 @@ To do so, create a rule using "rdk create" and provide a valid SourceIdentifier 
 Contributing
 ============
 
-email us at rdk-maintainers@amazon.com if you have any questions. We are happy to help and discuss. 
+email us at rdk-maintainers@amazon.com if you have any questions. We are happy to help and discuss.
 
 Authors
 =======
