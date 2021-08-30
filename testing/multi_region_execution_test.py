@@ -11,10 +11,14 @@ default:
   - ap-east-1
   - us-west-2
   - us-east-2
+  - us-east-1
+  - eu-north-1
 test-commercial:
   - ap-east-1
   - us-west-1
   - us-west-2
+  - us-east-1
+  - eu-north-1
 """
 
 with open(test_file_name, "w+") as f:
