@@ -228,7 +228,7 @@ def get_command_parser():
     parser.add_argument('--region-set', help="[optional] Set of regions within the region file with which to run the command in parallel. Looks for a 'default' region set if not specified.")
     #parser.add_argument('--verbose','-v', action='count')
     #Removed for now from command choices: 'test-remote', 'status'
-    parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'deploy-organization', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy', 'undeploy-organization', 'export'])
+    parser.add_argument('command', metavar='<command>', help='Command to run.  Refer to the usage instructions for each command for more details', choices=['clean', 'create', 'create-rule-template', 'deploy', 'deploy-organization', 'init', 'logs', 'modify', 'rulesets', 'sample-ci', 'test-local', 'undeploy', 'undeploy-organization', 'export', 'create-region-set'])
     parser.add_argument('command_args', metavar='<command arguments>', nargs=argparse.REMAINDER, help="Run `rdk <command> --help` to see command-specific arguments.")
     parser.add_argument('-v','--version', help='Display the version of this tool', action="version", version='%(prog)s '+MY_VERSION)
 
@@ -443,6 +443,14 @@ def get_create_rule_template_parser():
     parser.add_argument('-t','--tag-config-rules-script', required=False, help="filename of generated script to tag config rules with the tags in each parameter.json")
     parser.add_argument('--config-role-arn', required=False, help="[optional] Assign existing iam role as config role. If omitted, \"config-role\" will be created.")
     parser.add_argument('--rules-only', action="store_true", help="[optional] Generate a CloudFormation Template that only includes the Config Rules and not the Bucket, Configuration Recorder, and Delivery Channel.")
+    return parser
+
+def get_create_region_set_parser():
+    parser = argparse.ArgumentParser(
+        prog='rdk create-region-set',
+        description="Outputs a YAML region set file for multi-region deployment."
+    )
+    parser.add_argument('-o','--output-file', required=False, default="regions", help="Filename of the generated regionset file")
     return parser
 
 def parse_region_file(args):
@@ -1512,7 +1520,7 @@ class rdk:
                     json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name+'Policy')] = ssm_iam_policy
 
             #debugging
-            #print(json.dumps(json_body, indent=2))
+            # print(json.dumps(json_body, indent=2))
 
             #deploy config rule
             my_cfn = my_session.client('cloudformation')
@@ -1542,9 +1550,9 @@ class rdk:
                             print(f"[{my_session.region_name}]: No changes to Config Rule.")
                         else:
                             #Something unexpected has gone wrong.  Emit an error and bail.
-                            print(f'[{my_session.region_name}]: Validation Error on CFN')
-                            print(f'[{my_session.region_name}]: ' + json.dumps(cfn_args))
-                            print(f'[{my_session.region_name}]: {e}')
+                            print(f'[{my_session.region_name}]: Validation Error on CFN\n')
+                            print(f'[{my_session.region_name}]: ' + json.dumps(cfn_args)+ "\n")
+                            print(f'[{my_session.region_name}]: {e}\n')
                             return 1
                     else:
                         raise
@@ -2494,6 +2502,13 @@ class rdk:
                 print(script_for_tag)
                 print("you can use flag [--tag-config-rules-script <file path> ] to output the script")
 
+    def create_region_set(self):
+        self.args = get_create_region_set_parser().parse_args(self.args.command_args, self.args)
+        output_file = self.args.output_file
+        output_dict = {"default":["us-east-1","us-west-1","eu-north-1","ap-east-1"],"aws-cn-region-set":["cn-north-1","cn-northwest-1"]}
+        with open(f"{output_file}.yaml","w+") as file:
+            yaml.dump(output_dict, file, default_flow_style = False)
+
     def __generate_terraform_shell(self, args):
         return ""
 
@@ -3054,7 +3069,7 @@ class rdk:
             'Description': self.args.rulename,
             'SourceRuntime': self.args.runtime,
             #'CodeBucket': code_bucket_prefix + account_id,
-            'CodeKey': self.args.rulename+'.zip',
+            'CodeKey': self.args.rulename+my_session.region_name+'.zip',
             'InputParameters': json.dumps(my_input_params),
             'OptionalParameters': json.dumps(my_optional_params)
         }
@@ -3269,7 +3284,7 @@ class rdk:
             subprocess.call( command, cwd=working_dir)
 
             #set source as distribution zip
-            s3_src = os.path.join(os.getcwd(), rules_dir, rule_name, 'build', 'distributions', rule_name+".zip")
+            s3_src = os.path.join(os.getcwd(), rules_dir, rule_name, 'build', 'distributions', rule_name+session.region_name+".zip")
         elif params['SourceRuntime'] in ["dotnetcore1.0","dotnetcore2.0"]:
             print ("Packaging "+rule_name)
             working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
@@ -3285,7 +3300,7 @@ class rdk:
                 subprocess.call( command, cwd=working_dir)
 
             # Remove old zip file if it already exists
-            package_file_dst = os.path.join(rule_name, rule_name+".zip")
+            package_file_dst = os.path.join(rule_name, rule_name+session.region_name+".zip")
             self.__delete_package_file(package_file_dst)
 
             # Create new package in temp directory, copy to rule directory
@@ -3299,17 +3314,19 @@ class rdk:
         else:
             print (f"[{session.region_name}]: Zipping " + rule_name)
             # Remove old zip file if it already exists
-            package_file_dst = os.path.join(rule_name, rule_name+".zip")
+            package_file_dst = os.path.join(rule_name, rule_name+session.region_name+".zip")
             self.__delete_package_file(package_file_dst)
 
             #zip rule code files and upload to s3 bucket
             s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
-            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), session.region_name+rule_name), 'zip', s3_src_dir)
+
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+session.region_name), 'zip', s3_src_dir)
+
             shutil.copy(tmp_src, package_file_dst)
             s3_src = os.path.abspath(package_file_dst)
             self.__delete_package_file(tmp_src)
 
-        s3_dst = "/".join((rule_name, rule_name+".zip"))
+        s3_dst = "/".join((rule_name, rule_name+session.region_name+".zip"))
 
         my_s3 = session.resource('s3')
 
