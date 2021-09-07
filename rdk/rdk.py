@@ -17,6 +17,7 @@ import sys
 import tempfile
 import time
 import unittest
+from boto3 import session
 import yaml
 from builtins import input
 from datetime import datetime
@@ -2976,7 +2977,7 @@ class rdk:
 
             # zip rule code files and upload to s3 bucket
             s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
-            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), session.region_name+rule_name), 'zip', s3_src_dir)
             shutil.copy(tmp_src, package_file_dst)
             s3_src = os.path.abspath(package_file_dst)
             self.__delete_package_file(tmp_src)
