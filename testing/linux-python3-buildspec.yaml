@@ -11,7 +11,12 @@ phases:
       - echo Starting tests
   build:
     commands:
+      - rdk create-region-set -o test-region
+      - rdk -f test-region.yaml init
+      - rdk create MFA_ENABLED_RULE --runtime python3.8 --resource-types AWS::IAM::User
+      - rdk -f test-region.yaml deploy MFA_ENABLED_RULE
       - python3 testing/multi_region_execution_test.py
+      - rdk -f test-region.yaml undeploy --force MFA_ENABLED_RULE
       - python3 testing/partition_test.py
       - rdk init --generate-lambda-layer
       - rdk create LP3_TestRule_P38_lib --runtime python3.8-lib --resource-types AWS::EC2::SecurityGroup
@@ -19,11 +24,11 @@ phases:
       - rdk create LP3_TestRule_P36_lib --runtime python3.6-lib --resource-types AWS::EC2::SecurityGroup
       - rdk -f test-region.yaml deploy LP3_TestRule_P38_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P37_lib --generated-lambda-layer
-      - rdk -f test-region.yaml --region-set test-commercial deploy LP3_TestRule_P36_lib --generated-lambda-layer
+      - rdk -f test-region.yaml deploy LP3_TestRule_P36_lib --generated-lambda-layer
       - python3 testing/check_generated_lambda_layers_test.py
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P38_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P37_lib
-      - yes | rdk -f test-region.yaml --region-set test-commercial undeploy LP3_TestRule_P36_lib
+      - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P36_lib
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
