@@ -25,7 +25,6 @@ phases:
       - rdk -f test-region.yaml deploy LP3_TestRule_P38_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P37_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P36_lib --generated-lambda-layer
-      - python3 testing/check_generated_lambda_layers_test.py
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P38_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P37_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P36_lib
