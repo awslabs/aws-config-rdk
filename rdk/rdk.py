@@ -84,6 +84,8 @@ accepted_resource_types = [
     "AWS::EKS::Cluster",
     "AWS::Elasticsearch::Domain",
     "AWS::QLDB::Ledger",
+    "AWS::Kineses::Stream",
+    "AWS::Kineses::StreamConsumer",
     "AWS::Redshift::Cluster",
     "AWS::Redshift::ClusterParameterGroup",
     "AWS::Redshift::ClusterSecurityGroup",
@@ -113,6 +115,10 @@ accepted_resource_types = [
     "AWS::AutoScaling::LaunchConfiguration",
     "AWS::AutoScaling::ScalingPolicy",
     "AWS::AutoScaling::ScheduledAction",
+    "AWS::Backup::BackupPlan",
+    "AWS::Backup::BackupSelection",
+    "AWS::Backup::BackupVault",
+    "AWS::Backup::RecoveryPoint",
     "AWS::ACM::Certificate",
     "AWS::CloudFormation::Stack",
     "AWS::CloudTrail::Trail",
@@ -138,8 +144,6 @@ accepted_resource_types = [
     "AWS::ServiceCatalog::Portfolio",
     "AWS::Shield::Protection",
     "AWS::ShieldRegional::Protection",
-    "AWS::Shield::Protection",
-    "AWS::ShieldRegional::Protection",
     "AWS::SSM::ManagedInstanceInventory",
     "AWS::SSM::PatchCompliance",
     "AWS::SSM::AssociationCompliance",
@@ -148,10 +152,6 @@ accepted_resource_types = [
     "AWS::WAF::Rule",
     "AWS::WAF::WebACL",
     "AWS::WAF::RuleGroup",
-    "AWS::WAFRegional::RateBasedRule",
-    "AWS::WAFRegional::Rule",
-    "AWS::WAFRegional::WebACL",
-    "AWS::WAFRegional::RuleGroup",
     "AWS::WAFRegional::RateBasedRule",
     "AWS::WAFRegional::Rule",
     "AWS::WAFRegional::WebACL",
@@ -268,7 +268,7 @@ def get_rule_parser(is_required, command):
     )
     parser.add_argument('rulename', metavar='<rulename>', help='Rule name to create/modify')
     runtime_group = parser.add_mutually_exclusive_group()
-    runtime_group.add_argument('-R', '--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib', 'dotnetcore1.0', 'dotnetcore2.0'], metavar="")
+    runtime_group.add_argument('-R', '--runtime', required=False, help='Runtime for lambda function', choices=['nodejs4.3', 'java8', 'python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib', 'python3.9', 'python3.9-lib', 'dotnetcore1.0', 'dotnetcore2.0'], metavar="")
     runtime_group.add_argument('--source-identifier', required=False, help="[optional] Used only for creating Managed Rules.")
     parser.add_argument('-l','--custom-lambda-name', required=False, help='[optional] Provide custom lambda name')
     parser.set_defaults(runtime='python3.6-lib')
@@ -757,16 +757,17 @@ class rdk:
             extension_mapping = {
                 'java8': '.java',
                 'python3.6': '.py',
-                'python3.6-managed':'.py',
-                'python3.6-lib':'.py',
+                'python3.6-managed': '.py',
+                'python3.6-lib': '.py',
                 'python3.7': '.py',
-                'python3.7-lib':'.py',
+                'python3.7-lib': '.py',
                 'python3.8': '.py',
-                'python3.8-lib':'.py',
+                'python3.8-lib': '.py',
+                'python3.9': '.py',
+                'python3.9-lib': '.py',
                 'nodejs4.3': '.js',
                 'dotnetcore1.0': 'cs',
                 'dotnetcore2.0': 'cs',
-                'python3.6-managed': '.py',
             }
             if self.args.runtime not in extension_mapping:
                 print ("rdk does not support that runtime yet.")
@@ -796,7 +797,7 @@ class rdk:
                     shutil.copyfile(src, dst)
                     f = fileinput.input(files=dst, inplace=True)
                     for line in f:
-                        if self.args.runtime in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib']:
+                        if self.args.runtime in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib', 'python3.9-lib']:
                             if self.args.resource_types:
                                 applicable_resource_list = ''
                                 for resource_type in self.args.resource_types.split(','):
@@ -1416,7 +1417,7 @@ class rdk:
                 }]
             layers = []
             if 'SourceRuntime' in rule_params:
-                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib']:
+                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib', 'python3.9-lib']:
                     if self.args.rdklib_layer_arn:
                         layers.append(self.args.rdklib_layer_arn)
                     else:
@@ -1776,7 +1777,7 @@ class rdk:
                 }]
             layers = []
             if 'SourceRuntime' in rule_params:
-                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib']:
+                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib', 'python3.9-lib']:
                     if self.args.rdklib_layer_arn:
                         layers.append(self.args.rdklib_layer_arn)
                     else:
@@ -1933,7 +1934,7 @@ class rdk:
             layers = []
             rdk_lib_version = "0"
             if 'SourceRuntime' in rule_params:
-                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib']:
+                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib', 'python3.9-lib']:
                     if self.args.rdklib_layer_arn:
                         layers.append(self.args.rdklib_layer_arn)
                     else:
@@ -2003,7 +2004,7 @@ class rdk:
 
         for rule_name in rule_names:
             rule_params, rule_tags = self.__get_rule_parameters(rule_name)
-            if rule_params['SourceRuntime'] not in ('python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib'):
+            if rule_params['SourceRuntime'] not in ('python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib', 'python3.9', 'python3.9-lib'):
                 print ("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
 
@@ -3143,7 +3144,7 @@ class rdk:
     def __get_handler(self, rule_name, params):
         if 'SourceHandler' in params:
             return params['SourceHandler']
-        if params['SourceRuntime'] in ['python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib', 'nodejs4.3', 'nodejs6.10', 'nodejs8.10']:
+        if params['SourceRuntime'] in ['python3.6', 'python3.6-lib', 'python3.7', 'python3.7-lib', 'python3.8', 'python3.8-lib', 'python3.9', 'python3.9-lib', 'nodejs4.3', 'nodejs6.10', 'nodejs8.10']:
             return (rule_name+'.lambda_handler')
         elif params['SourceRuntime'] in ['java8']:
             return ('com.rdk.RuleUtil::handler')
@@ -3151,7 +3152,7 @@ class rdk:
             return ('csharp7.0::Rdk.CustomConfigHandler::FunctionHandler')
 
     def __get_runtime_string(self, params):
-        if params['SourceRuntime'] in ['python3.6-lib', 'python3.6-managed', 'python3.7-lib', 'python3.8-lib']:
+        if params['SourceRuntime'] in ['python3.6-lib', 'python3.6-managed', 'python3.7-lib', 'python3.8-lib', 'python3.9-lib']:
             runtime = params['SourceRuntime'].split('-')
             return runtime[0]
         
