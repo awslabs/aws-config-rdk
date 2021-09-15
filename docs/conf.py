@@ -14,6 +14,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath("../"))
 sys.path.insert(0, os.path.abspath("../rdk/"))
@@ -22,7 +23,7 @@ sys.path.insert(0, os.path.abspath("../rdk/"))
 # -- Project information -----------------------------------------------------
 
 project = u'RDK'
-copyright = u'2017-2018 Amazon.com, Inc. or its affiliates. All Rights Reserved'
+copyright = u'2017-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved'
 author = u'Michael Borchert'
 
 # The short X.Y version

@@ -6,6 +6,12 @@
             "Description": "Name of the Rule",
             "Type": "String",
             "MinLength": "1",
+            "MaxLength": "128"
+        },
+        "Description": {
+            "Description": "Description of the Rule",
+            "Type": "String",
+            "MinLength": "1",
             "MaxLength": "255"
         },
         "SourceEvents": {
@@ -71,7 +77,7 @@
                     "Ref": "RuleName"
                 },
                 "Description": {
-                    "Ref": "RuleName"
+                    "Ref": "Description"
                 },
                 "Scope": {
                     "Fn::If": [

@@ -3,6 +3,10 @@ variable "rule_name" {
 	description = "Rule name to export."
 }
 
+variable "rule_lambda_name" {
+	type = string
+	description = "Lambda function name for the Config Rule to export."
+}
 
 variable "source_runtime" {
 	type = string
@@ -63,6 +67,11 @@ variable "source_periodic" {
 variable "lambda_role_arn" {
 	description = "Assign existing iam role to lambda functions. If omitted, new lambda role will be created."
 	type = string
+}
+
+variable "lambda_timeout" {
+    description = "Lambda function timeout"
+    type = string
 }
 
 locals {

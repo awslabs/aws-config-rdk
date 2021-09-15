@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Params
-#python_version must be either "2" or "3"
+#python_version must be "3"
 python_version=$1
 
 echo $CODEBUILD_SOURCE_VERSION
@@ -9,13 +9,17 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
   echo ${BASH_REMATCH[1]};
   build_id=${BASH_REMATCH[1]};
 
-  version_string="Python27";
+  version_string="Python36";
   windows_ami="ami-574d182b"
 
   if [[ ${python_version} == "3" ]]; then
     version_string="Python36";
   elif [[ ${python_version} == "37" ]]; then
     version_string="Python37";
+  elif [[ ${python_version} == "38" ]]; then
+    version_string="Python38";
+  elif [[ ${python_version} == "39" ]]; then
+    version_string="Python39";
   fi
 
   #Construct powershell script to run test and publish results to S3
@@ -26,15 +30,14 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
     set AWS_DEFAULT_REGION=ap-southeast-1
     Set-DefaultAWSRegion -Region ap-southeast-1
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 init >C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P39 --runtime python3.9 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
-    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P2 --runtime python2.7 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule_JS --runtime nodejs4.3 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 modify WP${python_version}-TestRule-P3 --input-parameters '{\"TestParameter\":\"TestValue\"}' >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule_P3 --runtime python3.6 --maximum-frequency One_Hour >>C:\tmp\output.txt
-    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 test-local WP${version}-TestRule-P2  >>C:\tmp\output.txt
-    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 test-local WP${version}-TestRule-P3  >>C:\tmp\output.txt
-    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 deploy WP${version}-TestRule-P2  >>C:\tmp\output.txt
+    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 test-local WP${python_version}-TestRule-P3  >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 deploy WP${python_version}-TestRule-P3 >>C:\tmp\output.txt
     Start-Sleep -s 60
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 logs WP${python_version}-TestRule-P3 >>C:\tmp\output.txt

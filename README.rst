@@ -9,7 +9,7 @@ For complete documentation, including command reference, check out the `ReadTheD
 
 Getting Started
 ===============
-Uses python 2.7/3.6/3.7 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
+Uses python 3.6/3.7/3.8/3.9 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
 
 Under the hood, rdk uses boto3 to make API calls to AWS, so you can set your credentials any way that boto3 recognizes (options 3 through 8 here: http://boto3.readthedocs.io/en/latest/guide/configuration.html) or pass them in with the command-line parameters --profile, --region, --access-key-id, or --secret-access-key
 
@@ -55,13 +55,23 @@ To use the RDK, it's recommended to create a directory that will be your working
 
 Running ``init`` subsequent times will validate your AWS Config setup and re-create any S3 buckets or IAM resources that are needed.
 
+- If you have config delivery bucket already present in some other AWS account then use **--config-bucket-exists-in-another-account** as argument:::
+
+  $ rdk init --config-bucket-exists-in-another-account
+- If you have AWS Organizations/ControlTower Setup in your AWS environment then additionally, use **--control-tower** as argument:::
+
+  $ rdk init --control-tower --config-bucket-exists-in-another-account
+- If bucket for custom lambda code is already present in current account then use **--skip-code-bucket-creation** argument:::
+
+  $ rdk init --skip-code-bucket-creation
+
 Create Rules
 ------------
 In your working directory, use the ``create`` command to start creating a new custom rule.  You must specify the runtime for the lambda function that will back the Rule, and you can also specify a resource type (or comma-separated list of types) that the Rule will evaluate or a maximum frequency for a periodic rule.  This will add a new directory for the rule and populate it with several files, including a skeleton of your Lambda code.
 
 ::
 
-  $ rdk create MyRule --runtime python3.7 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
+  $ rdk create MyRule --runtime python3.8 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
   Running create!
   Local Rule files created.
 
@@ -122,7 +132,7 @@ If you need to change the parameters of a Config rule in your working directory 
 
 ::
 
-  $ rdk modify MyRule --runtime python2.7 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
+  $ rdk modify MyRule --runtime python3.6 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
   Running modify!
   Modified Rule 'MyRule'.  Use the `deploy` command to push your changes to AWS.
 
@@ -150,6 +160,29 @@ Once you have completed your compliance validation code and set your Rule's conf
 
 The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.
 
+Deploy Organization Rule
+------------------------
+You can also deploy the Rule to your AWS Organization using the ``deploy-organization`` command.
+For successful evaluation of custom rules in child accounts, please make sure you do one of the following: 
+
+1. Set ASSUME_ROLE_MODE in Lambda code to True, to get the lambda to assume the Role attached on the Config Service and confirm that the role trusts the master account where the Lambda function is going to be deployed.
+2. Set ASSUME_ROLE_MODE in Lambda code to True, to get the lambda to assume a custom role and define an optional parameter with key as ExecutionRoleName and set the value to your custom role name; confirm that the role trusts the master account of the organization where the Lambda function will be deployed.
+
+::
+
+  $ rdk deploy-organization MyRule
+  Running deploy!
+  Zipping MyRule
+  Uploading MyRule
+  Creating CloudFormation Stack for MyRule
+  Waiting for CloudFormation stack operation to complete...
+  ...
+  Waiting for CloudFormation stack operation to complete...
+  Config deploy complete.
+  
+The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.
+This command uses 'PutOrganizationConfigRule' API for the rule deployment. If a new account joins an organization, the rule is deployed to that account. When an account leaves an organization, the rule is removed. Deployment of existing organizational AWS Config Rules will only be retried for 7 hours after an account is added to your organization if a recorder is not available. You are expected to create a recorder if one doesn't exist within 7 hours of adding an account to your organization.
+
 View Logs For Deployed Rule
 ---------------------------
 Once the Rule has been deployed to AWS you can get the CloudWatch logs associated with your lambda function using the ``logs`` command.
@@ -171,7 +204,7 @@ You can use the ``-n`` and ``-f`` command line flags just like the UNIX ``tail``
 Running the tests
 =================
 
-The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environemnts (currently Ubuntu linux running python2.7, Ubuntu linux running python 3.6/3.7, and Windows Server running python2.7).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
+The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environments (currently Ubuntu linux running python 3.6/3.7/3.8/3.9, and Windows Server running python3.6).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
 
 
 Advanced Features
@@ -194,6 +227,33 @@ This command generates a CloudFormation template that defines the AWS Config rul
   Generating CloudFormation template!
   CloudFormation template written to remote-rule-template.json
 
+
+Disable the supported resource types check
+------------------------------------------
+It is now possible to define a resource type that is not yet supported by rdk. To disable the supported resource check use the optional flag '--skip-supported-resource-check' during the create command.
+
+::
+
+  $ rdk create MyRule --runtime python3.8 --resource-types AWS::New::ResourceType --skip-supported-resource-check
+  'AWS::New::ResourceType' not found in list of accepted resource types.
+  Skip-Supported-Resource-Check Flag set (--skip-supported-resource-check), ignoring missing resource type error.
+  Running create!
+  Local Rule files created.
+  
+Custom Lambda Function Name
+---------------------------
+As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Rule-Function-<RULE_NAME>' it is possible to customize the name for the Lambda function to any 64 characters string as per Lambda's naming standards using the optional '--custom-lambda-name' flag while performing rdk create. This opens up new features like : 
+
+1. Longer config rule name.
+2. Custom lambda function naming as per personal or enterprise standards.
+
+::
+
+  $ rdk create MyLongerRuleName --runtime python3.8 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
+  Running create!
+  Local Rule files created.
+  
+The above example would create files with config rule name as 'MyLongerRuleName' and lambda function with the name 'custom-prefix-for-MyLongerRuleName' instead of 'RDK-Rule-Function-MyLongerRuleName'
 
 RuleSets
 --------
@@ -236,7 +296,7 @@ To do so, create a rule using "rdk create" and provide a valid SourceIdentifier 
 Contributing
 ============
 
-email me at mborch@amazon.com if you are interested in contributing.  I'm using the github issues log as my "to-do" list, and I'm also happy to get PR's if you see something you want to fix.
+email us at rdk-maintainers@amazon.com if you have any questions. We are happy to help and discuss. 
 
 Authors
 =======

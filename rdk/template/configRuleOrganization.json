@@ -153,41 +153,26 @@
       }
     },
     "rdkConfigRule": {
-      "Type": "AWS::Config::ConfigRule",
+      "Type": "AWS::Config::OrganizationConfigRule",
       "DependsOn": [
         "ConfigPermissionToCallrdkRuleCodeLambda"
       ],
       "Properties": {
-        "ConfigRuleName": { "Ref": "RuleName" },
-        "Description": { "Ref": "Description" },
-        "Scope": {
-          "Fn::If": [ "EventTriggered",
-            { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },
-            { "Ref": "AWS::NoValue" }
-          ]
-        },
-        "Source": {
-          "Owner": "CUSTOM_LAMBDA",
-          "SourceIdentifier": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
-          "SourceDetails": [
-            {"Fn::If": [
-            "EventTriggered",
-            {
-              "EventSource": "aws.config",
-              "MessageType": "ConfigurationItemChangeNotification"
-            },
-            { "Ref": "AWS::NoValue"}]},
-            {"Fn::If": [
+        "OrganizationConfigRuleName": { "Ref": "RuleName" },
+        "OrganizationCustomRuleMetadata": {
+          "Description": { "Ref": "Description" },
+          "InputParameters": { "Ref": "SourceInputParameters" },
+          "LambdaFunctionArn": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
+          "ResourceTypesScope": { "Ref": "SourceEvents" },
+          "OrganizationConfigRuleTriggerTypes": [ {"Fn::If": [
             "PeriodicTriggered",
-            {
-              "EventSource": "aws.config",
-              "MessageType": "ScheduledNotification",
-              "MaximumExecutionFrequency": { "Ref": "SourcePeriodic" }
-            },
+            "ScheduledNotification" ,
+            "ConfigurationItemChangeNotification" ]} ],
+          "MaximumExecutionFrequency": {"Fn::If": [
+            "PeriodicTriggered",
+            { "Ref": "SourcePeriodic" },
             { "Ref": "AWS::NoValue"}]}
-          ]
-        },
-        "InputParameters": { "Ref": "SourceInputParameters" }
+        }
       }
     },
     "rdkLambdaRole": {
