@@ -167,7 +167,7 @@ The exact output will vary depending on Lambda runtime.  You can use the --all f
 Deploy Organization Rule
 ------------------------
 You can also deploy the Rule to your AWS Orgnization using the ``deploy-organization`` command.
-For successful evaluation of custom rules in child accounts, please make sure you do one of the following: 
+For successful evaluation of custom rules in child accounts, please make sure you do one of the following:
 
 1. Set ASSUME_ROLE_MODE in Lambda code to True, to get the lambda to assume the Role attached on the Config Service and confirm that the role trusts the master account where the Lambda function is going to be deployed.
 2. Set ASSUME_ROLE_MODE in Lambda code to True, to get the lambda to assume a custom role and define an optional parameter with key as ExecutionRoleName and set the value to your custom role name; confirm that the role trusts the master account of the organization where the Lambda function will be deployed.
@@ -183,7 +183,7 @@ For successful evaluation of custom rules in child accounts, please make sure yo
   ...
   Waiting for CloudFormation stack operation to complete...
   Config deploy complete.
-  
+
 The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.
 This command uses 'PutOrganizationConfigRule' API for the rule deployment. If a new account joins an organization, the rule is deployed to that account. When an account leaves an organization, the rule is removed. Deployment of existing organizational AWS Config Rules will only be retried for 7 hours after an account is added to your organization if a recorder is not available. You are expected to create a recorder if one doesn't exist within 7 hours of adding an account to your organization.
 
@@ -296,6 +296,10 @@ Managed Rules
 The RDK is able to deploy AWS Managed Rules.
 
 To do so, create a rule using "rdk create" and provide a valid SourceIdentifier via the --source-identifier CLI option. The list of Managed Rules can be found here: https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html, and note that the Identifier can be obtained by replacing the dashes with underscores and using all capitals (for example, the "guardduty-enabled-centralized" rule has the SourceIdentifier "GUARDDUTY_ENABLED_CENTRALIZED").  Just like custom Rules you will need to specify source events and/or a maximum evaluation frequency, and also pass in any Rule parameters.  The resulting Rule directory will contain only the parameters.json file, but using `rdk deploy` or `rdk create-rule-template` can be used to deploy the Managed Rule like any other Custom Rule.
+
+Deploying Rules Across Multiple Regions
+-------------
+The RDK is able to run init/deploy/undeploy across multiple regions with a rdk -f <region file
 
 Contributing
 ============

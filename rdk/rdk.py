@@ -450,7 +450,7 @@ def get_create_region_set_parser():
         prog='rdk create-region-set',
         description="Outputs a YAML region set file for multi-region deployment."
     )
-    parser.add_argument('-o','--output-file', required=False, default="regions", help="Filename of the generated regionset file")
+    parser.add_argument('-o','--output-file', required=False, default="regions", help="Filename of the generated region set file")
     return parser
 
 def parse_region_file(args):
