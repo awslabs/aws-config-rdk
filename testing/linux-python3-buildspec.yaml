@@ -28,7 +28,6 @@ phases:
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P38_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P37_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P36_lib
-      - yes | rdk -f test-region.yaml --region-set test-commercial undeploy LP3_TestRule_P36_lib
       - rdk create LP3_TestRule_P39 --runtime python3.9 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
