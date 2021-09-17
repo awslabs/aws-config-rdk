@@ -9,6 +9,7 @@ phases:
   pre_build:
     commands:
       - echo Starting tests
+      - rm -rf LP3*
   build:
     commands:
       - rdk create-region-set -o test-region
