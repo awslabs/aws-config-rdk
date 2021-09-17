@@ -524,7 +524,10 @@ class rdk:
         if lambda_layer_version:
             print(f"[{my_session.region_name}]: Found Version: " + lambda_layer_version)
 
-        if self.args.generate_lambda_layer or not lambda_layer_version:
+        if self.args.generate_lambda_layer:
+            lambda_layer_version = self.__get_existing_lambda_layer(my_session)
+            if lambda_layer_version:
+                print(f"[{my_session.region_name}]: Found Version: " + lambda_layer_version)
             if self.args.generate_lambda_layer:
                 print(f"[{my_session.region_name}]: --generate-lambda-layer Flag received, forcing update of the Lambda Layer in {my_session.region_name}")
             else:

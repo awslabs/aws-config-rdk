@@ -305,6 +305,12 @@ If no region group is specified, rdk will deploy to the `default` region set
 
 To create a sample starter region group, run `rdk create-region-set` to specify the filename, add the `-o <region set output file name>` this will create a region set with the following tests and regions `"default":["us-east-1","us-west-1","eu-north-1","ap-east-1"],"aws-cn-region-set":["cn-north-1","cn-northwest-1"]`
 
+Using RDK to Generate a Lambda Layer in a region (Python3)
+-------------
+By default `rdk init --generate-lambda-layer` will generate an rdklib lambda layer while running init in whatever region it is run, to force re-generation of the layer, run `rdk init --generate-lambda-layer` again over a region
+
+To use this generated lambda layer, add the flag `--generated-lambda-layer` when running `rdk deploy`. For example: `rdk -f regions.yaml deploy LP3_TestRule_P36_lib --generated-lambda-layer`
+
 Contributing
 ============
 
