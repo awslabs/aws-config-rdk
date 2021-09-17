@@ -11,6 +11,7 @@ phases:
       - echo Starting tests
   build:
     commands:
+<<<<<<< HEAD
       - python3 testing/multi_region_execution_test.py
       - python3 testing/partition_test.py
       - rdk init --generate-lambda-layer
@@ -24,14 +25,21 @@ phases:
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P38_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P37_lib
       - yes | rdk -f test-region.yaml --region-set test-commercial undeploy LP3_TestRule_P36_lib
+=======
+      - rdk create LP3_TestRule_P39 --runtime python3.9 --resource-types AWS::EC2::SecurityGroup
+>>>>>>> dc3c67ed3987d60f2d09f697bd59b7495f311cf4
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_JS --runtime nodejs4.3 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_EFSFS --runtime python3.9 --resource-types AWS::EFS::FileSystem
       - rdk create LP3_TestRule_CREC --runtime python3.8 --resource-types AWS::Config::ResourceCompliance
       - rdk create LP3_TestRule_ECSTD --runtime python3.7 --resource-types AWS::ECS::TaskDefinition
       - rdk create LP3_TestRule_ECSS --runtime python3.6 --resource-types AWS::ECS::Service
+<<<<<<< HEAD
       - rdk create LP3_TestRule_EFSFS --runtime python3.7 --resource-types AWS::EFS::FileSystem
+=======
+>>>>>>> dc3c67ed3987d60f2d09f697bd59b7495f311cf4
       - rdk modify LP3_TestRule_P3 --input-parameters '{"TestParameter":"TestValue"}'
       - rdk create LP3_TestRule_P3_Periodic --runtime python3.6 --maximum-frequency One_Hour
       - rdk create LP3_TestRule_P36lib_Periodic --runtime python3.6-lib --maximum-frequency One_Hour
@@ -39,6 +47,8 @@ phases:
       - rdk create LP3_TestRule_P37lib_Periodic --runtime python3.7-lib --maximum-frequency One_Hour
       - rdk create LP3_TestRule_P38_Periodic --runtime python3.8 --maximum-frequency One_Hour
       - rdk create LP3_TestRule_P38lib_Periodic --runtime python3.8-lib --maximum-frequency One_Hour
+      - rdk create LP3_TestRule_P39_Periodic --runtime python3.9 --maximum-frequency One_Hour
+      - rdk create LP3_TestRule_P39lib_Periodic --runtime python3.9-lib --maximum-frequency One_Hour
       - rdk test-local --all
       - rdk deploy --all
       - yes | rdk undeploy LP3_TestRule_P3
@@ -46,6 +56,8 @@ phases:
       - yes | rdk undeploy LP3_TestRule_P37_Periodic
       - yes | rdk undeploy LP3_TestRule_P38
       - yes | rdk undeploy LP3_TestRule_P38_Periodic
+      - yes | rdk undeploy LP3_TestRule_P39
+      - yes | rdk undeploy LP3_TestRule_P39_Periodic
       - sleep 30
       - rdk logs LP3_TestRule_P3
       - yes | rdk undeploy -a
