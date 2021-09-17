@@ -9,7 +9,7 @@ For complete documentation, including command reference, check out the `ReadTheD
 
 Getting Started
 ===============
-Uses python 3.6/3.7/3.8 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
+Uses python 3.6/3.7/3.8/3.9 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
 
 Under the hood, rdk uses boto3 to make API calls to AWS, so you can set your credentials any way that boto3 recognizes (options 3 through 8 here: http://boto3.readthedocs.io/en/latest/guide/configuration.html) or pass them in with the command-line parameters --profile, --region, --access-key-id, or --secret-access-key
 
@@ -166,7 +166,7 @@ The exact output will vary depending on Lambda runtime.  You can use the --all f
 
 Deploy Organization Rule
 ------------------------
-You can also deploy the Rule to your AWS Orgnization using the ``deploy-organization`` command.
+You can also deploy the Rule to your AWS Organization using the ``deploy-organization`` command.
 For successful evaluation of custom rules in child accounts, please make sure you do one of the following:
 
 1. Set ASSUME_ROLE_MODE in Lambda code to True, to get the lambda to assume the Role attached on the Config Service and confirm that the role trusts the master account where the Lambda function is going to be deployed.
@@ -208,7 +208,7 @@ You can use the ``-n`` and ``-f`` command line flags just like the UNIX ``tail``
 Running the tests
 =================
 
-The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environemnts (currently Ubuntu linux running python 3.6/3.7/3.8, and Windows Server running python3.6).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
+The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environments (currently Ubuntu linux running python 3.6/3.7/3.8/3.9, and Windows Server running python3.6).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
 
 
 Advanced Features
@@ -246,7 +246,7 @@ It is now possible to define a resource type that is not yet supported by rdk. T
 
 Custom Lambda Function Name
 ---------------------------
-As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Rule-Function-<RULE_NAME>' it is possible to customize the name for lambda function to any 64 characters string as per lambda naming standrds using the optional '--custom-lambda-name' flag while performing rdk create. This opens up new features like :
+As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Rule-Function-<RULE_NAME>' it is possible to customize the name for the Lambda function to any 64 characters string as per Lambda's naming standards using the optional '--custom-lambda-name' flag while performing rdk create. This opens up new features like :
 
 1. Longer config rule name.
 2. Custom lambda function naming as per personal or enterprise standards.
