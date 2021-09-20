@@ -2976,7 +2976,8 @@ class rdk:
             # This copy avoids the archiver trying to include the output zip in itself
             s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name, 'bin', 'Release', app_runtime, 'publish')
             tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+session.region_name), 'zip', s3_src_dir)
-            shutil.copy(tmp_src, package_file_dst)
+            if not(os.path.exists(package_file_dst)):
+                shutil.copy(tmp_src, package_file_dst)
             s3_src = os.path.abspath(package_file_dst)
             self.__delete_package_file(tmp_src)
 
@@ -2989,7 +2990,8 @@ class rdk:
             # zip rule code files and upload to s3 bucket
             s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
             tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+session.region_name), 'zip', s3_src_dir)
-            shutil.copy(tmp_src, package_file_dst)
+            if not(os.path.exists(package_file_dst)):
+                shutil.copy(tmp_src, package_file_dst)
             s3_src = os.path.abspath(package_file_dst)
             self.__delete_package_file(tmp_src)
 
@@ -3318,7 +3320,8 @@ class rdk:
             print (f"[{session.region_name}]: Uploading " + rule_name)
             my_s3.meta.client.upload_file(tmp_src, code_bucket_name, s3_dst)
             print (f"[{session.region_name}]: Upload complete.")
-            shutil.copy(tmp_src, package_file_dst)
+            if not(os.path.exists(package_file_dst)):
+                shutil.copy(tmp_src, package_file_dst)
             self.__delete_package_file(tmp_src)
 
         else:
@@ -3339,7 +3342,8 @@ class rdk:
             print (f"[{session.region_name}]: Uploading " + rule_name)
             my_s3.meta.client.upload_file(tmp_src, code_bucket_name, s3_dst)
             print (f"[{session.region_name}]: Upload complete.")
-            shutil.copy(tmp_src, package_file_dst)
+            if not(os.path.exists(package_file_dst)):
+                shutil.copy(tmp_src, package_file_dst)
             self.__delete_package_file(tmp_src)
 
         return s3_dst
