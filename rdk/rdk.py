@@ -1470,15 +1470,6 @@ class rdk:
                     'ParameterValue': str(self.args.lambda_timeout)
                 }]
             layers = self.__get_lambda_layers(my_session, self.args, rule_params)
-            if 'SourceRuntime' in rule_params:
-                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib', 'python3.9-lib']:
-                    if self.args.rdklib_layer_arn:
-                        layers.append(self.args.rdklib_layer_arn)
-                    else:
-                        rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
-                        rdklib_arn = RDKLIB_ARN_STRING.format(region=my_session.region_name, version=rdk_lib_version)
-                        layers.append(rdklib_arn)
-
 
             if self.args.lambda_layers:
                 additional_layers = self.args.lambda_layers.split(',')
@@ -1830,15 +1821,7 @@ class rdk:
                     'ParameterKey': 'Timeout',
                     'ParameterValue': str(self.args.lambda_timeout)
                 }]
-            layers = []
-            if 'SourceRuntime' in rule_params:
-                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib', 'python3.9-lib']:
-                    if self.args.rdklib_layer_arn:
-                        layers.append(self.args.rdklib_layer_arn)
-                    else:
-                        rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
-                        rdklib_arn = RDKLIB_ARN_STRING.format(region=my_session.region_name, version=rdk_lib_version)
-                        layers.append(rdklib_arn)
+            layers = self.__get_lambda_layers(session,self.args,params)
 
 
             if self.args.lambda_layers:
@@ -1990,16 +1973,6 @@ class rdk:
             rdk_lib_version = "0"
             my_session = self.__get_boto_session()
             layers = self.__get_lambda_layers(my_session, self.args, rule_params)
-            if 'SourceRuntime' in rule_params:
-                if rule_params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib', 'python3.9-lib']:
-                    if self.args.rdklib_layer_arn:
-                        layers.append(self.args.rdklib_layer_arn)
-                    else:
-                        #create custom session based on whatever credentials are available to us
-                        my_session = self.__get_boto_session()
-                        rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
-                        rdklib_arn = RDKLIB_ARN_STRING.format(region=my_session.region_name, version=rdk_lib_version)
-                        layers.append(rdklib_arn)
 
             if self.args.lambda_layers:
                 additional_layers = self.args.lambda_layers.split(',')
