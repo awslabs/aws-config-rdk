@@ -1574,7 +1574,7 @@ class rdk:
                 print(f"[{my_session.region_name}]: Lambda code updated.")
             except ClientError as e:
                 #If we're in the exception, the stack does not exist and we should create it.
-                print (f"[{my_session.region_name}]: Creating CloudFormation Stack for " + rule_name)
+                print (f"[{my_session.region_name}]: Creating CloudFormatioon Stack for " + rule_name)
                 cfn_args = {
                     'StackName': my_stack_name,
                     'TemplateBody': json.dumps(json_body,indent=2),
@@ -2981,6 +2981,7 @@ class rdk:
             self.__delete_package_file(tmp_src)
 
         else:
+            print("AHHHHH")
             print("Zipping " + rule_name)
             # Remove old zip file if it already exists
             package_file_dst = os.path.join(rule_name, rule_name + ".zip")
@@ -3322,7 +3323,7 @@ class rdk:
             s3_src = os.path.abspath(package_file_dst)
             self.__delete_package_file(tmp_src)
 
-        s3_dst = "/".join((rule_name, rule_name+session.region_name+".zip"))
+        s3_dst = "/".join((rule_name, rule_name+".zip"))
 
         my_s3 = session.resource('s3')
 
@@ -3524,6 +3525,7 @@ class rdk:
             resources["rdkLambdaRole"] = lambda_role
 
         rule_names = self.__get_rule_list_for_command()
+        my_session = self.__get_boto_session()
         for rule_name in rule_names:
             alphanum_rule_name = self.__get_alphanumeric_rule_name(rule_name)
             params, tags = self.__get_rule_parameters(rule_name)
