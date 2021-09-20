@@ -2969,27 +2969,26 @@ class rdk:
                 subprocess.call(command, cwd=working_dir)
 
             # Remove old zip file if it already exists
-            package_file_dst = os.path.join(rule_name, rule_name + ".zip")
+            package_file_dst = os.path.join(rule_name, rule_name+".zip")
             self.__delete_package_file(package_file_dst)
 
             # Create new package in temp directory, copy to rule directory
             # This copy avoids the archiver trying to include the output zip in itself
             s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name, 'bin', 'Release', app_runtime, 'publish')
-            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+session.region_name), 'zip', s3_src_dir)
             shutil.copy(tmp_src, package_file_dst)
             s3_src = os.path.abspath(package_file_dst)
             self.__delete_package_file(tmp_src)
 
         else:
-            print("AHHHHH")
             print("Zipping " + rule_name)
             # Remove old zip file if it already exists
-            package_file_dst = os.path.join(rule_name, rule_name + ".zip")
+            package_file_dst = os.path.join(rule_name, rule_name+".zip")
             self.__delete_package_file(package_file_dst)
 
             # zip rule code files and upload to s3 bucket
             s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
-            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), session.region_name+rule_name), 'zip', s3_src_dir)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+session.region_name), 'zip', s3_src_dir)
             shutil.copy(tmp_src, package_file_dst)
             s3_src = os.path.abspath(package_file_dst)
             self.__delete_package_file(tmp_src)
@@ -3282,6 +3281,14 @@ class rdk:
 
             #set source as distribution zip
             s3_src = os.path.join(os.getcwd(), rules_dir, rule_name, 'build', 'distributions', rule_name+session.region_name+".zip")
+            s3_dst = "/".join((rule_name, rule_name+".zip"))
+
+            my_s3 = session.resource('s3')
+
+            print (f"[{session.region_name}]: Uploading " + rule_name)
+            my_s3.meta.client.upload_file(s3_src, code_bucket_name, s3_dst)
+            print (f"[{session.region_name}]: Upload complete.")
+
         elif params['SourceRuntime'] in ["dotnetcore1.0","dotnetcore2.0"]:
             print ("Packaging "+rule_name)
             working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
@@ -3297,21 +3304,29 @@ class rdk:
                 subprocess.call( command, cwd=working_dir)
 
             # Remove old zip file if it already exists
-            package_file_dst = os.path.join(rule_name, rule_name+session.region_name+".zip")
+            package_file_dst = os.path.join(rule_name, rule_name+".zip")
             self.__delete_package_file(package_file_dst)
 
             # Create new package in temp directory, copy to rule directory
             # This copy avoids the archiver trying to include the output zip in itself
             s3_src_dir = os.path.join(os.getcwd(),rules_dir, rule_name,'bin','Release', app_runtime, 'publish')
-            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name), 'zip', s3_src_dir)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+session.region_name), 'zip', s3_src_dir)
             shutil.copy(tmp_src, package_file_dst)
             s3_src = os.path.abspath(package_file_dst)
+            self.__delete_package_file(tmp_src)
+            s3_dst = "/".join((rule_name, rule_name+".zip"))
+
+            my_s3 = session.resource('s3')
+
+            print (f"[{session.region_name}]: Uploading " + rule_name)
+            my_s3.meta.client.upload_file(tmp_src, code_bucket_name, s3_dst)
+            print (f"[{session.region_name}]: Upload complete.")
             self.__delete_package_file(tmp_src)
 
         else:
             print (f"[{session.region_name}]: Zipping " + rule_name)
             # Remove old zip file if it already exists
-            package_file_dst = os.path.join(rule_name, rule_name+session.region_name+".zip")
+            package_file_dst = os.path.join(rule_name, rule_name+".zip")
             self.__delete_package_file(package_file_dst)
 
             #zip rule code files and upload to s3 bucket
@@ -3321,15 +3336,15 @@ class rdk:
 
             shutil.copy(tmp_src, package_file_dst)
             s3_src = os.path.abspath(package_file_dst)
+
+            s3_dst = "/".join((rule_name, rule_name+".zip"))
+
+            my_s3 = session.resource('s3')
+
+            print (f"[{session.region_name}]: Uploading " + rule_name)
+            my_s3.meta.client.upload_file(tmp_src, code_bucket_name, s3_dst)
+            print (f"[{session.region_name}]: Upload complete.")
             self.__delete_package_file(tmp_src)
-
-        s3_dst = "/".join((rule_name, rule_name+".zip"))
-
-        my_s3 = session.resource('s3')
-
-        print (f"[{session.region_name}]: Uploading " + rule_name)
-        my_s3.meta.client.upload_file(s3_src, code_bucket_name, s3_dst)
-        print (f"[{session.region_name}]: Upload complete.")
 
         return s3_dst
 
