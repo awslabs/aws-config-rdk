@@ -3638,7 +3638,7 @@ class rdk:
         region = session.region_name
         print(f"[{region}]: Creating new rdklib-layer")
         folder_name = "lib" + str(uuid.uuid4())
-        shell_command = f"pip3 install --target python boto3 botocore rdk rdklib"
+        shell_command = f"pip3 install --target python boto3 botocore rdk rdklib future mock"
 
         print(f"[{region}]: Installing Packages to {folder_name}/python")
         try:
@@ -3650,7 +3650,7 @@ class rdk:
         ret = subprocess.run(shell_command, capture_output=True, shell=True)
 
         print(f"[{region}]: Creating rdk_lib_layer.zip")
-        shutil.make_archive(f"rdk_lib_layer", "zip", f"python")
+        shutil.make_archive(f"rdk_lib_layer", "zip", "." ,"python")
         os.chdir("..")
         s3_client = session.client('s3')
         s3_resource = session.resource('s3')
