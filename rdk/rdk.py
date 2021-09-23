@@ -50,7 +50,7 @@ example_ci_dir = 'example_ci'
 test_ci_filename = 'test_ci.json'
 event_template_filename = 'test_event_template.json'
 
-RDKLIB_LAYER_VERSION={'ap-southeast-1':'28', 'ap-south-1':'5', 'us-east-2':'5', 'us-east-1':'5', 'us-west-1':'4', 'us-west-2':'4', 'ap-northeast-2':'5', 'ap-southeast-2':'5', 'ap-northeast-1':'5', 'ca-central-1':'5', 'eu-central-1':'5', 'eu-west-1':'5', 'eu-west-2':'4', 'eu-west-3':'5', 'eu-north-1':'5', 'sa-east-1':'5', 'cn-north-1': '1', 'cn-northwest-1': '1', 'ap-east-1': '1', 'eu-south-1': '1'}
+RDKLIB_LAYER_VERSION={'ap-southeast-1':'28', 'ap-south-1':'5', 'us-east-2':'5', 'us-east-1':'5', 'us-west-1':'4', 'us-west-2':'4', 'ap-northeast-2':'5', 'ap-southeast-2':'5', 'ap-northeast-1':'5', 'ca-central-1':'5', 'eu-central-1':'5', 'eu-west-1':'5', 'eu-west-2':'4', 'eu-west-3':'5', 'eu-north-1':'5', 'sa-east-1':'5'}
 
 RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{version}"
 PARALLEL_COMMAND_THROTTLE_PERIOD = 2  # 2 seconds, used in running commands in parallel over multiple regions
