@@ -5,7 +5,7 @@ import boto3
 
 test_file_name = "test-region.yaml"
 
-cfn_client_ap_east = boto3.client('cloudformation', region_name='ap-east-1')
+cfn_client_ap_east = boto3.client('cloudformation', region_name='ap-southeast-1')
 stack_status_ap_east = cfn_client_ap_east.describe_stacks(StackName='MFAENABLEDRULE')
 if stack_status_ap_east["Stacks"][0]["StackStatus"] != "CREATE_COMPLETE":
     sys.exit(1)
