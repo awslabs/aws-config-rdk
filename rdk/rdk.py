@@ -2960,6 +2960,7 @@ class rdk:
                     sys.exit(1)
 
     def __package_function_code(self, rule_name, params):
+        my_session = self.__get_boto_session()
         if params['SourceRuntime'] == "java8":
             # Do java build and package.
             print("Running Gradle Build for " + rule_name)
@@ -2990,7 +2991,7 @@ class rdk:
             # Create new package in temp directory, copy to rule directory
             # This copy avoids the archiver trying to include the output zip in itself
             s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name, 'bin', 'Release', app_runtime, 'publish')
-            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+session.region_name), 'zip', s3_src_dir)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+my_session.region_name), 'zip', s3_src_dir)
             if not(os.path.exists(package_file_dst)):
                 shutil.copy(tmp_src, package_file_dst)
             s3_src = os.path.abspath(package_file_dst)
@@ -3004,7 +3005,7 @@ class rdk:
 
             # zip rule code files and upload to s3 bucket
             s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
-            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+session.region_name), 'zip', s3_src_dir)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+my_session.region_name), 'zip', s3_src_dir)
             if not(os.path.exists(package_file_dst)):
                 shutil.copy(tmp_src, package_file_dst)
             s3_src = os.path.abspath(package_file_dst)
