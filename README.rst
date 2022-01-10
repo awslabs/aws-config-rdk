@@ -332,6 +332,8 @@ Authors
 * **Santosh Kumar** - *current maintainer*
 * **Jose Obando** - *current maintainer*
 * **Sandeep Batchu** - *current maintainer*
+* **Jarrett Andrulis** - *current maintainer*
+* **Julio Delgado Jr** - *current maintainer*
 
 License
 =======
