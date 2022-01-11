@@ -17,7 +17,7 @@ import sys
 import tempfile
 import time
 import unittest
-from boto3 import session
+from boto3 import Session
 import yaml
 from builtins import input
 from datetime import datetime
@@ -1836,7 +1836,7 @@ class rdk:
                     'ParameterKey': 'Timeout',
                     'ParameterValue': str(self.args.lambda_timeout)
                 }]
-            layers = self.__get_lambda_layers(session,self.args,params)
+            layers = self.__get_lambda_layers(my_session,self.args,rule_params)
 
 
             if self.args.lambda_layers:
@@ -2699,10 +2699,10 @@ class rdk:
             session_args['aws_access_key_id']=self.args.access_key_id
             session_args['aws_secret_access_key']=self.args.secret_access_key
 
-        return boto3.session.Session(**session_args)
+        return Session(**session_args)
 
-    def __get_caller_identity_details(self, session):
-        my_sts = session.client('sts')
+    def __get_caller_identity_details(self, my_session):
+        my_sts = my_session.client('sts')
         response = my_sts.get_caller_identity()
         arn_split = response['Arn'].split(':')
 
@@ -3289,23 +3289,23 @@ class rdk:
         except OSError:
             pass
 
-    def __upload_function_code(self, rule_name, params, account_id, session, code_bucket_name):
+    def __upload_function_code(self, rule_name, params, account_id, my_session, code_bucket_name):
         if params['SourceRuntime'] == "java8":
             #Do java build and package.
-            print (f"[{session.region_name}]: Running Gradle Build for "+rule_name)
+            print (f"[{my_session.region_name}]: Running Gradle Build for "+rule_name)
             working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
             command = ["gradle","build"]
             subprocess.call( command, cwd=working_dir)
 
             #set source as distribution zip
-            s3_src = os.path.join(os.getcwd(), rules_dir, rule_name, 'build', 'distributions', rule_name+session.region_name+".zip")
+            s3_src = os.path.join(os.getcwd(), rules_dir, rule_name, 'build', 'distributions', rule_name+my_session.region_name+".zip")
             s3_dst = "/".join((rule_name, rule_name+".zip"))
 
-            my_s3 = session.resource('s3')
+            my_s3 = my_session.resource('s3')
 
-            print (f"[{session.region_name}]: Uploading " + rule_name)
+            print (f"[{my_session.region_name}]: Uploading " + rule_name)
             my_s3.meta.client.upload_file(s3_src, code_bucket_name, s3_dst)
-            print (f"[{session.region_name}]: Upload complete.")
+            print (f"[{my_session.region_name}]: Upload complete.")
 
         elif params['SourceRuntime'] in ["dotnetcore1.0","dotnetcore2.0"]:
             print ("Packaging "+rule_name)
@@ -3328,20 +3328,20 @@ class rdk:
             # Create new package in temp directory, copy to rule directory
             # This copy avoids the archiver trying to include the output zip in itself
             s3_src_dir = os.path.join(os.getcwd(),rules_dir, rule_name,'bin','Release', app_runtime, 'publish')
-            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+session.region_name), 'zip', s3_src_dir)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+my_session.region_name), 'zip', s3_src_dir)
             s3_dst = "/".join((rule_name, rule_name+".zip"))
 
-            my_s3 = session.resource('s3')
+            my_s3 = my_session.resource('s3')
 
-            print (f"[{session.region_name}]: Uploading " + rule_name)
+            print (f"[{my_session.region_name}]: Uploading " + rule_name)
             my_s3.meta.client.upload_file(tmp_src, code_bucket_name, s3_dst)
-            print (f"[{session.region_name}]: Upload complete.")
+            print (f"[{my_session.region_name}]: Upload complete.")
             if not(os.path.exists(package_file_dst)):
                 shutil.copy(tmp_src, package_file_dst)
             self.__delete_package_file(tmp_src)
 
         else:
-            print (f"[{session.region_name}]: Zipping " + rule_name)
+            print (f"[{my_session.region_name}]: Zipping " + rule_name)
             # Remove old zip file if it already exists
             package_file_dst = os.path.join(rule_name, rule_name+".zip")
             self.__delete_package_file(package_file_dst)
@@ -3349,15 +3349,15 @@ class rdk:
             #zip rule code files and upload to s3 bucket
             s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
 
-            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+session.region_name), 'zip', s3_src_dir)
+            tmp_src = shutil.make_archive(os.path.join(tempfile.gettempdir(), rule_name+my_session.region_name), 'zip', s3_src_dir)
 
             s3_dst = "/".join((rule_name, rule_name+".zip"))
 
-            my_s3 = session.resource('s3')
+            my_s3 = my_session.resource('s3')
 
-            print (f"[{session.region_name}]: Uploading " + rule_name)
+            print (f"[{my_session.region_name}]: Uploading " + rule_name)
             my_s3.meta.client.upload_file(tmp_src, code_bucket_name, s3_dst)
-            print (f"[{session.region_name}]: Upload complete.")
+            print (f"[{my_session.region_name}]: Upload complete.")
             if not(os.path.exists(package_file_dst)):
                 shutil.copy(tmp_src, package_file_dst)
             self.__delete_package_file(tmp_src)
@@ -3621,52 +3621,52 @@ class rdk:
         )
         return response
 
-    def __get_lambda_layers(self,session,args,params):
+    def __get_lambda_layers(self,my_session,args,params):
         layers = []
         if 'SourceRuntime' in params:
             if params['SourceRuntime'] in ['python3.6-lib', 'python3.7-lib', 'python3.8-lib']:
                 if args.generated_lambda_layer:
-                    lambda_layer_version = self.__get_existing_lambda_layer(session, layer_name=args.custom_layer_name)
+                    lambda_layer_version = self.__get_existing_lambda_layer(my_session, layer_name=args.custom_layer_name)
                     if not lambda_layer_version:
-                        print(f"{session.region_name} --generated-lambda-layer flag received, but rdklib-layer not found in {session.region_name}. Creating one now")
-                        self.__create_new_lambda_layer(session, layer_name=args.custom_layer_name)
-                        lambda_layer_version = self.__get_existing_lambda_layer(session, layer_name=args.custom_layer_name)
+                        print(f"{my_session.region_name} --generated-lambda-layer flag received, but rdklib-layer not found in {my_session.region_name}. Creating one now")
+                        self.__create_new_lambda_layer(my_session, layer_name=args.custom_layer_name)
+                        lambda_layer_version = self.__get_existing_lambda_layer(my_session, layer_name=args.custom_layer_name)
                     layers.append(lambda_layer_version)
                 elif args.rdklib_layer_arn:
                     layers.append(args.rdklib_layer_arn)
                 else:
-                    rdk_lib_version = RDKLIB_LAYER_VERSION[session.region_name]
-                    rdklib_arn = RDKLIB_ARN_STRING.format(region=session.region_name, version=rdk_lib_version)
+                    rdk_lib_version = RDKLIB_LAYER_VERSION[my_session.region_name]
+                    rdklib_arn = RDKLIB_ARN_STRING.format(region=my_session.region_name, version=rdk_lib_version)
                     layers.append(rdklib_arn)
         return layers
 
-    def __get_existing_lambda_layer(self, session, layer_name="rdklib-layer"):
-        region = session.region_name
-        lambda_client = session.client("lambda")
+    def __get_existing_lambda_layer(self, my_session, layer_name="rdklib-layer"):
+        region = my_session.region_name
+        lambda_client = my_session.client("lambda")
         print(f"[{region}]: Checking for Existing RDK Layer")
         response = lambda_client.list_layer_versions(LayerName=layer_name)
         if response["LayerVersions"]:
             return response['LayerVersions'][0]['LayerVersionArn']
         elif not response["LayerVersions"]:
             return None
-    def __create_new_lambda_layer(self, session, layer_name="rdklib-layer"):
+    def __create_new_lambda_layer(self, my_session, layer_name="rdklib-layer"):
 
         successful_return = None
         if layer_name == "rdklib-layer":
-            successful_return = self.__create_new_lambda_layer_serverless_repo(session)
+            successful_return = self.__create_new_lambda_layer_serverless_repo(my_session)
 
         # If that doesn't work, create it locally and upload - SAR doesn't support the custom layer name
         if layer_name != "rdklib-layer" or not successful_return:
             if layer_name == "rdklib-layer":
-                print(f"[{session.region_name}]: Serverless Application Repository deployment not supported, attempting manual deployment")
+                print(f"[{my_session.region_name}]: Serverless Application Repository deployment not supported, attempting manual deployment")
             else:
-                print(f"[{session.region_name}]: Custom name layer not supported with Serverless Application Repository deployment, attempting manual deployment")
-            self.__create_new_lambda_layer_locally(session, layer_name)
+                print(f"[{my_session.region_name}]: Custom name layer not supported with Serverless Application Repository deployment, attempting manual deployment")
+            self.__create_new_lambda_layer_locally(my_session, layer_name)
 
-    def __create_new_lambda_layer_serverless_repo(self, session):
+    def __create_new_lambda_layer_serverless_repo(self, my_session):
         try:
-            cfn_client = session.client("cloudformation")
-            sar_client = session.client("serverlessrepo")
+            cfn_client = my_session.client("cloudformation")
+            sar_client = my_session.client("serverlessrepo")
             sar_client.get_application(ApplicationId=RDKLIB_LAYER_SAR_ID)
             # Try to create the stack from scratch
             create_type = "update"
@@ -3678,25 +3678,25 @@ class rdk:
                 else:
                     raise ce
             change_set_arn = sar_client.create_cloud_formation_change_set(ApplicationId=RDKLIB_LAYER_SAR_ID, StackName='rdklib')["ChangeSetId"]
-            print(f"[{session.region_name}]: Creating change set to deploy rdklib-layer")
+            print(f"[{my_session.region_name}]: Creating change set to deploy rdklib-layer")
             code = self.__check_on_change_set(cfn_client,change_set_arn)
             if code == 1:
-                print(f"[{session.region_name}]: Lambda layer up to date with the Serverless Application Repository Version")
+                print(f"[{my_session.region_name}]: Lambda layer up to date with the Serverless Application Repository Version")
                 return 1
             if code == -1:
-                print(f"[{session.region_name}]: Error creating change set, attempting to use manual deployment")
+                print(f"[{my_session.region_name}]: Error creating change set, attempting to use manual deployment")
                 raise ClientError()
-            print(f"[{session.region_name}]: Executing change set to deploy rdklib-layer")
+            print(f"[{my_session.region_name}]: Executing change set to deploy rdklib-layer")
             cfn_client.execute_change_set(ChangeSetName=change_set_arn)
             waiter = cfn_client.get_waiter(f'stack_{create_type}_complete')
             waiter.wait(StackName='serverlessrepo-rdklib')
-            print(f"[{session.region_name}]: Successfully executed change set")
+            print(f"[{my_session.region_name}]: Successfully executed change set")
             return 1
         # 2021-10-13 -> aws partition regions where SAR is not supported throw EndpointConnectionError and aws-cn throw ClientError
         except (EndpointConnectionError, ClientError):
             return None
-    def __create_new_lambda_layer_locally(self, session, layer_name="rdklib-layer"):
-        region = session.region_name
+    def __create_new_lambda_layer_locally(self, my_session, layer_name="rdklib-layer"):
+        region = my_session.region_name
         print(f"[{region}]: Creating new {layer_name}")
         folder_name = "lib" + str(uuid.uuid4())
         shell_command = f"pip3 install --target python boto3 botocore rdk rdklib future mock"
@@ -3713,8 +3713,8 @@ class rdk:
         print(f"[{region}]: Creating rdk_lib_layer.zip")
         shutil.make_archive(f"rdk_lib_layer", "zip", "." ,"python")
         os.chdir("..")
-        s3_client = session.client('s3')
-        s3_resource = session.resource('s3')
+        s3_client = my_session.client('s3')
+        s3_resource = my_session.resource('s3')
 
         print(f"[{region}]: Creating temporary S3 Bucket")
         bucket_name = "rdkliblayertemp" + str(uuid.uuid4())
@@ -3730,7 +3730,7 @@ class rdk:
             f"{folder_name}/rdk_lib_layer.zip", layer_name
         )
 
-        lambda_client = session.client("lambda")
+        lambda_client = my_session.client("lambda")
 
         print(f"[{region}]: Publishing Lambda Layer")
         lambda_client.publish_layer_version(
