@@ -646,7 +646,7 @@ class rdk:
         for bucket in response['Buckets']:
             if bucket['Name'] == code_bucket_name:
                 bucket_exists = True
-                print (f"[{self.args.region}]: Found code bucket: " + code_bucket_name)
+                print (f"[{my_session.region_name}]: Found code bucket: " + code_bucket_name)
 
         if not bucket_exists:
             if self.args.skip_code_bucket_creation:
@@ -1021,11 +1021,11 @@ class rdk:
 
         #get the rule names
         rule_names = self.__get_rule_list_for_command()
+        my_session = self.__get_boto_session()
 
-        print("Running Organization un-deploy!")
+        print(f"[{my_session.region_name}]: Running Organization un-deploy!")
 
         #create custom session based on whatever credentials are available to us.
-        my_session = self.__get_boto_session()
 
         #Collect a list of all of the CloudFormation templates that we delete.  We'll need it at the end to make sure everything worked.
         deleted_stacks = []
@@ -1037,9 +1037,9 @@ class rdk:
                 cfn_client.delete_stack(StackName=self.args.stack_name)
                 deleted_stacks.append(self.args.stack_name)
             except ClientError as ce:
-                print("Client Error encountered attempting to delete CloudFormation stack for Lambda Functions: " + str(ce))
+                print(f"[{my_session.region_name}]: Client Error encountered attempting to delete CloudFormation stack for Lambda Functions: " + str(ce))
             except Exception as e:
-                print("Exception encountered attempting to delete CloudFormation stack for Lambda Functions: " + str(e))
+                print(f"[{my_session.region_name}]: Exception encountered attempting to delete CloudFormation stack for Lambda Functions: " + str(e))
 
             return
 
@@ -1048,17 +1048,17 @@ class rdk:
                 cfn_client.delete_stack(StackName=self.__get_stack_name_from_rule_name(rule_name))
                 deleted_stacks.append(self.__get_stack_name_from_rule_name(rule_name))
             except ClientError as ce:
-                print("Client Error encountered attempting to delete CloudFormation stack for Rule: " + str(ce))
+                print(f"[{my_session.region_name}]: Client Error encountered attempting to delete CloudFormation stack for Rule: " + str(ce))
             except Exception as e:
-                print("Exception encountered attempting to delete CloudFormation stack for Rule: " + str(e))
+                print(f"[{my_session.region_name}]: Exception encountered attempting to delete CloudFormation stack for Rule: " + str(e))
 
-        print("Rule removal initiated. Waiting for Stack Deletion to complete.")
+        print(f"[{my_session.region_name}]: Rule removal initiated. Waiting for Stack Deletion to complete.")
 
         for stack_name in deleted_stacks:
             self.__wait_for_cfn_stack(cfn_client, stack_name)
 
-        print("Rule removal complete, but local files have been preserved.")
-        print("To re-deploy, use the 'deploy-organization' command.")
+        print(f"[{my_session.region_name}]: Rule removal complete, but local files have been preserved.")
+        print(f"[{my_session.region_name}]: To re-deploy, use the 'deploy-organization' command.")
 
     def deploy(self):
         self.__parse_deploy_args()
@@ -1067,12 +1067,12 @@ class rdk:
 
         #get the rule names
         rule_names = self.__get_rule_list_for_command()
-
+        my_session = self.__get_boto_session()
         #run the deploy code
-        print (f"[{self.args.region}]: Running deploy!")
+        print (f"[{my_session.region_name}]: Running deploy!")
 
         #create custom session based on whatever credentials are available to us
-        my_session = self.__get_boto_session()
+
 
         #get accountID
         identity_details = self.__get_caller_identity_details(my_session)
@@ -1153,7 +1153,7 @@ class rdk:
                             print(f"[{my_session.region_name}]: No changes to Config Rule configurations.")
                         else:
                             #Something unexpected has gone wrong.  Emit an error and bail.
-                            print(e)
+                            print(f"[{my_session.region_name}]: {e}")
                             return 1
                     else:
                         raise
@@ -1227,7 +1227,7 @@ class rdk:
                 combined_input_parameters.update(optional_parameters_json)
 
             if 'SourceIdentifier' in rule_params:
-                print("Found Managed Rule.")
+                print(f"[{my_session.region_name}]: Found Managed Rule.")
                 #create CFN Parameters for Managed Rules
 
                 try:
@@ -1313,7 +1313,7 @@ class rdk:
                                     print(f"[{my_session.region_name}]: No changes to Config Rule.")
                                 else:
                                     #Something unexpected has gone wrong.  Emit an error and bail.
-                                    print(e)
+                                    print(f"[{my_session.region_name}]: {e}")
                                     return 1
                             else:
                                 raise
@@ -1354,7 +1354,7 @@ class rdk:
                         my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
                         my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
                         #If we've gotten here, stack exists and we should update it.
-                        print (f"[{self.args.region}]: Updating CloudFormation Stack for " + rule_name)
+                        print (f"[{my_session.region_name}]: Updating CloudFormation Stack for " + rule_name)
                         try:
                             cfn_args = {
                                 'StackName': my_stack_name,
@@ -1380,7 +1380,7 @@ class rdk:
                                 raise
                     except ClientError as e:
                         #If we're in the exception, the stack does not exist and we should create it.
-                        print (f"[{self.args.region}]: Creating CloudFormation Stack for " + rule_name)
+                        print (f"[{my_session.region_name}]: Creating CloudFormation Stack for " + rule_name)
                         cfn_args = {
                             'StackName': my_stack_name,
                             'TemplateBody': open(cfn_body, "r").read(),
@@ -1544,7 +1544,7 @@ class rdk:
                 my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
                 my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
                 #If we've gotten here, stack exists and we should update it.
-                print (f"[{self.args.region}]: Updating CloudFormation Stack for " + rule_name)
+                print (f"[{my_session.region_name}]: Updating CloudFormation Stack for " + rule_name)
                 try:
                     cfn_args = {
                         'StackName': my_stack_name,
@@ -3639,7 +3639,7 @@ class rdk:
                 if hasattr(args, "generated_lambda_layer") and args.generated_lambda_layer:
                     lambda_layer_version = self.__get_existing_lambda_layer(my_session, layer_name=args.custom_layer_name)
                     if not lambda_layer_version:
-                        print(f"{my_session.region_name} --generated-lambda-layer flag received, but rdklib-layer not found in {my_session.region_name}. Creating one now")
+                        print(f"{my_session.region_name} generated-lambda-layer flag received, but layer [{args.custom_layer_name}] not found in {my_session.region_name}. Creating one now")
                         self.__create_new_lambda_layer(my_session, layer_name=args.custom_layer_name)
                         lambda_layer_version = self.__get_existing_lambda_layer(my_session, layer_name=args.custom_layer_name)
                     layers.append(lambda_layer_version)
