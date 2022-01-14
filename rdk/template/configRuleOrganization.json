@@ -164,10 +164,10 @@
           "InputParameters": { "Ref": "SourceInputParameters" },
           "LambdaFunctionArn": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
           "ResourceTypesScope": { "Ref": "SourceEvents" },
-          "OrganizationConfigRuleTriggerTypes": [ {"Fn::If": [
+          "OrganizationConfigRuleTriggerTypes": {"Fn::If": [
             "PeriodicTriggered",
-            "ScheduledNotification" ,
-            "ConfigurationItemChangeNotification" ]} ],
+            [ "ScheduledNotification" ],
+            [ "ConfigurationItemChangeNotification", "OversizedConfigurationItemChangeNotification" ] ]},
           "MaximumExecutionFrequency": {"Fn::If": [
             "PeriodicTriggered",
             { "Ref": "SourcePeriodic" },
