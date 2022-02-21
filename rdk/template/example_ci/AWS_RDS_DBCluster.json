@@ -1,0 +1,97 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T18:42:15.271Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645468935271",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:rds:us-east-2:123456789012:cluster:test",
+    "resourceType": "AWS::RDS::DBCluster",
+    "resourceId": "cluster-test",
+    "resourceName": "test",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Multiple Availability Zones",
+    "resourceCreationTime": "2022-02-21T18:41:07.743Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::RDS::DBSubnetGroup",
+        "resourceName": "default-vpc-test",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-test",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::RDS::DBInstance",
+        "resourceName": "test-instance-1",
+        "relationshipName": "Contains "
+      }
+    ],
+    "configuration": {
+      "allocatedStorage": 1,
+      "availabilityZones": [
+        "us-east-2b",
+        "us-east-2c",
+        "us-east-2a"
+      ],
+      "backupRetentionPeriod": 1,
+      "databaseName": "",
+      "status": "available",
+      "endpoint": "test.cluster-test.us-east-2.rds.amazonaws.com",
+      "readerEndpoint": "test.cluster-ro-test.us-east-2.rds.amazonaws.com",
+      "customEndpoints": [],
+      "multiAZ": false,
+      "engine": "aurora-mysql",
+      "engineVersion": "5.7.mysql_aurora.2.07.2",
+      "port": 3306,
+      "masterUsername": "admin",
+      "preferredBackupWindow": "04:48-05:18",
+      "preferredMaintenanceWindow": "fri:03:50-fri:04:20",
+      "readReplicaIdentifiers": [],
+      "vpcSecurityGroups": [
+        {
+          "vpcSecurityGroupId": "sg-test",
+          "status": "active"
+        }
+      ],
+      "hostedZoneId": "test",
+      "storageEncrypted": true,
+      "kmsKeyId": "arn:aws:kms:us-east-2:123456789012:key/test",
+      "dbClusterResourceId": "cluster-test",
+      "associatedRoles": [],
+      "clusterCreateTime": 1645468867743,
+      "enabledCloudwatchLogsExports": [],
+      "engineMode": "provisioned",
+      "deletionProtection": false,
+      "httpEndpointEnabled": false,
+      "activityStreamStatus": "stopped",
+      "copyTagsToSnapshot": true,
+      "crossAccountClone": false,
+      "domainMemberships": [],
+      "tagList": [],
+      "autoMinorVersionUpgrade": false,
+      "dbclusterIdentifier": "test",
+      "iamdatabaseAuthenticationEnabled": false,
+      "dbsubnetGroup": "default-vpc-test",
+      "dbclusterOptionGroupMemberships": [],
+      "dbclusterParameterGroup": "default.aurora-mysql5.7",
+      "dbclusterMembers": [
+        {
+          "isClusterWriter": false,
+          "promotionTier": 1,
+          "dbinstanceIdentifier": "test-instance-1",
+          "clusterWriter": false,
+          "dbclusterParameterGroupStatus": "in-sync"
+        }
+      ],
+      "dbclusterArn": "arn:aws:rds:us-east-2:123456789012:cluster:test"
+    },
+    "supplementaryConfiguration": {
+      "Tags": []
+    },
+    "resourceTransitionStatus": "None"
+  }

@@ -1,0 +1,34 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T19:40:25.738Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645472425738",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:autoscaling:us-east-2:123456789012:scheduledUpdateGroupAction:test:autoScalingGroupName/test:scheduledActionName/test",
+    "resourceType": "AWS::AutoScaling::ScheduledAction",
+    "resourceId": "arn:aws:autoscaling:us-east-2:123456789012:scheduledUpdateGroupAction:test:autoScalingGroupName/test:scheduledActionName/test",
+    "resourceName": "test",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Not Applicable",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::AutoScaling::AutoScalingGroup",
+        "resourceName": "test",
+        "relationshipName": "Is associated with "
+      }
+    ],
+    "configuration": {
+      "autoScalingGroupName": "test",
+      "scheduledActionName": "test",
+      "scheduledActionARN": "arn:aws:autoscaling:us-east-2:123456789012:scheduledUpdateGroupAction:test:autoScalingGroupName/test:scheduledActionName/test",
+      "minSize": 1,
+      "maxSize": 1,
+      "desiredCapacity": 1,
+      "timeZone": "Etc/UTC"
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }

@@ -1,0 +1,30 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2021-11-04T16:52:50.612Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1636044770612",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:ecr:us-east-1:123456789012:repository/test",
+    "resourceType": "AWS::ECR::Repository",
+    "resourceId": "test",
+    "resourceName": "test",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Regional",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "Arn": "arn:aws:ecr:us-east-1:123456789012:repository/test",
+      "ImageScanningConfiguration": {
+        "ScanOnPush": false
+      },
+      "ImageTagMutability": "MUTABLE",
+      "RepositoryName": "test",
+      "LifecyclePolicy": {},
+      "RepositoryPolicyText": {},
+      "Tags": []
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }

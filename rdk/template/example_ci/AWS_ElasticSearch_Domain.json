@@ -1,0 +1,120 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T18:31:25.104Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645468285104",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:es:us-east-2:123456789012:domain/test",
+    "resourceType": "AWS::Elasticsearch::Domain",
+    "resourceId": "123456789012/test",
+    "resourceName": "test",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Multiple Availability Zones",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-test",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-test",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::KMS::Key",
+        "resourceId": "test",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-test",
+        "relationshipName": "Is associated with "
+      }
+    ],
+    "configuration": {
+      "domainId": "123456789012/test",
+      "domainName": "test",
+      "created": true,
+      "deleted": false,
+      "processing": true,
+      "upgradeProcessing": false,
+      "elasticsearchVersion": "7.10",
+      "elasticsearchClusterConfig": {
+        "instanceType": "r6g.large.elasticsearch",
+        "instanceCount": 3,
+        "dedicatedMasterEnabled": false,
+        "zoneAwarenessEnabled": false,
+        "warmEnabled": false,
+        "coldStorageOptions": {
+          "enabled": false
+        }
+      },
+      "accessPolicies": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"es:*\",\"Resource\":\"arn:aws:es:us-east-2:123456789012:domain/test/*\"}]}",
+      "snapshotOptions": {},
+      "cognitoOptions": {
+        "enabled": false
+      },
+      "encryptionAtRestOptions": {
+        "enabled": true,
+        "kmsKeyId": "arn:aws:kms:us-east-2:123456789012:key/test"
+      },
+      "nodeToNodeEncryptionOptions": {
+        "enabled": true
+      },
+      "advancedOptions": {
+        "indices.fielddata.cache.size": "20",
+        "override_main_response_version": "false",
+        "indices.query.bool.max_clause_count": "1024",
+        "rest.action.multi.allow_explicit_index": "true"
+      },
+      "serviceSoftwareOptions": {
+        "currentVersion": "",
+        "newVersion": "",
+        "updateAvailable": false,
+        "cancellable": false,
+        "updateStatus": "COMPLETED",
+        "description": "There is no software update available for this domain.",
+        "automatedUpdateDate": 0,
+        "optionalDeployment": true
+      },
+      "domainEndpointOptions": {
+        "enforceHTTPS": true,
+        "customEndpointEnabled": false,
+        "tlssecurityPolicy": "Policy-Min-TLS-1-0-2019-07"
+      },
+      "advancedSecurityOptions": {
+        "enabled": true,
+        "internalUserDatabaseEnabled": true,
+        "anonymousAuthEnabled": false
+      },
+      "autoTuneOptions": {
+        "state": "ENABLE_IN_PROGRESS"
+      },
+      "arn": "arn:aws:es:us-east-2:123456789012:domain/test",
+      "ebsoptions": {
+        "volumeType": "gp2",
+        "volumeSize": 10,
+        "ebsenabled": true
+      },
+      "vpcoptions": {
+        "subnetIds": [
+          "subnet-test"
+        ],
+        "availabilityZones": [
+          "us-east-2c"
+        ],
+        "securityGroupIds": [
+          "sg-test"
+        ],
+        "vpcid": "vpc-test"
+      }
+    },
+    "supplementaryConfiguration": {
+      "Tags": []
+    },
+    "resourceTransitionStatus": "None"
+  }
