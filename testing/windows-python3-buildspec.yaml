@@ -26,9 +26,9 @@ phases:
       - rdk -f test-region.yaml deploy LP3_TestRule_P38_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P37_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P36_lib --generated-lambda-layer
-      - echo y|rdk -f test-region.yaml undeploy LP3_TestRule_P38_lib
-      - echo y|rdk -f test-region.yaml undeploy LP3_TestRule_P37_lib
-      - echo y|rdk -f test-region.yaml undeploy LP3_TestRule_P36_lib
+      - rdk -f test-region.yaml undeploy LP3_TestRule_P38_lib --force
+      - rdk -f test-region.yaml undeploy LP3_TestRule_P37_lib --force
+      - rdk -f test-region.yaml undeploy LP3_TestRule_P36_lib --force
       - rdk create LP3_TestRule_P39 --runtime python3.9 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
@@ -49,16 +49,16 @@ phases:
       - rdk create LP3_TestRule_P39lib_Periodic --runtime python3.9-lib --maximum-frequency One_Hour
       - rdk test-local --all
       - rdk deploy --all
-      - echo y|rdk undeploy LP3_TestRule_P3
-      - echo y|rdk undeploy LP3_TestRule_P37
-      - echo y|rdk undeploy LP3_TestRule_P37_Periodic
-      - echo y|rdk undeploy LP3_TestRule_P38
-      - echo y|rdk undeploy LP3_TestRule_P38_Periodic
-      - echo y|rdk undeploy LP3_TestRule_P39
-      - echo y|rdk undeploy LP3_TestRule_P39_Periodic
+      - rdk undeploy LP3_TestRule_P3 --force
+      - rdk undeploy LP3_TestRule_P37 --force
+      - rdk undeploy LP3_TestRule_P37_Periodic --force
+      - rdk undeploy LP3_TestRule_P38 --force
+      - rdk undeploy LP3_TestRule_P38_Periodic --force
+      - rdk undeploy LP3_TestRule_P39 --force
+      - rdk undeploy LP3_TestRule_P39_Periodic --force
       - timeout 30
       - rdk logs LP3_TestRule_P3
-      - echo y|rdk undeploy -a
+      - rdk undeploy -a --force
   post_build:
     commands:
       - echo Build completed on `date`
