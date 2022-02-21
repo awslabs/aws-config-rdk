@@ -1,0 +1,78 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2021-08-18T15:55:41.284Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1629302141284",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:ec2:us-east-1:123456789012:vpc-peering-connection/pcx-test",
+    "resourceType": "AWS::EC2::VPCPeeringConnection",
+    "resourceId": "pcx-test",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "tags": {
+      "Name": "pcx-1"
+    },
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-test",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::EC2::VPC",
+        "resourceId": "vpc-test",
+        "relationshipName": "Is associated with "
+      }
+    ],
+    "configuration": {
+      "accepterVpcInfo": {
+        "cidrBlock": "10.0.0.0/28",
+        "ipv6CidrBlockSet": [],
+        "cidrBlockSet": [
+          {
+            "cidrBlock": "10.0.0.0/28"
+          }
+        ],
+        "ownerId": "123456789012",
+        "peeringOptions": {
+          "allowDnsResolutionFromRemoteVpc": true,
+          "allowEgressFromLocalClassicLinkToRemoteVpc": false,
+          "allowEgressFromLocalVpcToRemoteClassicLink": false
+        },
+        "vpcId": "vpc-04beaa07c4832fa62",
+        "region": "us-east-1"
+      },
+      "requesterVpcInfo": {
+        "cidrBlock": "10.0.1.0/28",
+        "ipv6CidrBlockSet": [],
+        "cidrBlockSet": [
+          {
+            "cidrBlock": "10.0.1.0/28"
+          }
+        ],
+        "ownerId": "123456789012",
+        "peeringOptions": {
+          "allowDnsResolutionFromRemoteVpc": true,
+          "allowEgressFromLocalClassicLinkToRemoteVpc": false,
+          "allowEgressFromLocalVpcToRemoteClassicLink": false
+        },
+        "vpcId": "vpc-0916508f3632dad66",
+        "region": "us-east-1"
+      },
+      "status": {
+        "code": "active",
+        "message": "Active"
+      },
+      "tags": [
+        {
+          "key": "Name",
+          "value": "pcx-1"
+        }
+      ],
+      "vpcPeeringConnectionId": "pcx-test"
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }

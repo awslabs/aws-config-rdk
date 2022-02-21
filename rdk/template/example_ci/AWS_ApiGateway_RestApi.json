@@ -1,0 +1,30 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T18:36:56.299Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645468616299",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:apigateway:us-east-2::/restapis/test",
+    "resourceType": "AWS::ApiGateway::RestApi",
+    "resourceId": "arn:aws:apigateway:us-east-2::/restapis/test",
+    "resourceName": "test",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2022-02-21T18:36:56.236Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "id": "test",
+      "name": "test",
+      "createdDate": "Feb 21, 2022 6:36:56 PM",
+      "apiKeySource": "HEADER",
+      "endpointConfiguration": {
+        "types": [
+          "REGIONAL"
+        ]
+      }
+    },
+    "supplementaryConfiguration": {}
+  }

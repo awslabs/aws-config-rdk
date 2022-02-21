@@ -1,0 +1,61 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T18:57:35.374Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645469855374",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:autoscaling:us-east-2:123456789012:autoScalingGroup:test:autoScalingGroupName/asg1",
+    "resourceType": "AWS::AutoScaling::AutoScalingGroup",
+    "resourceId": "arn:aws:autoscaling:us-east-2:123456789012:autoScalingGroup:test:autoScalingGroupName/asg1",
+    "resourceName": "asg1",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Multiple Availability Zones",
+    "resourceCreationTime": "2022-02-21T18:55:35.472Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::AutoScaling::LaunchConfiguration",
+        "resourceName": "lc1",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::EC2::Subnet",
+        "resourceId": "subnet-test",
+        "relationshipName": "Is associated with "
+      }
+    ],
+    "configuration": {
+      "autoScalingGroupName": "asg1",
+      "autoScalingGroupARN": "arn:aws:autoscaling:us-east-2:123456789012:autoScalingGroup:test:autoScalingGroupName/test",
+      "launchConfigurationName": "test",
+      "minSize": 1,
+      "maxSize": 1,
+      "desiredCapacity": 1,
+      "defaultCooldown": 300,
+      "availabilityZones": [
+        "us-east-2a"
+      ],
+      "loadBalancerNames": [],
+      "targetGroupARNs": [],
+      "healthCheckType": "EC2",
+      "healthCheckGracePeriod": 300,
+      "instances": [],
+      "createdTime": 1645469735472,
+      "suspendedProcesses": [],
+      "enabledMetrics": [],
+      "tags": [],
+      "terminationPolicies": [
+        "Default"
+      ],
+      "newInstancesProtectedFromScaleIn": false,
+      "serviceLinkedRoleARN": "arn:aws:iam::123456789012:role/aws-service-role/autoscaling.amazonaws.com/test",
+      "capacityRebalance": true,
+      "vpczoneIdentifier": "subnet-test"
+    },
+    "supplementaryConfiguration": {
+      "LifeCycleHooks": []
+    },
+    "resourceTransitionStatus": "None"
+  }

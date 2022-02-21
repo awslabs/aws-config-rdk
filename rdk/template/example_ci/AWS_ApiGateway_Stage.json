@@ -1,0 +1,37 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T18:37:48.975Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645468668975",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:apigateway:us-east-2::/restapis/test/stages/test",
+    "resourceType": "AWS::ApiGateway::Stage",
+    "resourceId": "arn:aws:apigateway:us-east-2::/restapis/test/stages/test",
+    "resourceName": "test",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2022-02-21T18:37:48.843Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::ApiGateway::RestApi",
+        "resourceId": "arn:aws:apigateway:us-east-2::/restapis/test",
+        "resourceName": "test",
+        "relationshipName": "Is contained in "
+      }
+    ],
+    "configuration": {
+      "deploymentId": "jmlwbd",
+      "stageName": "test",
+      "cacheClusterEnabled": false,
+      "cacheClusterStatus": "NOT_AVAILABLE",
+      "methodSettings": {},
+      "tracingEnabled": false,
+      "createdDate": "Feb 21, 2022 6:37:48 PM",
+      "lastUpdatedDate": "Feb 21, 2022 6:37:48 PM"
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }

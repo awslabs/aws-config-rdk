@@ -12,13 +12,10 @@ arn_array = sts_client.get_caller_identity()["Arn"].split(":")
 partition = arn_array[1]
 region = arn_array[3]
 
-if(region not in testing_regions[partition]):
+if region not in testing_regions[partition]:
     testing_regions[partition].append(region)
 
-subprocesses = [
-    subprocess.Popen(["rdk", "-r", region, "init"])
-    for region in testing_regions[partition]
-]
+subprocesses = [subprocess.Popen(["rdk", "-r", region, "init"]) for region in testing_regions[partition]]
 
 received_bad_return_code = False
 
