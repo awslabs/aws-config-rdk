@@ -17,7 +17,7 @@ phases:
       - rdk create W_MFA_ENABLED_RULE --runtime python3.8 --resource-types AWS::IAM::User
       - rdk -f test-region.yaml deploy W_MFA_ENABLED_RULE
       - python testing/win_multi_region_execution_test.py
-      - rdk -f test-region.yaml undeploy --force MFA_ENABLED_RULE
+      - rdk -f test-region.yaml undeploy --force W_MFA_ENABLED_RULE
       - python testing/win_partition_test.py
       - rdk init --generate-lambda-layer
       - rdk create WP3_TestRule_P38_lib --runtime python3.8-lib --resource-types AWS::EC2::SecurityGroup
