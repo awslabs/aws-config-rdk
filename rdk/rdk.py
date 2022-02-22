@@ -3307,6 +3307,7 @@ class rdk:
 
         if self.args.input_parameters:
             try:
+                print(self.args.input_parameters)
                 input_params_dict = json.loads(self.args.input_parameters, strict=False)
             except Exception as e:
                 print("Failed to parse input parameters.")
