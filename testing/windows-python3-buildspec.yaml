@@ -38,7 +38,7 @@ phases:
       - rdk create WP3_TestRule_CREC --runtime python3.8 --resource-types AWS::Config::ResourceCompliance
       - rdk create WP3_TestRule_ECSTD --runtime python3.7 --resource-types AWS::ECS::TaskDefinition
       - rdk create WP3_TestRule_ECSS --runtime python3.6 --resource-types AWS::ECS::Service
-      - rdk modify WP3_TestRule_P3 --input-parameters {^"TestParameter^":^"TestValue^"}
+      - rdk modify WP3_TestRule_P3 --input-parameters {\"TestParameter\":\"TestValue\"}
       - rdk create WP3_TestRule_P3_Periodic --runtime python3.6 --maximum-frequency One_Hour
       - rdk create WP3_TestRule_P36lib_Periodic --runtime python3.6-lib --maximum-frequency One_Hour
       - rdk create WP3_TestRule_P37_Periodic --runtime python3.7 --maximum-frequency One_Hour
