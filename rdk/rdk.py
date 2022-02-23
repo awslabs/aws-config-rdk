@@ -3704,7 +3704,6 @@ class rdk:
             "python3.8-lib",
             "python3.9",
             "python3.9-lib",
-            "nodejs4.3",
             "nodejs6.10",
             "nodejs8.10",
         ]:
