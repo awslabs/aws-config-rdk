@@ -378,7 +378,7 @@ def get_rule_parser(is_required, command):
         required=False,
         help="Runtime for lambda function",
         choices=[
-            "nodejs4.3",
+            "nodejs6.10",
             "java8",
             "python3.6",
             "python3.6-lib",
