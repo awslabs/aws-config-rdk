@@ -22,14 +22,14 @@ sys.path.insert(0, os.path.abspath("../rdk/"))
 
 # -- Project information -----------------------------------------------------
 
-project = u"RDK"
-copyright = u"2017-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved"
-author = u"Michael Borchert"
+project = "RDK"
+copyright = "2017-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved"
+author = "Michael Borchert"
 
 # The short X.Y version
-version = u""
+version = ""
 # The full version, including alpha/beta/rc tags
-release = u"1.0"
+release = "1.0"
 
 on_rtd = os.environ.get("READTHEDOCS", None) == "True"
 
@@ -79,7 +79,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = [u"_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -147,7 +147,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "RDK.tex", u"RDK Documentation", u"Michael Borchert", "manual"),
+    (master_doc, "RDK.tex", "RDK Documentation", "Michael Borchert", "manual"),
 ]
 
 
@@ -155,7 +155,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "rdk", u"RDK Documentation", [author], 1)]
+man_pages = [(master_doc, "rdk", "RDK Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -164,7 +164,7 @@ man_pages = [(master_doc, "rdk", u"RDK Documentation", [author], 1)]
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, "RDK", u"RDK Documentation", author, "RDK", "One line description of project.", "Miscellaneous"),
+    (master_doc, "RDK", "RDK Documentation", author, "RDK", "One line description of project.", "Miscellaneous"),
 ]
 
 
