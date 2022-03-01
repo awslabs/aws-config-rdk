@@ -1227,7 +1227,7 @@ class rdk:
                 "python3.8-lib": ".py",
                 "python3.9": ".py",
                 "python3.9-lib": ".py",
-                "nodejs4.3": ".js",
+                "nodejs6.10": ".js",
                 "dotnetcore1.0": "cs",
                 "dotnetcore2.0": "cs",
             }
