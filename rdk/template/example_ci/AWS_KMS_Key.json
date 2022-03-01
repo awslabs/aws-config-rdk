@@ -1,0 +1,40 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2021-09-29T23:33:38.881Z",
+    "configurationItemStatus": "OK",
+    "configurationStateId": "1632958418881",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:kms:us-east-1:123456789012:key/test",
+    "resourceType": "AWS::KMS::Key",
+    "resourceId": "test",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2021-05-14T20:42:04.302Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "keyId": "test",
+      "arn": "arn:aws:kms:us-east-1:123456789012:key/123456789012",
+      "creationDate": 1621024924302,
+      "enabled": true,
+      "description": "Default master key that protects my Lambda functions when no other key is defined",
+      "keyUsage": "ENCRYPT_DECRYPT",
+      "keyState": "Enabled",
+      "origin": "AWS_KMS",
+      "keyManager": "AWS",
+      "customerMasterKeySpec": "SYMMETRIC_DEFAULT",
+      "keySpec": "SYMMETRIC_DEFAULT",
+      "encryptionAlgorithms": [
+        "SYMMETRIC_DEFAULT"
+      ],
+      "signingAlgorithms": [],
+      "multiRegion": false,
+      "awsaccountId": "123456789012"
+    },
+    "supplementaryConfiguration": {
+      "Policy": "{\n  \"Version\" : \"2012-10-17\",\n  \"Id\" : \"auto-awslambda\",\n  \"Statement\" : [ {\n    \"Sid\" : \"Allow access through AWS Lambda for all principals in the account that are authorized to use AWS Lambda\",\n    \"Effect\" : \"Allow\",\n    \"Principal\" : {\n      \"AWS\" : \"*\"\n    },\n    \"Action\" : [ \"kms:Encrypt\", \"kms:Decrypt\", \"kms:ReEncrypt*\", \"kms:GenerateDataKey*\", \"kms:CreateGrant\", \"kms:DescribeKey\" ],\n    \"Resource\" : \"*\",\n    \"Condition\" : {\n      \"StringEquals\" : {\n        \"kms:CallerAccount\" : \"123456789012\",\n        \"kms:ViaService\" : \"lambda.us-east-1.amazonaws.com\"\n      }\n    }\n  }, {\n    \"Sid\" : \"Allow direct access to key metadata to the account\",\n    \"Effect\" : \"Allow\",\n    \"Principal\" : {\n      \"AWS\" : \"arn:aws:iam::123456789012:root\"\n    },\n    \"Action\" : [ \"kms:Describe*\", \"kms:Get*\", \"kms:List*\", \"kms:RevokeGrant\" ],\n    \"Resource\" : \"*\"\n  } ]\n}"
+    },
+    "resourceTransitionStatus": "None"
+  }
