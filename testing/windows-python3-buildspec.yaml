@@ -33,7 +33,6 @@ phases:
       - rdk create WP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create WP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
       - rdk create WP3_TestRule_P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
-      - rdk create WP3_TestRule_JS --runtime nodejs6.10 --resource-types AWS::EC2::SecurityGroup
       - rdk create WP3_TestRule_EFSFS --runtime python3.9 --resource-types AWS::EFS::FileSystem
       - rdk create WP3_TestRule_ECSTD --runtime python3.7 --resource-types AWS::ECS::TaskDefinition
       - rdk create WP3_TestRule_ECSS --runtime python3.6 --resource-types AWS::ECS::Service

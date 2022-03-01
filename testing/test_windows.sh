@@ -34,7 +34,6 @@ if [[ $CODEBUILD_SOURCE_VERSION =~ MyApp\/(.*).zip ]]; then
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule-P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
-    python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule_JS --runtime nodejs6.10 --resource-types AWS::EC2::SecurityGroups >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 modify WP${python_version}-TestRule-P3 --input-parameters '{\"TestParameter\":\"TestValue\"}' >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 create WP${python_version}-TestRule_P3 --runtime python3.6 --maximum-frequency One_Hour >>C:\tmp\output.txt
     python C:\\${version_string}\Scripts\rdk --region ap-southeast-1 test-local WP${python_version}-TestRule-P3  >>C:\tmp\output.txt
