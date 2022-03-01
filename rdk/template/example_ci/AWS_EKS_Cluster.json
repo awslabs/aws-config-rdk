@@ -1,0 +1,34 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-03-01T21:46:11.377Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1646171171377",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:eks:us-east-2:123456789012:cluster/test",
+    "resourceType": "AWS::EKS::Cluster",
+    "resourceId": "test",
+    "resourceName": "test",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Regional",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "Arn": "arn:aws:eks:us-east-2:123456789012:cluster/test",
+      "Name": "test",
+      "ResourcesVpcConfig": {
+        "SecurityGroupIds": [],
+        "SubnetIds": [
+          "subnet-test",
+          "subnet-test",
+          "subnet-test"
+        ]
+      },
+      "RoleArn": "arn:aws:iam::123456789012:role/test",
+      "Version": "1.21",
+      "Tags": []
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }
