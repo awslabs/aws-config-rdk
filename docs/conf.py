@@ -23,8 +23,8 @@ sys.path.insert(0, os.path.abspath("../rdk/"))
 # -- Project information -----------------------------------------------------
 
 project = "RDK"
-copyright = "2017-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved"
-author = "Michael Borchert"
+copyright = "2017-2022 Amazon.com, Inc. or its affiliates. All Rights Reserved"
+author = "RDK Maintainers"
 
 # The short X.Y version
 version = ""
@@ -147,7 +147,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "RDK.tex", "RDK Documentation", "Michael Borchert", "manual"),
+    (master_doc, "RDK.tex", "RDK Documentation", "manual"),
 ]
 
 
