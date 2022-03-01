@@ -54,7 +54,6 @@ phases:
       - rdk undeploy WP3_TestRule_P38_Periodic --force
       - rdk undeploy WP3_TestRule_P39 --force
       - rdk undeploy WP3_TestRule_P39_Periodic --force
-      - timeout 30
       - rdk logs WP3_TestRule_P3
       - rdk undeploy -a --force
   post_build:
