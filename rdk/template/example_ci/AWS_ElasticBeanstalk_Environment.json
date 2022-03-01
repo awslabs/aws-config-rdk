@@ -1,0 +1,308 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2021-11-19T17:36:10.873Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1637343370873",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:elasticbeanstalk:us-east-1:123456789012:environment/AppName1/test",
+    "resourceType": "AWS::ElasticBeanstalk::Environment",
+    "resourceId": "e-test",
+    "resourceName": "test",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2021-11-19T17:33:51.152Z",
+    "tags": {
+      "Project": "test",
+      "elasticbeanstalk:environment-name": "test",
+      "elasticbeanstalk:environment-id": "e-test",
+      "Name": "test"
+    },
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::CloudFormation::Stack",
+        "resourceId": "arn:aws:cloudformation:us-east-1:123456789012:stack/test/test",
+        "relationshipName": "Contains "
+      },
+      {
+        "resourceType": "AWS::IAM::Role",
+        "resourceName": "test-BeanstalkInstanceProfile-test",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::ElasticBeanstalk::Application",
+        "resourceId": "arn:aws:elasticbeanstalk:us-east-1:123456789012:application/AppName1",
+        "resourceName": "AppName1",
+        "relationshipName": "Is contained in "
+      },
+      {
+        "resourceType": "AWS::IAM::Role",
+        "resourceName": "AWSServiceRoleForElasticBeanstalk",
+        "relationshipName": "Is associated with "
+      }
+    ],
+    "configuration": {
+      "applicationName": "AppName1",
+      "cNAME": "test.eba-jigr6f4p.us-east-1.elasticbeanstalk.com",
+      "dateCreated": "Nov 19, 2021 5:33:51 PM",
+      "dateUpdated": "Nov 19, 2021 5:36:10 PM",
+      "endpointURL": "awseb-test.us-east-1.elb.amazonaws.com",
+      "environmentArn": "arn:aws:elasticbeanstalk:us-east-1:123456789012:environment/AppName1/test",
+      "environmentId": "e-test",
+      "environmentName": "test",
+      "optionSettings": {
+        "aws:elasticbeanstalk:command": {
+          "BatchSize": {
+            "value": "100"
+          },
+          "Timeout": {
+            "value": "600"
+          },
+          "BatchSizeType": {
+            "value": "Percentage"
+          },
+          "IgnoreHealthCheck": {
+            "value": "false"
+          }
+        },
+        "aws:elasticbeanstalk:application": {
+          "Application Healthcheck URL": {
+            "value": "TCP:80"
+          }
+        },
+        "aws:autoscaling:trigger": {
+          "BreachDuration": {
+            "value": "5"
+          },
+          "LowerBreachScaleIncrement": {
+            "value": "-1"
+          },
+          "UpperBreachScaleIncrement": {
+            "value": "1"
+          },
+          "Statistic": {
+            "value": "Average"
+          },
+          "LowerThreshold": {
+            "value": "2000000"
+          },
+          "MeasureName": {
+            "value": "NetworkOut"
+          },
+          "Period": {
+            "value": "5"
+          },
+          "EvaluationPeriods": {
+            "value": "1"
+          },
+          "UpperThreshold": {
+            "value": "6000000"
+          },
+          "Unit": {
+            "value": "Bytes"
+          }
+        },
+        "aws:ec2:vpc": {
+          "ELBScheme": {
+            "value": "public"
+          }
+        },
+        "aws:autoscaling:asg": {
+          "MinSize": {
+            "value": "1"
+          },
+          "EnableCapacityRebalancing": {
+            "value": "false"
+          },
+          "Cooldown": {
+            "value": "360"
+          },
+          "Availability Zones": {
+            "value": "Any"
+          },
+          "MaxSize": {
+            "value": "4"
+          }
+        },
+        "aws:elasticbeanstalk:container:python": {
+          "NumThreads": {
+            "value": "15"
+          },
+          "NumProcesses": {
+            "value": "1"
+          },
+          "WSGIPath": {
+            "value": "application"
+          }
+        },
+        "aws:elasticbeanstalk:managedactions": {
+          "ManagedActionsEnabled": {
+            "value": "false"
+          }
+        },
+        "aws:autoscaling:updatepolicy:rollingupdate": {
+          "Timeout": {
+            "value": "PT30M"
+          },
+          "RollingUpdateType": {
+            "value": "Time"
+          },
+          "RollingUpdateEnabled": {
+            "value": "false"
+          }
+        },
+        "aws:elasticbeanstalk:managedactions:platformupdate": {
+          "InstanceRefreshEnabled": {
+            "value": "false"
+          }
+        },
+        "aws:elasticbeanstalk:sns:topics": {
+          "Notification Protocol": {
+            "value": "email"
+          }
+        },
+        "aws:elb:policies": {
+          "ConnectionSettingIdleTimeout": {
+            "value": "60"
+          },
+          "ConnectionDrainingEnabled": {
+            "value": "false"
+          },
+          "ConnectionDrainingTimeout": {
+            "value": "20"
+          }
+        },
+        "aws:elb:listener:80": {
+          "ListenerEnabled": {
+            "value": "true"
+          },
+          "InstancePort": {
+            "value": "80"
+          },
+          "ListenerProtocol": {
+            "value": "HTTP"
+          },
+          "InstanceProtocol": {
+            "value": "HTTP"
+          }
+        },
+        "aws:elb:healthcheck": {
+          "Target": {
+            "value": "TCP:80"
+          },
+          "UnhealthyThreshold": {
+            "value": "5"
+          },
+          "Timeout": {
+            "value": "5"
+          },
+          "HealthyThreshold": {
+            "value": "3"
+          },
+          "Interval": {
+            "value": "10"
+          }
+        },
+        "aws:elasticbeanstalk:cloudwatch:logs": {
+          "RetentionInDays": {
+            "value": "7"
+          },
+          "DeleteOnTerminate": {
+            "value": "false"
+          },
+          "StreamLogs": {
+            "value": "True"
+          }
+        },
+        "aws:elb:loadbalancer": {
+          "LoadBalancerSSLPortProtocol": {
+            "value": "HTTPS"
+          },
+          "LoadBalancerHTTPSPort": {
+            "value": "OFF"
+          },
+          "CrossZone": {
+            "value": "false"
+          },
+          "LoadBalancerHTTPPort": {
+            "value": "80"
+          },
+          "LoadBalancerPortProtocol": {
+            "value": "HTTP"
+          }
+        },
+        "aws:elasticbeanstalk:environment:proxy": {
+          "ProxyServer": {
+            "value": "nginx"
+          }
+        },
+        "aws:elasticbeanstalk:environment": {
+          "ServiceRole": {
+            "value": "AWSServiceRoleForElasticBeanstalk"
+          },
+          "EnvironmentType": {
+            "value": "LoadBalanced"
+          },
+          "LoadBalancerIsShared": {
+            "value": "false"
+          },
+          "LoadBalancerType": {
+            "value": "classic"
+          }
+        },
+        "aws:elasticbeanstalk:healthreporting:system": {
+          "ConfigDocument": {
+            "value": "{\"Version\":1.0,\"CloudWatchMetrics\":{\"Instance\":{},\"Environment\":{}}}"
+          },
+          "EnhancedHealthAuthEnabled": {
+            "value": "true"
+          },
+          "SystemType": {
+            "value": "enhanced"
+          },
+          "HealthCheckSuccessThreshold": {
+            "value": "Ok"
+          }
+        },
+        "aws:autoscaling:launchconfiguration": {
+          "MonitoringInterval": {
+            "value": "5 minute"
+          },
+          "SSHSourceRestriction": {
+            "value": "tcp,22,22,0.0.0.0/0"
+          },
+          "DisableIMDSv1": {
+            "value": "false"
+          },
+          "ImageId": {
+            "value": "ami-test"
+          },
+          "IamInstanceProfile": {
+            "value": "test-BeanstalkInstanceProfile-test"
+          },
+          "OmitDefaultEC2SecurityGroup": {
+            "value": "false"
+          },
+          "InstanceType": {
+            "value": "t1.micro"
+          }
+        }
+      },
+      "platformArn": "arn:aws:elasticbeanstalk:us-east-1::platform/Python 3.8 running on 64bit Amazon Linux 2/3.3.7",
+      "solutionStackName": "64bit Amazon Linux 2 v3.3.7 running Python 3.8",
+      "status": "Ready",
+      "tags": {
+        "Project": "Honeycomb",
+        "elasticbeanstalk:environment-name": "test",
+        "elasticbeanstalk:environment-id": "e-test",
+        "Name": "test"
+      },
+      "tier": {
+        "name": "WebServer",
+        "type": "Standard",
+        "version": "1.0"
+      }
+    },
+    "supplementaryConfiguration": {}
+  }

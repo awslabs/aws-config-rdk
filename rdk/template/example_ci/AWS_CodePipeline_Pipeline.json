@@ -1,0 +1,139 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T15:58:19.734Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645459099734",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:codepipeline:us-east-2:123456789012:test",
+    "resourceType": "AWS::CodePipeline::Pipeline",
+    "resourceId": "test",
+    "resourceName": "test",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2022-02-21T15:12:27.483Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::CodeBuild::Project",
+        "resourceName": "RDK",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::IAM::Role",
+        "resourceName": "AWSCodePipelineServiceRole-us-east-2-test",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::CodeBuild::Project",
+        "resourceName": "RDK_Windows",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::S3::Bucket",
+        "resourceId": "codepipeline-us-east-2-123456789012",
+        "resourceName": "codepipeline-us-east-2-123456789012",
+        "relationshipName": "Is attached to "
+      }
+    ],
+    "configuration": {
+      "pipeline": {
+        "name": "test",
+        "roleArn": "arn:aws:iam::123456789012:role/service-role/AWSCodePipelineServiceRole-us-east-2-test",
+        "artifactStore": {
+          "type": "S3",
+          "location": "codepipeline-us-east-2-123456789012"
+        },
+        "stages": [
+          {
+            "name": "Source",
+            "actions": [
+              {
+                "name": "Source",
+                "actionTypeId": {
+                  "category": "Source",
+                  "owner": "AWS",
+                  "provider": "CodeStarSourceConnection",
+                  "version": "1"
+                },
+                "runOrder": 1,
+                "configuration": {
+                  "ConnectionArn": "arn:aws:codestar-connections:us-east-2:123456789012:connection/test",
+                  "BranchName": "staging",
+                  "FullRepositoryId": "awslabs/aws-config-rdk",
+                  "OutputArtifactFormat": "CODE_ZIP"
+                },
+                "outputArtifacts": [
+                  {
+                    "name": "SourceArtifact"
+                  }
+                ],
+                "inputArtifacts": [],
+                "region": "us-east-2",
+                "namespace": "SourceVariables"
+              }
+            ]
+          },
+          {
+            "name": "Build",
+            "actions": [
+              {
+                "name": "Build",
+                "actionTypeId": {
+                  "category": "Build",
+                  "owner": "AWS",
+                  "provider": "CodeBuild",
+                  "version": "1"
+                },
+                "runOrder": 1,
+                "configuration": {
+                  "BatchEnabled": "false",
+                  "ProjectName": "RDK"
+                },
+                "outputArtifacts": [
+                  {
+                    "name": "BuildArtifact"
+                  }
+                ],
+                "inputArtifacts": [
+                  {
+                    "name": "SourceArtifact"
+                  }
+                ],
+                "region": "us-east-2",
+                "namespace": "BuildVariables"
+              },
+              {
+                "name": "Build-Windows",
+                "actionTypeId": {
+                  "category": "Build",
+                  "owner": "AWS",
+                  "provider": "CodeBuild",
+                  "version": "1"
+                },
+                "runOrder": 1,
+                "configuration": {
+                  "ProjectName": "RDK_Windows"
+                },
+                "outputArtifacts": [],
+                "inputArtifacts": [
+                  {
+                    "name": "SourceArtifact"
+                  }
+                ],
+                "region": "us-east-2"
+              }
+            ]
+          }
+        ],
+        "version": 2
+      },
+      "metadata": {
+        "pipelineArn": "arn:aws:codepipeline:us-east-2:123456789012:test",
+        "created": 1645456347483
+      }
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }
