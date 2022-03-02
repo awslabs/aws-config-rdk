@@ -147,7 +147,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "RDK.tex", "RDK Documentation", "manual"),
+    (master_doc, "RDK.tex", "RDK Documentation", "RDK Maintainers", "manual"),
 ]
 
 
