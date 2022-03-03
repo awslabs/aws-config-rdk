@@ -16,7 +16,9 @@ phases:
       - rdk -f test-region.yaml init
       - rdk create MFA_ENABLED_RULE --runtime python3.8 --resource-types AWS::IAM::User
       - rdk -f test-region.yaml deploy MFA_ENABLED_RULE
+      - sleep 30
       - python3 testing/multi_region_execution_test.py
+      - sleep 30
       - rdk -f test-region.yaml undeploy --force MFA_ENABLED_RULE
       - python3 testing/partition_test.py
       - rdk init --generate-lambda-layer
