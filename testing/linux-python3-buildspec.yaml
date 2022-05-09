@@ -16,7 +16,9 @@ phases:
       - rdk -f test-region.yaml init
       - rdk create MFA_ENABLED_RULE --runtime python3.8 --resource-types AWS::IAM::User
       - rdk -f test-region.yaml deploy MFA_ENABLED_RULE
+      - sleep 30
       - python3 testing/multi_region_execution_test.py
+      - sleep 30
       - rdk -f test-region.yaml undeploy --force MFA_ENABLED_RULE
       - python3 testing/partition_test.py
       - rdk init --generate-lambda-layer
@@ -33,9 +35,7 @@ phases:
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
-      - rdk create LP3_TestRule_JS --runtime nodejs4.3 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_EFSFS --runtime python3.9 --resource-types AWS::EFS::FileSystem
-      - rdk create LP3_TestRule_CREC --runtime python3.8 --resource-types AWS::Config::ResourceCompliance
       - rdk create LP3_TestRule_ECSTD --runtime python3.7 --resource-types AWS::ECS::TaskDefinition
       - rdk create LP3_TestRule_ECSS --runtime python3.6 --resource-types AWS::ECS::Service
       - rdk modify LP3_TestRule_P3 --input-parameters '{"TestParameter":"TestValue"}'

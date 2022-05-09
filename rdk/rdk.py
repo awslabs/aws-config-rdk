@@ -378,7 +378,7 @@ def get_rule_parser(is_required, command):
         required=False,
         help="Runtime for lambda function",
         choices=[
-            "nodejs4.3",
+            "nodejs6.10",
             "java8",
             "python3.6",
             "python3.6-lib",
@@ -1227,7 +1227,7 @@ class rdk:
                 "python3.8-lib": ".py",
                 "python3.9": ".py",
                 "python3.9-lib": ".py",
-                "nodejs4.3": ".js",
+                "nodejs6.10": ".js",
                 "dotnetcore1.0": "cs",
                 "dotnetcore2.0": "cs",
             }
@@ -3307,6 +3307,7 @@ class rdk:
 
         if self.args.input_parameters:
             try:
+                print(self.args.input_parameters)
                 input_params_dict = json.loads(self.args.input_parameters, strict=False)
             except Exception as e:
                 print("Failed to parse input parameters.")
@@ -3703,7 +3704,6 @@ class rdk:
             "python3.8-lib",
             "python3.9",
             "python3.9-lib",
-            "nodejs4.3",
             "nodejs6.10",
             "nodejs8.10",
         ]:

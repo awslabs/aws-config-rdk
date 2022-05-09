@@ -321,19 +321,21 @@ Contributing
 
 email us at rdk-maintainers@amazon.com if you have any questions. We are happy to help and discuss.
 
-Authors
+Contacts
 =======
+* **Ricky Chau** - `rickychau2780 <https://github.com/rickychau2780>`_ - *current maintainer*
+* **Jarrett Andrulis** - `jarrettandrulis <https://github.com/jarrettandrulis>`_ - *current maintainer*
+* **Julio Delgado Jr** - `tekdj7 <https://github.com/tekdj7>`_ - *current maintainer*
+* **Sandeep Batchu** - `batchus <https://github.com/batchus>`_ - *current maintainer*
 
-* **Michael Borchert** - *Python version*
-* **Jonathan Rault** - *Design, testing, feedback*
+Past Contributors
+=======
+* **Michael Borchert** - *Orignal Python version*
+* **Jonathan Rault** - *Orignal Design, testing, feedback*
 * **Greg Kim and Chris Gutierrez** - *Initial work and CI definitions*
 * **Henry Huang** - *Original CFN templates and other code*
-* **Ricky Chau** - *current maintainer*
-* **Santosh Kumar** - *current maintainer*
-* **Jose Obando** - *current maintainer*
-* **Sandeep Batchu** - *current maintainer*
-* **Jarrett Andrulis** - *current maintainer*
-* **Julio Delgado Jr** - *current maintainer*
+* **Santosh Kumar** - *maintainer*
+* **Jose Obando** - *maintainer*
 
 License
 =======
