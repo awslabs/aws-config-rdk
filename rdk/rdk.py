@@ -999,7 +999,7 @@ class rdk:
 
             # attach role policy
             my_iam.attach_role_policy(
-                RoleName=config_role_name, PolicyArn="arn:" + partition + ":iam::aws:policy/service-role/AWSConfigRole"
+                RoleName=config_role_name, PolicyArn="arn:" + partition + ":iam::aws:policy/service-role/AWS_ConfigRole"
             )
             my_iam.attach_role_policy(
                 RoleName=config_role_name, PolicyArn="arn:" + partition + ":iam::aws:policy/ReadOnlyAccess"
@@ -2071,7 +2071,7 @@ class rdk:
                 print(f"[{my_session.region_name}]: Lambda code updated.")
             except ClientError as e:
                 # If we're in the exception, the stack does not exist and we should create it.
-                print(f"[{my_session.region_name}]: Creating CloudFormatioon Stack for " + rule_name)
+                print(f"[{my_session.region_name}]: Creating CloudFormation Stack for " + rule_name)
                 cfn_args = {
                     "StackName": my_stack_name,
                     "TemplateBody": json.dumps(json_body, indent=2),
@@ -2758,7 +2758,7 @@ class rdk:
                 "RoleName": config_role_name,
                 "Path": "/rdk/",
                 "ManagedPolicyArns": [
-                    {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSConfigRole"},
+                    {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/service-role/AWS_ConfigRole"},
                     {"Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"},
                 ],
                 "AssumeRolePolicyDocument": CONFIG_ROLE_ASSUME_ROLE_POLICY_DOCUMENT,

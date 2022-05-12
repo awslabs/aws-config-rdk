@@ -1,7 +1,7 @@
 rdk
 ===
 Rule Development Kit
-We are greatly appreciated feedback and bug reports at rdk-maintainers@amazon.com! You may also create an issue on this repo.
+We greatly appreciate feedback and bug reports at rdk-maintainers@amazon.com! You may also create an issue on this repo.
 
 The RDK is designed to support a "Compliance-as-Code" workflow that is intuitive and productive.  It abstracts away much of the undifferentiated heavy lifting associated with deploying AWS Config rules backed by custom lambda functions, and provides a streamlined develop-deploy-monitor iterative process.
 

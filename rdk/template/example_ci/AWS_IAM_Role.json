@@ -59,8 +59,8 @@
           "policyArn": "arn:aws:iam::264683526309:policy/service-role/config-role-ezcrc2-AWSConfigDeliveryPermissions-us-west-2"
         },
         {
-          "policyName": "AWSConfigRole",
-          "policyArn": "arn:aws:iam::aws:policy/service-role/AWSConfigRole"
+          "policyName": "AWS_ConfigRole",
+          "policyArn": "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
         }
       ]
     },
