@@ -1,0 +1,28 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2021-08-06T04:33:39.914Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1628224419914",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:sns:us-east-1:123456789012:topic",
+    "resourceType": "AWS::SNS::Topic",
+    "resourceId": "arn:aws:sns:us-east-1:123456789012:topic",
+    "resourceName": "OpenTopic",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "Policy": "{\"Version\":\"2008-10-17\",\"Id\":\"__default_policy_ID\",\"Statement\":[{\"Sid\":\"__default_statement_ID\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:Publish\",\"SNS:RemovePermission\",\"SNS:SetTopicAttributes\",\"SNS:DeleteTopic\",\"SNS:ListSubscriptionsByTopic\",\"SNS:GetTopicAttributes\",\"SNS:Receive\",\"SNS:AddPermission\",\"SNS:Subscribe\"],\"Resource\":\"arn:aws:sns:us-east-1:123456789012:topic\",\"Condition\":{\"StringEquals\":{\"AWS:SourceOwner\":\"123456789012\"}}},{\"Sid\":\"__console_pub_0\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"SNS:Publish\",\"Resource\":\"arn:aws:sns:us-east-1:123456789012:topic\"},{\"Sid\":\"__console_sub_0\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":[\"SNS:Subscribe\",\"SNS:Receive\"],\"Resource\":\"arn:aws:sns:us-east-1:123456789012:topic\"}]}",
+      "Owner": "123456789012",
+      "TopicArn": "arn:aws:sns:us-east-1:123456789012:topic",
+      "EffectiveDeliveryPolicy": "{\"http\":{\"defaultHealthyRetryPolicy\":{\"minDelayTarget\":20,\"maxDelayTarget\":20,\"numRetries\":3,\"numMaxDelayRetries\":0,\"numNoDelayRetries\":0,\"numMinDelayRetries\":0,\"backoffFunction\":\"linear\"},\"disableSubscriptionOverrides\":false}}",
+      "DisplayName": "Open"
+    },
+    "supplementaryConfiguration": {
+      "Tags": []
+    },
+    "resourceTransitionStatus": "None"
+  }

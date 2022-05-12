@@ -1,7 +1,7 @@
 rdk
 ===
-Rule Development Kit 
-We are greatly appreciated feedback and bug reports at rdk-maintainers@amazon.com! You may also create an issue on this repo.
+Rule Development Kit
+We greatly appreciate feedback and bug reports at rdk-maintainers@amazon.com! You may also create an issue on this repo.
 
 The RDK is designed to support a "Compliance-as-Code" workflow that is intuitive and productive.  It abstracts away much of the undifferentiated heavy lifting associated with deploying AWS Config rules backed by custom lambda functions, and provides a streamlined develop-deploy-monitor iterative process.
 
@@ -64,6 +64,13 @@ Running ``init`` subsequent times will validate your AWS Config setup and re-cre
 - If bucket for custom lambda code is already present in current account then use **--skip-code-bucket-creation** argument:::
 
   $ rdk init --skip-code-bucket-creation
+
+- If you want rdk to create/update and upload the rdklib-layer for you, then use **--generate-lambda-layer** argument. In supported regions, rdk will deploy the layer using the Serverless Application Repository, otherwise it will build a local lambda layer archive and upload it for use:::
+
+  $ rdk init --generate-lambda-layer 
+- If you want rdk to give a custom name to the lambda layer for you, then use **--custom-layer-namer** argument. The Serverless Application Repository currently cannot be used for custom lambda layers.:::
+
+  $ rdk init --generate-lambda-layer --custom-layer-name <LAYER_NAME>
 
 Create Rules
 ------------
@@ -158,12 +165,12 @@ Once you have completed your compliance validation code and set your Rule's conf
   Waiting for CloudFormation stack operation to complete...
   Config deploy complete.
 
-The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.
+The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.  If you used the --generate-lambda-layer flag in rdk init, use the --generated-lambda-layer flag for rdk deploy.
 
 Deploy Organization Rule
 ------------------------
 You can also deploy the Rule to your AWS Organization using the ``deploy-organization`` command.
-For successful evaluation of custom rules in child accounts, please make sure you do one of the following: 
+For successful evaluation of custom rules in child accounts, please make sure you do one of the following:
 
 1. Set ASSUME_ROLE_MODE in Lambda code to True, to get the lambda to assume the Role attached on the Config Service and confirm that the role trusts the master account where the Lambda function is going to be deployed.
 2. Set ASSUME_ROLE_MODE in Lambda code to True, to get the lambda to assume a custom role and define an optional parameter with key as ExecutionRoleName and set the value to your custom role name; confirm that the role trusts the master account of the organization where the Lambda function will be deployed.
@@ -179,7 +186,7 @@ For successful evaluation of custom rules in child accounts, please make sure yo
   ...
   Waiting for CloudFormation stack operation to complete...
   Config deploy complete.
-  
+
 The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.
 This command uses 'PutOrganizationConfigRule' API for the rule deployment. If a new account joins an organization, the rule is deployed to that account. When an account leaves an organization, the rule is removed. Deployment of existing organizational AWS Config Rules will only be retried for 7 hours after an account is added to your organization if a recorder is not available. You are expected to create a recorder if one doesn't exist within 7 hours of adding an account to your organization.
 
@@ -239,10 +246,10 @@ It is now possible to define a resource type that is not yet supported by rdk. T
   Skip-Supported-Resource-Check Flag set (--skip-supported-resource-check), ignoring missing resource type error.
   Running create!
   Local Rule files created.
-  
+
 Custom Lambda Function Name
 ---------------------------
-As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Rule-Function-<RULE_NAME>' it is possible to customize the name for the Lambda function to any 64 characters string as per Lambda's naming standards using the optional '--custom-lambda-name' flag while performing rdk create. This opens up new features like : 
+As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Rule-Function-<RULE_NAME>' it is possible to customize the name for the Lambda function to any 64 characters string as per Lambda's naming standards using the optional '--custom-lambda-name' flag while performing rdk create. This opens up new features like :
 
 1. Longer config rule name.
 2. Custom lambda function naming as per personal or enterprise standards.
@@ -252,7 +259,7 @@ As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Ru
   $ rdk create MyLongerRuleName --runtime python3.8 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
   Running create!
   Local Rule files created.
-  
+
 The above example would create files with config rule name as 'MyLongerRuleName' and lambda function with the name 'custom-prefix-for-MyLongerRuleName' instead of 'RDK-Rule-Function-MyLongerRuleName'
 
 RuleSets
@@ -293,22 +300,42 @@ The RDK is able to deploy AWS Managed Rules.
 
 To do so, create a rule using "rdk create" and provide a valid SourceIdentifier via the --source-identifier CLI option. The list of Managed Rules can be found here: https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html, and note that the Identifier can be obtained by replacing the dashes with underscores and using all capitals (for example, the "guardduty-enabled-centralized" rule has the SourceIdentifier "GUARDDUTY_ENABLED_CENTRALIZED").  Just like custom Rules you will need to specify source events and/or a maximum evaluation frequency, and also pass in any Rule parameters.  The resulting Rule directory will contain only the parameters.json file, but using `rdk deploy` or `rdk create-rule-template` can be used to deploy the Managed Rule like any other Custom Rule.
 
+Deploying Rules Across Multiple Regions
+---------------------------------------
+The RDK is able to run init/deploy/undeploy across multiple regions with a `rdk -f <region file> -t <region set>`
+
+If no region group is specified, rdk will deploy to the `default` region set
+
+To create a sample starter region group, run `rdk create-region-set` to specify the filename, add the `-o <region set output file name>` this will create a region set with the following tests and regions `"default":["us-east-1","us-west-1","eu-north-1","ap-east-1"],"aws-cn-region-set":["cn-north-1","cn-northwest-1"]`
+
+Using RDK to Generate a Lambda Layer in a region (Python3)
+----------------------------------------------------------
+By default `rdk init --generate-lambda-layer` will generate an rdklib lambda layer while running init in whatever region it is run, to force re-generation of the layer, run `rdk init --generate-lambda-layer` again over a region
+
+To use this generated lambda layer, add the flag `--generated-lambda-layer` when running `rdk deploy`. For example: `rdk -f regions.yaml deploy LP3_TestRule_P36_lib --generated-lambda-layer`
+
+If you created layer with a custom name (by running `rdk init --custom-lambda-layer`, add a similar `custom-lambda-layer` flag when running deploy.
+
 Contributing
 ============
 
-email us at rdk-maintainers@amazon.com if you have any questions. We are happy to help and discuss. 
+email us at rdk-maintainers@amazon.com if you have any questions. We are happy to help and discuss.
 
-Authors
+Contacts
 =======
+* **Ricky Chau** - `rickychau2780 <https://github.com/rickychau2780>`_ - *current maintainer*
+* **Jarrett Andrulis** - `jarrettandrulis <https://github.com/jarrettandrulis>`_ - *current maintainer*
+* **Julio Delgado Jr** - `tekdj7 <https://github.com/tekdj7>`_ - *current maintainer*
+* **Sandeep Batchu** - `batchus <https://github.com/batchus>`_ - *current maintainer*
 
-* **Michael Borchert** - *Python version*
-* **Jonathan Rault** - *Design, testing, feedback*
+Past Contributors
+=======
+* **Michael Borchert** - *Orignal Python version*
+* **Jonathan Rault** - *Orignal Design, testing, feedback*
 * **Greg Kim and Chris Gutierrez** - *Initial work and CI definitions*
 * **Henry Huang** - *Original CFN templates and other code*
-* **Ricky Chau** - *current maintainer*
-* **Santosh Kumar** - *current maintainer*
-* **Jose Obando** - *current maintainer*
-* **Sandeep Batchu** - *current maintainer*
+* **Santosh Kumar** - *maintainer*
+* **Jose Obando** - *maintainer*
 
 License
 =======

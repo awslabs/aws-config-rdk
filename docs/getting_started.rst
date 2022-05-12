@@ -221,3 +221,42 @@ Rules can be added to or removed from RuleSets using the `add` and `remove` subc
   RSTest removed from RuleSet AnotherRuleSet
 
 RuleSets are a convenient way to maintain a single repository of Config Rules that may need to have subsets of them deployed to different environments.  For example your development environment may contain some of the Rules that you run in Production but not all of them; RuleSets gives you a way to identify and selectively deploy the appropriate Rules to each environment.
+
+
+Region Sets
+~~~~~~~~~~~
+`rdk init`, `rdk deploy`, and `rdk undeploy` subcommands now support running across multiple regions in parallel using region sets defined in a yaml file.
+
+To run a subcommand with a region set, pass in the region set yaml file and the specific region set to run through.
+
+::
+
+    $ rdk -f regions.yaml --region-set region-set-1 undeploy CUSTOM_RULE
+    Deleting rules in the following regions: ['sa-east-1', 'us-east-1'].
+    Delete specified Rules and Lambda Functions from your AWS Account? (y/N): y
+    [sa-east-1] Running un-deploy!
+    [us-east-1] Running un-deploy!
+    [us-east-1] Rule removal initiated. Waiting for Stack Deletion to complete.
+    [sa-east-1] Rule removal initiated. Waiting for Stack Deletion to complete.
+    [us-east-1] CloudFormation stack operation complete.
+    [us-east-1] Rule removal complete, but local files have been preserved.
+    [us-east-1] To re-deploy, use the 'deploy' command.
+    [sa-east-1] CloudFormation stack operation complete.
+    [sa-east-1] Rule removal complete, but local files have been preserved.
+    [sa-east-1] To re-deploy, use the 'deploy' command.
+
+Example region set file:
+
+::
+
+    default:
+      - us-west-1
+      - us-west-2
+    region-set-1:
+      - sa-east-1
+      - us-east-1
+    region-set-2:
+      - ap-southeast-1
+      - eu-central-1
+      - sa-east-1
+      - us-east-1

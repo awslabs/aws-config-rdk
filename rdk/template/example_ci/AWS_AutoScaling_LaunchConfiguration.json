@@ -1,0 +1,93 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T18:55:25.285Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645469725285",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:autoscaling:us-east-2:123456789012:launchConfiguration:test:launchConfigurationName/test",
+    "resourceType": "AWS::AutoScaling::LaunchConfiguration",
+    "resourceId": "arn:aws:autoscaling:us-east-2:123456789012:launchConfiguration:test2:launchConfigurationName/test",
+    "resourceName": "lc1",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2022-02-21T18:54:30.080Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::EC2::SecurityGroup",
+        "resourceId": "sg-test",
+        "relationshipName": "Is associated with "
+      }
+    ],
+    "configuration": {
+      "launchConfigurationName": "lc1",
+      "launchConfigurationARN": "arn:aws:autoscaling:us-east-2:123456789012:launchConfiguration:test/test",
+      "imageId": "ami-test",
+      "keyName": "",
+      "securityGroups": [
+        "sg-test"
+      ],
+      "classicLinkVPCSecurityGroups": [],
+      "userData": "",
+      "instanceType": "t2.nano",
+      "kernelId": "",
+      "ramdiskId": "",
+      "blockDeviceMappings": [
+        {
+          "deviceName": "/dev/sdj",
+          "ebs": {
+            "volumeSize": 5,
+            "volumeType": "gp2",
+            "deleteOnTermination": false,
+            "encrypted": true
+          }
+        },
+        {
+          "deviceName": "/dev/sda1",
+          "ebs": {
+            "snapshotId": "snap-test",
+            "volumeSize": 8,
+            "volumeType": "gp2",
+            "deleteOnTermination": true,
+            "encrypted": false
+          }
+        },
+        {
+          "deviceName": "/dev/sdc",
+          "noDevice": true
+        },
+        {
+          "deviceName": "/dev/sdh",
+          "ebs": {
+            "volumeSize": 20,
+            "volumeType": "gp2",
+            "deleteOnTermination": false,
+            "encrypted": true
+          }
+        },
+        {
+          "deviceName": "/dev/sdi",
+          "ebs": {
+            "volumeSize": 10,
+            "volumeType": "gp2",
+            "deleteOnTermination": false,
+            "encrypted": true
+          }
+        },
+        {
+          "deviceName": "/dev/sdb",
+          "noDevice": true
+        }
+      ],
+      "instanceMonitoring": {
+        "enabled": false
+      },
+      "iamInstanceProfile": "arn:aws:iam::123456789012:instance-profile/test",
+      "createdTime": 1645469670080,
+      "ebsOptimized": false
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }

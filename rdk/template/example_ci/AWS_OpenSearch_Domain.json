@@ -1,0 +1,87 @@
+{
+  "version": "1.3",
+  "accountId": "123456789012",
+  "configurationItemCaptureTime": "2022-02-21T18:24:55.063Z",
+  "configurationItemStatus": "ResourceDiscovered",
+  "configurationStateId": "1645467895063",
+  "configurationItemMD5Hash": "",
+  "arn": "arn:aws:es:us-east-2:123456789012:domain/test",
+  "resourceType": "AWS::OpenSearch::Domain",
+  "resourceId": "test",
+  "resourceName": "test",
+  "awsRegion": "us-east-2",
+  "availabilityZone": "Regional",
+  "tags": {},
+  "relatedEvents": [],
+  "relationships": [],
+  "configuration": {
+    "Id": "123456789012/test",
+    "VPCOptions": {
+      "SecurityGroupIds": [
+        "sg-test"
+      ],
+      "SubnetIds": [
+        "subnet-test"
+      ]
+    },
+    "EBSOptions": {
+      "EBSEnabled": true,
+      "VolumeSize": 10,
+      "VolumeType": "gp2"
+    },
+    "DomainEndpointOptions": {
+      "EnforceHTTPS": true,
+      "TLSSecurityPolicy": "Policy-Min-TLS-1-0-2019-07",
+      "CustomEndpointEnabled": false
+    },
+    "ClusterConfig": {
+      "InstanceType": "r6g.large.search",
+      "InstanceCount": 1,
+      "DedicatedMasterEnabled": false,
+      "ZoneAwarenessEnabled": false,
+      "WarmEnabled": false
+    },
+    "AccessPolicies": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Deny",
+          "Principal": {
+            "AWS": "*"
+          },
+          "Action": "es:*",
+          "Resource": "arn:aws:es:us-east-2:123456789012:domain/test/*"
+        }
+      ]
+    },
+    "Tags": [],
+    "DomainName": "test",
+    "Arn": "arn:aws:es:us-east-2:123456789012:domain/test",
+    "EngineVersion": "OpenSearch_1.1",
+    "SnapshotOptions": {},
+    "CognitoOptions": {
+      "Enabled": false
+    },
+    "EncryptionAtRestOptions": {
+      "Enabled": true,
+      "KmsKeyId": "arn:aws:kms:us-east-2:123456789012:key/test"
+    },
+    "NodeToNodeEncryptionOptions": {
+      "Enabled": true
+    },
+    "AdvancedOptions": {
+      "indices.fielddata.cache.size": "20",
+      "override_main_response_version": "false",
+      "indices.query.bool.max_clause_count": "1024",
+      "rest.action.multi.allow_explicit_index": "true"
+    },
+    "LogPublishingOptions": {},
+    "AdvancedSecurityOptions": {
+      "Enabled": true,
+      "InternalUserDatabaseEnabled": true,
+      "AnonymousAuthEnabled": false
+    }
+  },
+  "supplementaryConfiguration": {},
+  "resourceTransitionStatus": "None"
+}

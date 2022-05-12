@@ -1,0 +1,62 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T19:03:14.057Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "test",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:network-firewall:us-east-2:123456789012:stateless-rulegroup/test",
+    "resourceType": "AWS::NetworkFirewall::RuleGroup",
+    "resourceId": "test",
+    "resourceName": "test",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Not Applicable",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "ruleGroup": {
+        "rulesSource": {
+          "statelessRulesAndCustomActions": {
+            "customActions": [],
+            "statelessRules": [
+              {
+                "priority": 1,
+                "ruleDefinition": {
+                  "actions": [
+                    "aws:pass"
+                  ],
+                  "matchAttributes": {
+                    "destinations": [
+                      {
+                        "addressDefinition": "0.0.0.0/0"
+                      }
+                    ],
+                    "sources": [
+                      {
+                        "addressDefinition": "0.0.0.0/0"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "ruleGroupResponse": {
+        "capacity": 1,
+        "consumedCapacity": 1,
+        "numberOfAssociations": 0,
+        "ruleGroupArn": "arn:aws:network-firewall:us-east-2:123456789012:stateless-rulegroup/test",
+        "ruleGroupId": "test",
+        "ruleGroupName": "test",
+        "ruleGroupStatus": "ACTIVE",
+        "tags": [],
+        "type": "STATELESS"
+      },
+      "updateToken": "ec7708d3-a707-4342-920f-39581f1fccef"
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }

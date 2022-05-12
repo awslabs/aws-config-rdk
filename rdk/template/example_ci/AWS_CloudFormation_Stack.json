@@ -1,13 +1,13 @@
 {
 	"version": "1.3",
-	"accountId": "123456789101",
-	"configurationItemCaptureTime": "datetime.datetime(2020, 4, 22, 13, 13, 17, 718000, tzinfo=tzlocal())",
+	"accountId": "123456789012",
+	"configurationItemCaptureTime": "2022-02-21T18:24:55.063Z",
 	"configurationItemStatus": "OK",
 	"configurationStateId": "1587582797718",
 	"configurationItemMD5Hash": "",
-	"arn": "arn:aws:cloudformation:us-east-1:123456789101:stack/example-stack/ee155870-38af-11ea-865a-0a8540e42a70",
+	"arn": "arn:aws:cloudformation:us-east-1:123456789012:stack/example-stack/ee155870-38af-11ea-865a-0a8540e42a70",
 	"resourceType": "AWS::CloudFormation::Stack",
-	"resourceId": "arn:aws:cloudformation:us-east-1:123456789101:stack/example-stack/ee155870-38af-11ea-865a-0a8540e42a70",
+	"resourceId": "arn:aws:cloudformation:us-east-1:123456789012:stack/example-stack/ee155870-38af-11ea-865a-0a8540e42a70",
 	"resourceName": "example-stack",
 	"awsRegion": "us-east-1",
 	"availabilityZone": "Regional",
@@ -18,13 +18,13 @@
 	"relatedEvents": [],
 	"relationships": [],
 	"configuration": {
-		"stackId": "arn:aws:cloudformation:us-east-1:123456789101:stack/example-stack/ee155870-38af-11ea-865a-0a8540e42a70",
+		"stackId": "arn:aws:cloudformation:us-east-1:123456789012:stack/example-stack/ee155870-38af-11ea-865a-0a8540e42a70",
 		"stackName": "example-stack",
 		"description": "Example Stack Configuration Item",
 		"parameters": [
 			{
 				"parameterKey": "TopicARN",
-				"parameterValue": "arn:aws:sns:us-east-1:123456789101:example-topic"
+				"parameterValue": "arn:aws:sns:us-east-1:123456789012:example-topic"
 			}
 		],
 		"creationTime": "Jan 16, 2020 10:31:25 PM",
@@ -55,7 +55,7 @@
 		"StackResourceSummaries": [
 			{
 				"logicalResourceId": "Subscription",
-				"physicalResourceId": "arn:aws:sns:us-east-1:123456789101:example-topic:6d5412ed-84ab-4216-b57e-769d11719e08",
+				"physicalResourceId": "arn:aws:sns:us-east-1:123456789012:example-topic:6d5412ed-84ab-4216-b57e-769d11719e08",
 				"resourceType": "AWS::SNS::Subscription",
 				"lastUpdatedTimestamp": "Jan 16, 2020 10:31:30 PM",
 				"resourceStatus": "CREATE_COMPLETE",
@@ -66,7 +66,7 @@
 		],
 		"unsupportedResources": [
 			{
-				"resourceId": "arn:aws:sns:us-east-1:123456789101:example-topic:6d5412ed-84ab-4216-b57e-769d11719e08",
+				"resourceId": "arn:aws:sns:us-east-1:123456789012:example-topic:6d5412ed-84ab-4216-b57e-769d11719e08",
 				"resourceType": "AWS::SNS::Subscription"
 			}
 		]

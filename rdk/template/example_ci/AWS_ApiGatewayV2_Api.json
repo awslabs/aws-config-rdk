@@ -1,0 +1,33 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T18:36:34.575Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645468594575",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:apigateway:us-east-2::/apis/test",
+    "resourceType": "AWS::ApiGatewayV2::Api",
+    "resourceId": "arn:aws:apigateway:us-east-2::/apis/test",
+    "resourceName": "test",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2022-02-21T18:36:34.386Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "apiId": "test",
+      "name": "test",
+      "protocolType": "HTTP",
+      "routeSelectionExpression": "$request.method $request.path",
+      "apiKeySelectionExpression": "$request.header.x-api-key",
+      "apiEndpoint": "https://test.execute-api.us-east-2.amazonaws.com",
+      "createdDate": "Feb 21, 2022 6:36:34 PM",
+      "tags": {
+        "internalId": "test",
+        "resourceArn": "arn:aws:apigateway:us-east-2::/apis/test"
+      },
+      "disableExecuteApiEndpoint": false
+    },
+    "supplementaryConfiguration": {}
+  }

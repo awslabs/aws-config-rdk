@@ -9,16 +9,33 @@ phases:
   pre_build:
     commands:
       - echo Starting tests
-      - python3 testing/partition_test.py
+      - rm -rf LP3*
   build:
     commands:
+      - rdk create-region-set -o test-region
+      - rdk -f test-region.yaml init
+      - rdk create MFA_ENABLED_RULE --runtime python3.8 --resource-types AWS::IAM::User
+      - rdk -f test-region.yaml deploy MFA_ENABLED_RULE
+      - sleep 30
+      - python3 testing/multi_region_execution_test.py
+      - sleep 30
+      - rdk -f test-region.yaml undeploy --force MFA_ENABLED_RULE
+      - python3 testing/partition_test.py
+      - rdk init --generate-lambda-layer
+      - rdk create LP3_TestRule_P38_lib --runtime python3.8-lib --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_P37_lib --runtime python3.7-lib --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_P36_lib --runtime python3.6-lib --resource-types AWS::EC2::SecurityGroup
+      - rdk -f test-region.yaml deploy LP3_TestRule_P38_lib --generated-lambda-layer
+      - rdk -f test-region.yaml deploy LP3_TestRule_P37_lib --generated-lambda-layer
+      - rdk -f test-region.yaml deploy LP3_TestRule_P36_lib --generated-lambda-layer
+      - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P38_lib
+      - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P37_lib
+      - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P36_lib
       - rdk create LP3_TestRule_P39 --runtime python3.9 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P3 --runtime python3.6 --resource-types AWS::EC2::SecurityGroup
-      - rdk create LP3_TestRule_JS --runtime nodejs4.3 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_EFSFS --runtime python3.9 --resource-types AWS::EFS::FileSystem
-      - rdk create LP3_TestRule_CREC --runtime python3.8 --resource-types AWS::Config::ResourceCompliance
       - rdk create LP3_TestRule_ECSTD --runtime python3.7 --resource-types AWS::ECS::TaskDefinition
       - rdk create LP3_TestRule_ECSS --runtime python3.6 --resource-types AWS::ECS::Service
       - rdk modify LP3_TestRule_P3 --input-parameters '{"TestParameter":"TestValue"}'

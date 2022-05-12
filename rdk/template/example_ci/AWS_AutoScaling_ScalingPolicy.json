@@ -1,0 +1,63 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T19:36:05.998Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645472165998",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:autoscaling:us-east-2:123456789012:scalingPolicy:test:autoScalingGroupName/test:policyName/Target Tracking Policy",
+    "resourceType": "AWS::AutoScaling::ScalingPolicy",
+    "resourceId": "arn:aws:autoscaling:us-east-2:123456789012:scalingPolicy:test:autoScalingGroupName/test:policyName/Target Tracking Policy",
+    "resourceName": "Target Tracking Policy",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Not Applicable",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::CloudWatch::Alarm",
+        "resourceId": "TargetTracking-test-AlarmHigh-test",
+        "resourceName": "TargetTracking-test-AlarmHigh-test",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::AutoScaling::AutoScalingGroup",
+        "resourceName": "test",
+        "relationshipName": "Is associated with "
+      },
+      {
+        "resourceType": "AWS::CloudWatch::Alarm",
+        "resourceId": "TargetTracking-test-AlarmLow-test",
+        "resourceName": "TargetTracking-test-AlarmLow-test",
+        "relationshipName": "Is associated with "
+      }
+    ],
+    "configuration": {
+      "autoScalingGroupName": "test",
+      "policyName": "Target Tracking Policy",
+      "policyARN": "arn:aws:autoscaling:us-east-2:123456789012:scalingPolicy:test:autoScalingGroupName/test:policyName/Target Tracking Policy",
+      "policyType": "TargetTrackingScaling",
+      "stepAdjustments": [],
+      "estimatedInstanceWarmup": 1500,
+      "alarms": [
+        {
+          "alarmName": "TargetTracking-test-AlarmHigh-test",
+          "alarmARN": "arn:aws:cloudwatch:us-east-2:123456789012:alarm:TargetTracking-test-AlarmHigh-test"
+        },
+        {
+          "alarmName": "TargetTracking-test-AlarmLow-test",
+          "alarmARN": "arn:aws:cloudwatch:us-east-2:123456789012:alarm:TargetTracking-test-AlarmLow-test"
+        }
+      ],
+      "targetTrackingConfiguration": {
+        "predefinedMetricSpecification": {
+          "predefinedMetricType": "ASGAverageCPUUtilization"
+        },
+        "targetValue": 50,
+        "disableScaleIn": false
+      },
+      "enabled": true
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }

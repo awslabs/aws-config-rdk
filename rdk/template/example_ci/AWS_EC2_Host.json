@@ -1,0 +1,47 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2021-12-02T17:29:00.471Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1638466140471",
+    "configurationItemMD5Hash": "",
+    "resourceType": "AWS::EC2::Host",
+    "resourceId": "h-test",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "us-east-1a",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "autoPlacement": "off",
+      "availabilityZone": "us-east-1a",
+      "availableCapacity": {
+        "availableInstanceCapacity": [
+          {
+            "availableCapacity": 8,
+            "instanceType": "c5.2xlarge",
+            "totalCapacity": 8
+          }
+        ],
+        "availableVCpus": 64
+      },
+      "clientToken": "test",
+      "hostId": "h-test",
+      "hostProperties": {
+        "cores": 36,
+        "instanceType": "c5.2xlarge",
+        "sockets": 2,
+        "totalVCpus": 64
+      },
+      "instances": [],
+      "state": "available",
+      "allocationTime": "2021-12-02T17:28:18.000Z",
+      "tags": [],
+      "hostRecovery": "off",
+      "allowsMultipleInstanceTypes": "off",
+      "ownerId": "123456789012",
+      "availabilityZoneId": "use1-az2",
+      "memberOfServiceLinkedResourceGroup": false
+    },
+    "supplementaryConfiguration": {}
+  }
