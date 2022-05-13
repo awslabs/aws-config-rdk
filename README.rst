@@ -1,7 +1,7 @@
 rdk
 ===
 Rule Development Kit
-We are greatly appreciated feedback and bug reports at rdk-maintainers@amazon.com! You may also create an issue on this repo.
+We greatly appreciate feedback and bug reports at rdk-maintainers@amazon.com! You may also create an issue on this repo.
 
 The RDK is designed to support a "Compliance-as-Code" workflow that is intuitive and productive.  It abstracts away much of the undifferentiated heavy lifting associated with deploying AWS Config rules backed by custom lambda functions, and provides a streamlined develop-deploy-monitor iterative process.
 
@@ -321,17 +321,21 @@ Contributing
 
 email us at rdk-maintainers@amazon.com if you have any questions. We are happy to help and discuss.
 
-Authors
+Contacts
 =======
+* **Ricky Chau** - `rickychau2780 <https://github.com/rickychau2780>`_ - *current maintainer*
+* **Jarrett Andrulis** - `jarrettandrulis <https://github.com/jarrettandrulis>`_ - *current maintainer*
+* **Julio Delgado Jr** - `tekdj7 <https://github.com/tekdj7>`_ - *current maintainer*
+* **Sandeep Batchu** - `batchus <https://github.com/batchus>`_ - *current maintainer*
 
-* **Michael Borchert** - *Python version*
-* **Jonathan Rault** - *Design, testing, feedback*
+Past Contributors
+=======
+* **Michael Borchert** - *Orignal Python version*
+* **Jonathan Rault** - *Orignal Design, testing, feedback*
 * **Greg Kim and Chris Gutierrez** - *Initial work and CI definitions*
 * **Henry Huang** - *Original CFN templates and other code*
-* **Ricky Chau** - *current maintainer*
-* **Santosh Kumar** - *current maintainer*
-* **Jose Obando** - *current maintainer*
-* **Sandeep Batchu** - *current maintainer*
+* **Santosh Kumar** - *maintainer*
+* **Jose Obando** - *maintainer*
 
 License
 =======

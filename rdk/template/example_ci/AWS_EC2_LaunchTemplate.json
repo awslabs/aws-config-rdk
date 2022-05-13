@@ -1,0 +1,37 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T18:55:25.306Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1645469725306",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:ec2:us-east-2:123456789012:launch-template/lt-test",
+    "resourceType": "AWS::EC2::LaunchTemplate",
+    "resourceId": "lt-test",
+    "resourceName": "test",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Regional",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "LaunchTemplateName": "test",
+      "Id": "lt-test",
+      "LaunchTemplateData": {
+        "BlockDeviceMappings": [],
+        "NetworkInterfaces": [],
+        "ImageId": "ami-test",
+        "TagSpecifications": [],
+        "ElasticGpuSpecifications": [],
+        "ElasticInferenceAccelerators": [],
+        "SecurityGroupIds": [],
+        "SecurityGroups": [],
+        "LicenseSpecifications": []
+      },
+      "DefaultVersionNumber": "1",
+      "LatestVersionNumber": "1",
+      "TagSpecifications": []
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }

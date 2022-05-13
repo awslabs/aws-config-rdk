@@ -178,6 +178,13 @@
             },
             { "Ref": "AWS::NoValue"}]},
             {"Fn::If": [
+            "EventTriggered",
+            {
+              "EventSource": "aws.config",
+              "MessageType": "OversizedConfigurationItemChangeNotification"
+            },
+            { "Ref": "AWS::NoValue"}]},
+            {"Fn::If": [
             "PeriodicTriggered",
             {
               "EventSource": "aws.config",

@@ -1,0 +1,42 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-02-21T18:36:35.045Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "123456789012",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:apigateway:us-east-2::/apis/test/stages/$default",
+    "resourceType": "AWS::ApiGatewayV2::Stage",
+    "resourceId": "arn:aws:apigateway:us-east-2::/apis/test/stages/$default",
+    "resourceName": "$default",
+    "awsRegion": "us-east-2",
+    "availabilityZone": "Not Applicable",
+    "resourceCreationTime": "2022-02-21T18:36:34.905Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [
+      {
+        "resourceType": "AWS::ApiGatewayV2::Api",
+        "resourceId": "arn:aws:apigateway:us-east-2::/apis/test",
+        "resourceName": "test",
+        "relationshipName": "Is contained in "
+      }
+    ],
+    "configuration": {
+      "stageName": "$default",
+      "defaultRouteSettings": {
+        "detailedMetricsEnabled": false
+      },
+      "routeSettings": {},
+      "stageVariables": {},
+      "autoDeploy": true,
+      "createdDate": "Feb 21, 2022 6:36:34 PM",
+      "lastUpdatedDate": "Feb 21, 2022 6:36:34 PM",
+      "tags": {
+        "internalId": "trub",
+        "resourceArn": "arn:aws:apigateway:us-east-2::/apis/test/stages/$default"
+      }
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }
