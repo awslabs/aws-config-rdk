@@ -9,7 +9,7 @@ phases:
   pre_build:
     commands:
       - echo Starting tests
-      - rm -r WP3*
+      - rd -r WP3*
   build:
     commands:
       - rdk create-region-set -o test-region
