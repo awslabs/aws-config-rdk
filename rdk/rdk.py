@@ -3658,7 +3658,12 @@ class rdk:
             my_stacks = []
             response = cfn_client.list_stacks()
 
-            for stack in response["StackSummaries"]:
+            all_stacks = response["StackSummaries"]
+            while 'NextToken' in response:
+                response = cfn_client.list_stacks(NextToken=response['NextToken'])
+                all_stacks += response["StackSummaries"]
+
+            for stack in all_stacks:
                 if stack["StackName"] == stackname:
                     my_stacks.append(stack)
 
