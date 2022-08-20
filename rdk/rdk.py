@@ -2108,15 +2108,14 @@ class rdk:
                     else:
                         raise
 
-                if source_runtime != "cloudformation-guard2.0":
-                    my_lambda_arn = self.__get_lambda_arn_for_stack(my_stack_name)
+                my_lambda_arn = self.__get_lambda_arn_for_stack(my_stack_name)
 
-                    print(f"[{my_session.region_name}]: Publishing Lambda code...")
-                    my_lambda_client = my_session.client("lambda")
-                    my_lambda_client.update_function_code(
-                        FunctionName=my_lambda_arn, S3Bucket=code_bucket_name, S3Key=s3_dst, Publish=True
-                    )
-                    print(f"[{my_session.region_name}]: Lambda code updated.")
+                print(f"[{my_session.region_name}]: Publishing Lambda code...")
+                my_lambda_client = my_session.client("lambda")
+                my_lambda_client.update_function_code(
+                    FunctionName=my_lambda_arn, S3Bucket=code_bucket_name, S3Key=s3_dst, Publish=True
+                )
+                print(f"[{my_session.region_name}]: Lambda code updated.")
             except ClientError as e:
                 # If we're in the exception, the stack does not exist and we should create it.
                 print(f"[{my_session.region_name}]: Creating CloudFormation Stack for " + rule_name)
