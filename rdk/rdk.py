@@ -393,6 +393,7 @@ def get_rule_parser(is_required, command):
             "python3.9-lib",
             "dotnetcore1.0",
             "dotnetcore2.0",
+            "cloudformation-guard2.0"
         ],
         metavar="",
     )
@@ -1233,6 +1234,7 @@ class rdk:
                 "nodejs6.10": ".js",
                 "dotnetcore1.0": "cs",
                 "dotnetcore2.0": "cs",
+                "cloudformation-guard2.0": "guard",
             }
             if self.args.runtime not in extension_mapping:
                 print("rdk does not support that runtime yet.")
@@ -1256,6 +1258,8 @@ class rdk:
                     self.__create_java_rule()
                 elif self.args.runtime in ["dotnetcore1.0", "dotnetcore2.0"]:
                     self.__create_dotnet_rule()
+                elif self.args.runtime == "cloudformation-guard2.0":
+                    self.__create_cloudformation_guard_rule()
                 else:
                     src = os.path.join(
                         path.dirname(__file__),
@@ -1895,99 +1899,140 @@ class rdk:
 
                 continue
 
-            print(f"[{my_session.region_name}]: Found Custom Rule.")
-
-            s3_src = ""
-            s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
-
-            # create CFN Parameters for Custom Rules
-            lambdaRoleArn = ""
-            if self.args.lambda_role_arn:
-                print(f"[{my_session.region_name}]: Existing IAM Role provided: " + self.args.lambda_role_arn)
-                lambdaRoleArn = self.args.lambda_role_arn
-            elif self.args.lambda_role_name:
-                print(f"[{my_session.region_name}]: Building IAM Role ARN from Name: " + self.args.lambda_role_name)
-                arn = f"arn:{partition}:iam::{account_id}:role/{self.args.lambda_role_name}"
-                lambdaRoleArn = arn
-
-            if self.args.boundary_policy_arn:
-                print(f"[{my_session.region_name}]: Boundary Policy provided: " + self.args.boundary_policy_arn)
-                boundaryPolicyArn = self.args.boundary_policy_arn
-            else:
-                boundaryPolicyArn = ""
-
             try:
                 rule_description = rule_params["Description"]
             except KeyError:
                 rule_description = rule_name
 
-            my_params = [
-                {
-                    "ParameterKey": "RuleName",
-                    "ParameterValue": rule_name,
-                },
-                {
-                    "ParameterKey": "RuleLambdaName",
-                    "ParameterValue": self.__get_lambda_name(rule_name, rule_params),
-                },
-                {
-                    "ParameterKey": "Description",
-                    "ParameterValue": rule_description,
-                },
-                {
-                    "ParameterKey": "LambdaRoleArn",
-                    "ParameterValue": lambdaRoleArn,
-                },
-                {
-                    "ParameterKey": "BoundaryPolicyArn",
-                    "ParameterValue": boundaryPolicyArn,
-                },
-                {
-                    "ParameterKey": "SourceBucket",
-                    "ParameterValue": code_bucket_name,
-                },
-                {
-                    "ParameterKey": "SourcePath",
-                    "ParameterValue": s3_dst,
-                },
-                {
-                    "ParameterKey": "SourceRuntime",
-                    "ParameterValue": self.__get_runtime_string(rule_params),
-                },
-                {
-                    "ParameterKey": "SourceEvents",
-                    "ParameterValue": source_events,
-                },
-                {
-                    "ParameterKey": "SourcePeriodic",
-                    "ParameterValue": source_periodic,
-                },
-                {
-                    "ParameterKey": "SourceInputParameters",
-                    "ParameterValue": json.dumps(combined_input_parameters),
-                },
-                {"ParameterKey": "SourceHandler", "ParameterValue": self.__get_handler(rule_name, rule_params)},
-                {"ParameterKey": "Timeout", "ParameterValue": str(self.args.lambda_timeout)},
-            ]
-            layers = self.__get_lambda_layers(my_session, self.args, rule_params)
+            source_runtime = rule_params["SourceRuntime"]
 
-            if self.args.lambda_layers:
-                additional_layers = self.args.lambda_layers.split(",")
-                layers.extend(additional_layers)
+            print(f"[{my_session.region_name}]: Found Custom Rule.")
 
-            if layers:
-                my_params.append({"ParameterKey": "Layers", "ParameterValue": ",".join(layers)})
+            if source_runtime != "cloudformation-guard2.0":
+                s3_src = ""
+                s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
 
-            if self.args.lambda_security_groups and self.args.lambda_subnets:
-                my_params.append(
-                    {"ParameterKey": "SecurityGroupIds", "ParameterValue": self.args.lambda_security_groups}
+                # create CFN Parameters for Custom Rules
+                lambdaRoleArn = ""
+                if self.args.lambda_role_arn:
+                    print(f"[{my_session.region_name}]: Existing IAM Role provided: " + self.args.lambda_role_arn)
+                    lambdaRoleArn = self.args.lambda_role_arn
+                elif self.args.lambda_role_name:
+                    print(f"[{my_session.region_name}]: Building IAM Role ARN from Name: " + self.args.lambda_role_name)
+                    arn = f"arn:{partition}:iam::{account_id}:role/{self.args.lambda_role_name}"
+                    lambdaRoleArn = arn
+
+                if self.args.boundary_policy_arn:
+                    print(f"[{my_session.region_name}]: Boundary Policy provided: " + self.args.boundary_policy_arn)
+                    boundaryPolicyArn = self.args.boundary_policy_arn
+                else:
+                    boundaryPolicyArn = ""
+
+                my_params = [
+                    {
+                        "ParameterKey": "RuleName",
+                        "ParameterValue": rule_name,
+                    },
+                    {
+                        "ParameterKey": "RuleLambdaName",
+                        "ParameterValue": self.__get_lambda_name(rule_name, rule_params),
+                    },
+                    {
+                        "ParameterKey": "Description",
+                        "ParameterValue": rule_description,
+                    },
+                    {
+                        "ParameterKey": "LambdaRoleArn",
+                        "ParameterValue": lambdaRoleArn,
+                    },
+                    {
+                        "ParameterKey": "BoundaryPolicyArn",
+                        "ParameterValue": boundaryPolicyArn,
+                    },
+                    {
+                        "ParameterKey": "SourceBucket",
+                        "ParameterValue": code_bucket_name,
+                    },
+                    {
+                        "ParameterKey": "SourcePath",
+                        "ParameterValue": s3_dst,
+                    },
+                    {
+                        "ParameterKey": "SourceRuntime",
+                        "ParameterValue": self.__get_runtime_string(rule_params),
+                    },
+                    {
+                        "ParameterKey": "SourceEvents",
+                        "ParameterValue": source_events,
+                    },
+                    {
+                        "ParameterKey": "SourcePeriodic",
+                        "ParameterValue": source_periodic,
+                    },
+                    {
+                        "ParameterKey": "SourceInputParameters",
+                        "ParameterValue": json.dumps(combined_input_parameters),
+                    },
+                    {"ParameterKey": "SourceHandler", "ParameterValue": self.__get_handler(rule_name, rule_params)},
+                    {"ParameterKey": "Timeout", "ParameterValue": str(self.args.lambda_timeout)},
+                ]
+                layers = self.__get_lambda_layers(my_session, self.args, rule_params)
+
+                if self.args.lambda_layers:
+                    additional_layers = self.args.lambda_layers.split(",")
+                    layers.extend(additional_layers)
+
+                if layers:
+                    my_params.append({"ParameterKey": "Layers", "ParameterValue": ",".join(layers)})
+
+                if self.args.lambda_security_groups and self.args.lambda_subnets:
+                    my_params.append(
+                        {"ParameterKey": "SecurityGroupIds", "ParameterValue": self.args.lambda_security_groups}
+                    )
+                    my_params.append({"ParameterKey": "SubnetIds", "ParameterValue": self.args.lambda_subnets})
+
+                # create json of CFN template
+                cfn_body = os.path.join(path.dirname(__file__), "template", "configRule.json")
+                template_body = open(cfn_body, "r").read()
+                json_body = json.loads(template_body)
+
+            else:  # update policy rule
+                print(f"[{my_session.region_name}]: Updating policy rule for " + rule_name)
+                policy = os.path.join(os.getcwd(), rules_dir, rule_name, "rule_code.guard")
+                my_cfg = my_session.client("config")
+                response = my_cfg.put_config_rule(
+                    ConfigRule={
+                        'ConfigRuleName': rule_name,
+                        'Description': rule_description,
+                        'Scope': {
+                            'ComplianceResourceTypes': source_events.split(',')
+                        },
+                        'Source': {
+                            'Owner': 'CUSTOM_POLICY',
+                            'SourceDetails': [
+                                {
+                                    'EventSource': 'aws.config',
+                                    'MessageType': 'ConfigurationItemChangeNotification'
+                                },
+                                {
+                                    'EventSource': 'aws.config',
+                                    'MessageType': 'OversizedConfigurationItemChangeNotification'
+                                },
+                            ],
+                            'CustomPolicyDetails': {
+                                'PolicyRuntime': 'guard-2.x.x',
+                                'PolicyText': open(policy).read(),
+                                'EnableDebugLogDelivery': False
+                            }
+                        },
+                        'InputParameters': json.dumps(combined_input_parameters),
+                    },
+                    Tags=cfn_tags
                 )
-                my_params.append({"ParameterKey": "SubnetIds", "ParameterValue": self.args.lambda_subnets})
-
-            # create json of CFN template
-            cfn_body = os.path.join(path.dirname(__file__), "template", "configRule.json")
-            template_body = open(cfn_body, "r").read()
-            json_body = json.loads(template_body)
+                if response['ResponseMetadata']['HTTPStatusCode'] != 200:
+                    print(f"[{my_session.region_name}]: API status error: " + response.__repr__())
+                print(f"[{my_session.region_name}]: Update done.")
+                return
 
             remediation = ""
             if "Remediation" in rule_params:
@@ -2064,14 +2109,15 @@ class rdk:
                     else:
                         raise
 
-                my_lambda_arn = self.__get_lambda_arn_for_stack(my_stack_name)
+                if source_runtime != "cloudformation-guard2.0":
+                    my_lambda_arn = self.__get_lambda_arn_for_stack(my_stack_name)
 
-                print(f"[{my_session.region_name}]: Publishing Lambda code...")
-                my_lambda_client = my_session.client("lambda")
-                my_lambda_client.update_function_code(
-                    FunctionName=my_lambda_arn, S3Bucket=code_bucket_name, S3Key=s3_dst, Publish=True
-                )
-                print(f"[{my_session.region_name}]: Lambda code updated.")
+                    print(f"[{my_session.region_name}]: Publishing Lambda code...")
+                    my_lambda_client = my_session.client("lambda")
+                    my_lambda_client.update_function_code(
+                        FunctionName=my_lambda_arn, S3Bucket=code_bucket_name, S3Key=s3_dst, Publish=True
+                    )
+                    print(f"[{my_session.region_name}]: Lambda code updated.")
             except ClientError as e:
                 # If we're in the exception, the stack does not exist and we should create it.
                 print(f"[{my_session.region_name}]: Creating CloudFormation Stack for " + rule_name)
@@ -2094,9 +2140,25 @@ class rdk:
             if cfn_tags is not None and len(cfn_tags) > 0:
                 self.__tag_config_rule(rule_name, cfn_tags, my_session)
 
-        print(f"[{my_session.region_name}]: Config deploy complete.")
+    def __get_cloudformation_guard_stack(self, rule_name):
+        # create json of CFN template
+        rule = os.path.join(os.getcwd(), rules_dir, rule_name, "rule_code.guard")
+        policy_text_list = []
+        for l in open(rule, "r").readlines():
+            l = l.replace('\n', '')
+            policy_text_list.append('"' + l + '"')
+        cfn_template = os.path.join(path.dirname(__file__), "template", "configRuleCloudformationGuard.json")
+        cfn_body = []
+        with open(cfn_template) as f:
+            for line in f.readlines():
+                replaced = line.replace("<%PolicyText%>", ",\n".join(policy_text_list))
+                cfn_body.append(replaced)
+        template_body = "\n".join(cfn_body)
+        # for debugging
+        # print(template_body)
+        json_body = json.loads(template_body)
+        return json_body
 
-        return 0
 
     def deploy_organization(self):
         self.__parse_deploy_organization_args()
@@ -3101,6 +3163,26 @@ class rdk:
             else:
                 shutil.copytree(src, dst)
 
+    def __create_cloudformation_guard_rule(self):
+        src = os.path.join(path.dirname(__file__), "template", "runtime", "cloudformation-guard2.0", "rule_code.guard")
+        dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, "rule_code.guard")
+        shutil.copyfile(src, dst)
+        f = fileinput.input(files=dst, inplace=True)
+        for line in f:
+            if self.args.resource_types:
+                applicable_resource_list = ",".join(["'" + typ + "'" for typ in self.args.resource_types.split(",")])
+                print(
+                    line.replace("<%RuleName%>", self.args.rulename)
+                    .replace(
+                        "<%ApplicableResources%>",
+                        " when resourceType IN [" + applicable_resource_list + "]",
+                    ),
+                    end="",
+                )
+            else:
+                print(line.replace("<%RuleName%>", self.args.rulename), end="")
+        f.close()
+
     def __print_log_event(self, event):
         time_string = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(event["timestamp"] / 1000))
 
@@ -3307,6 +3389,14 @@ class rdk:
         if is_required and not self.args.resource_types and not self.args.maximum_frequency:
             print("You must specify either a resource type trigger or a maximum frequency.")
             sys.exit(1)
+
+        if is_required and self.args.runtime == "cloudformation-guard2.0":
+            if self.args.maximum_frequency:
+                print("maximum frequency can not be used on a cloudformation-guard policy rule.")
+                sys.exit(1)
+            if not self.args.resource_types:
+                print("You must specify either a resource type for cloudformation-guard policy.")
+                sys.exit(1)
 
         if self.args.input_parameters:
             try:
