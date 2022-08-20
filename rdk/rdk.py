@@ -3149,17 +3149,18 @@ class rdk:
         f = fileinput.input(files=dst, inplace=True)
         for line in f:
             if self.args.resource_types:
-                applicable_resource_list = ",".join(["'" + typ + "'" for typ in self.args.resource_types.split(",")])
+                rule_name = self.args.rulename.replace("-", "_")
+                resource_types = ",".join(["'" + typ + "'" for typ in self.args.resource_types.split(",")])
                 print(
-                    line.replace("<%RuleName%>", self.args.rulename)
+                    line.replace("<%RuleName%>", rule_name)
                     .replace(
                         "<%ApplicableResources%>",
-                        " when resourceType IN [" + applicable_resource_list + "]",
+                        " when resourceType IN [" + resource_types + "]",
                     ),
                     end="",
                 )
             else:
-                print(line.replace("<%RuleName%>", self.args.rulename), end="")
+                print(line.replace("<%RuleName%>", rule_name), end="")
         f.close()
 
     def __print_log_event(self, event):
