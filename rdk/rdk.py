@@ -2139,25 +2139,6 @@ class rdk:
             if cfn_tags is not None and len(cfn_tags) > 0:
                 self.__tag_config_rule(rule_name, cfn_tags, my_session)
 
-    def __get_cloudformation_guard_stack(self, rule_name):
-        # create json of CFN template
-        rule = os.path.join(os.getcwd(), rules_dir, rule_name, "rule_code.guard")
-        policy_text_list = []
-        for l in open(rule, "r").readlines():
-            l = l.replace('\n', '')
-            policy_text_list.append('"' + l + '"')
-        cfn_template = os.path.join(path.dirname(__file__), "template", "configRuleCloudformationGuard.json")
-        cfn_body = []
-        with open(cfn_template) as f:
-            for line in f.readlines():
-                replaced = line.replace("<%PolicyText%>", ",\n".join(policy_text_list))
-                cfn_body.append(replaced)
-        template_body = "\n".join(cfn_body)
-        # for debugging
-        # print(template_body)
-        json_body = json.loads(template_body)
-        return json_body
-
 
     def deploy_organization(self):
         self.__parse_deploy_organization_args()
