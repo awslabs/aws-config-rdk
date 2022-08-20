@@ -3371,10 +3371,10 @@ class rdk:
 
         if is_required and self.args.runtime == "cloudformation-guard2.0":
             if self.args.maximum_frequency:
-                print("maximum frequency can not be used on a cloudformation-guard policy rule.")
+                print("maximum frequency can not be used on a custom policy rule.")
                 sys.exit(1)
             if not self.args.resource_types:
-                print("You must specify either a resource type for cloudformation-guard policy.")
+                print("You must specify a resource type for a custom policy rule.")
                 sys.exit(1)
 
         if self.args.input_parameters:
