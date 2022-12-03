@@ -9,7 +9,7 @@ For complete documentation, including command reference, check out the `ReadTheD
 
 Getting Started
 ===============
-Uses python 3.6/3.7/3.8/3.9 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
+Uses python 3.7/3.8/3.9 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
 
 Under the hood, rdk uses boto3 to make API calls to AWS, so you can set your credentials any way that boto3 recognizes (options 3 through 8 here: http://boto3.readthedocs.io/en/latest/guide/configuration.html) or pass them in with the command-line parameters --profile, --region, --access-key-id, or --secret-access-key
 
@@ -312,7 +312,7 @@ Using RDK to Generate a Lambda Layer in a region (Python3)
 ----------------------------------------------------------
 By default `rdk init --generate-lambda-layer` will generate an rdklib lambda layer while running init in whatever region it is run, to force re-generation of the layer, run `rdk init --generate-lambda-layer` again over a region
 
-To use this generated lambda layer, add the flag `--generated-lambda-layer` when running `rdk deploy`. For example: `rdk -f regions.yaml deploy LP3_TestRule_P36_lib --generated-lambda-layer`
+To use this generated lambda layer, add the flag `--generated-lambda-layer` when running `rdk deploy`. For example: `rdk -f regions.yaml deploy LP3_TestRule_P39_lib --generated-lambda-layer`
 
 If you created layer with a custom name (by running `rdk init --custom-lambda-layer`, add a similar `custom-lambda-layer` flag when running deploy.
 
