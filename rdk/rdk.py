@@ -4106,7 +4106,7 @@ class rdk:
     def __get_lambda_layers(self, my_session, args, params):
         layers = []
         if "SourceRuntime" in params:
-            if params["SourceRuntime"] in ["python3.7-lib", "python3.8-lib"]:
+            if params["SourceRuntime"] in ["python3.7-lib", "python3.8-lib", "python3.9-lib"]:
                 if hasattr(args, "generated_lambda_layer") and args.generated_lambda_layer:
                     lambda_layer_version = self.__get_existing_lambda_layer(
                         my_session, layer_name=args.custom_layer_name
@@ -4230,7 +4230,7 @@ class rdk:
         lambda_client.publish_layer_version(
             LayerName=layer_name,
             Content={"S3Bucket": bucket_name, "S3Key": layer_name},
-            CompatibleRuntimes=["python3.7", "python3.8"],
+            CompatibleRuntimes=["python3.7", "python3.8", "python3.9"],
         )
 
         print(f"[{region}]: Deleting temporary S3 Bucket")
