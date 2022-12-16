@@ -7,7 +7,7 @@ Export
    :prog: rdk export
    :nodescription:
 
-   This command will export the specified Rule(s) to the terraform file, it supports the terraform versions 0.11 and 0.12.
+   This command will export the specified Rule(s) to the terraform file, it supports the terraform versions 0.11, 0.12, and 1.x.
 
    
    The ``--format`` flag can be used to specify export format, currently it supports only terraform. 

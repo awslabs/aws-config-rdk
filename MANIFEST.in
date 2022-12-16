@@ -3,6 +3,7 @@ include rdk/template/*
 include rdk/template/terraform/*
 include rdk/template/terraform/0.11/*
 include rdk/template/terraform/0.12/*
+include rdk/template/terraform/1.x/*
 include rdk/template/example_ci/*
 include rdk/template/runtime/*
 include rdk/template/runtime/java8/*

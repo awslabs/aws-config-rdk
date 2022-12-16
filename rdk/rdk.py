@@ -717,7 +717,7 @@ def get_export_parser(ForceArgument=False, Command="export"):
         required=False,
         help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.",
     )
-    parser.add_argument("-v", "--version", required=True, help="Terraform version", choices=["0.11", "0.12"])
+    parser.add_argument("-v", "--version", required=True, help="Terraform version", choices=["0.11", "0.12", "1.x"])
     parser.add_argument("-f", "--format", required=True, help="Export Format", choices=["terraform"])
     parser.add_argument(
         "-g",
