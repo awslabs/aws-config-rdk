@@ -178,7 +178,7 @@ resource "aws_iam_role" "awsconfig" {
   count = local.create_new_lambda_role ? 1 : 0
   name  = local.rdk_role_name
 
-  assume_role_policy = data.aws_iam_policy_document.aws_config_policy_doc.json
+  assume_role_policy = data.aws_iam_policy_document.aws_config_policy_doc[count.index].json
 }
 
 resource "aws_iam_policy" "awsconfig_policy" {
