@@ -8,13 +8,8 @@
 
 import concurrent.futures
 import copy
-import six
-import time
 
-if six.PY2:
-    import rdk
-else:
-    from rdk import rdk
+from rdk import rdk
 
 
 def main():
