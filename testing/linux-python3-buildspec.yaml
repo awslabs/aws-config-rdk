@@ -22,17 +22,22 @@ phases:
       - rdk -f test-region.yaml undeploy --force MFA_ENABLED_RULE
       - python3 testing/partition_test.py
       - rdk init --generate-lambda-layer
+      - rdk create LP3_TestRule_P39_lib --runtime python3.9-lib --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P38_lib --runtime python3.8-lib --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37_lib --runtime python3.7-lib --resource-types AWS::EC2::SecurityGroup
+      - rdk -f test-region.yaml deploy LP3_TestRule_P39_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P38_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P37_lib --generated-lambda-layer
+      - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P39_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P38_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P37_lib
       - rdk create LP3_TestRule_P39 --runtime python3.9 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_P3 --runtime python3.9 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_EFSFS --runtime python3.9 --resource-types AWS::EFS::FileSystem
       - rdk create LP3_TestRule_ECSTD --runtime python3.7 --resource-types AWS::ECS::TaskDefinition
+      - rdk create LP3_TestRule_ECSS --runtime python3.9 --resource-types AWS::ECS::Service
       - rdk modify LP3_TestRule_P3 --input-parameters '{"TestParameter":"TestValue"}'
       - rdk create LP3_TestRule_P37_Periodic --runtime python3.7 --maximum-frequency One_Hour
       - rdk create LP3_TestRule_P37lib_Periodic --runtime python3.7-lib --maximum-frequency One_Hour
