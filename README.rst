@@ -325,9 +325,9 @@ email us at rdk-maintainers@amazon.com if you have any questions. We are happy t
 Contacts
 ========
 * **Ricky Chau** - `rickychau2780 <https://github.com/rickychau2780>`_ - *current maintainer*
-* **Jarrett Andrulis** - `jarrettandrulis <https://github.com/jarrettandrulis>`_ - *current maintainer*
+* **Benjamin Morris** - `bmorrissirromb <https://github.com/bmorrissirromb>`_ - *current maintainer*
+* **Mark Beacom** - `mbeacom <https://github.com/mbeacom>`_ - *current maintainer*
 * **Julio Delgado Jr** - `tekdj7 <https://github.com/tekdj7>`_ - *current maintainer*
-* **Sandeep Batchu** - `batchus <https://github.com/batchus>`_ - *current maintainer*
 
 Past Contributors
 =================
@@ -337,6 +337,8 @@ Past Contributors
 * **Henry Huang** - *Original CFN templates and other code*
 * **Santosh Kumar** - *maintainer*
 * **Jose Obando** - *maintainer*
+* **Jarrett Andrulis** - `jarrettandrulis <https://github.com/jarrettandrulis>`_ - *maintainer*
+* **Sandeep Batchu** - `batchus <https://github.com/batchus>`_ - *maintainer*
 
 License
 =======
