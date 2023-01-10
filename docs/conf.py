@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # Configuration file for the Sphinx documentation builder.
 #
 # This file does only contain a selection of the most common options. For a
@@ -23,7 +21,7 @@ sys.path.insert(0, os.path.abspath("../rdk/"))
 # -- Project information -----------------------------------------------------
 
 project = "RDK"
-copyright = "2017-2022 Amazon.com, Inc. or its affiliates. All Rights Reserved"
+copyright = "2017-2023 Amazon.com, Inc. or its affiliates. All Rights Reserved"
 author = "RDK Maintainers"
 
 # The short X.Y version
