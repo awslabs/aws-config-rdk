@@ -1,5 +1,13 @@
 rdk
 ===
+|pypibadge| |downloadsbadge|
+
+
+.. |pypibadge| image:: https://static.pepy.tech/personalized-badge/rdk?period=total&units=international_system&left_color=black&right_color=blue&left_text=downloads
+  :target: https://pepy.tech/project/rdk
+.. |downloadsbadge| image:: https://img.shields.io/pypi/v/rdk
+  :alt: PyPI
+
 Rule Development Kit
 
 We greatly appreciate feedback and bug reports at rdk-maintainers@amazon.com! You may also create an issue on this repo.
