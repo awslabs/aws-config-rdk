@@ -3,6 +3,7 @@ import json
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
+import shutil
 from typing import Any, Dict, List, Optional
 
 import rdk as this_pkg
@@ -24,10 +25,16 @@ class CdkRunner(BaseRunner):
 
     root_module: Path
     rules_dir: Path
+    cdk_app_dir: Path = field(init=False)
 
     def __post_init__(self):
         super().__post_init__()
-
+        cdk_source_dir = Path(__file__).resolve().parent.parent /'frameworks' / 'cdk'
+        self.logger.info("Getting latest deployment framework from " + cdk_source_dir.as_posix())
+        self.logger.info("Deploying latest deployment framework in " + self.root_module.as_posix())
+        shutil.rmtree(self.root_module / "cdk")
+        shutil.copytree(Path(__file__).resolve().parent.parent /'frameworks' / 'cdk', self.root_module / 'cdk')
+        self.cdk_app_dir = self.root_module / "cdk"
 
     def synthesize(self):
         """
@@ -41,13 +48,52 @@ class CdkRunner(BaseRunner):
         ]
 
 
-        self.logger.info("Synthsizing CloudFormation template(s)...")
-        self.logger.info(self.root_module.as_posix())
-        self.logger.info(self.rules_dir)
-
+        self.logger.info("Synthesizing CloudFormation template(s)...")
 
         self.run_cmd(
             cmd=cmd,
-            cwd=self.root_module.as_posix(),
+            cwd=self.cdk_app_dir.as_posix(),
+            allowed_return_codes=[0, 2],
+        )
+
+    def bootstrap(self):
+        """
+        Executes `cdk bootstrap`.
+
+        Parameters:
+        """
+        cmd = [
+            "cdk",
+            "bootstrap"
+        ]
+
+
+        self.logger.info("CDK Envrionment Bootstrapping ...")
+
+        self.run_cmd(
+            cmd=cmd,
+            cwd=self.cdk_app_dir.as_posix(),
+            allowed_return_codes=[0, 2],
+        )
+
+    def deploy(self):
+        """
+        Executes `cdk deploy`.
+
+        Parameters:
+        """
+        cmd = [
+            "cdk",
+            "deploy",
+            "--require-approval",
+            "never"
+        ]
+
+
+        self.logger.info("Deploying AWS Config Rules ...")
+
+        self.run_cmd(
+            cmd=cmd,
+            cwd=self.cdk_app_dir.as_posix(),
             allowed_return_codes=[0, 2],
         )

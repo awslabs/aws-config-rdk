@@ -20,7 +20,7 @@ class CdkStack(Stack):
         #     visibility_timeout=Duration.seconds(300),
         # )
         rule_name = "MyRuleCFNGuard"
-        rule_dir = "rdk_rules"
+        rule_dir = "../"
         sample_policy_text = Path(f'{rule_dir}/{rule_name}/rule_code.guard').read_text()
 
         # sample_policy_text = """

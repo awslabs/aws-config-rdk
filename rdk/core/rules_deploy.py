@@ -46,8 +46,10 @@ class RulesDeploy:
         rules_dir = Path(self.rulenames[0])
 
         cdk_runner = CdkRunner(
-            root_module=Path("./cdk"),
+            root_module=Path().absolute() ,
             rules_dir=rules_dir
         )
 
         cdk_runner.synthesize()
+        cdk_runner.bootstrap()
+        cdk_runner.deploy()
