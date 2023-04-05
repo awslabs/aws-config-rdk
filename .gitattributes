@@ -1,0 +1,16 @@
+###############################################################################
+# .gitattributes
+###############################################################################
+
+# gitattributes - defining attributes per path
+
+# Documentation:
+#   https://git-scm.com/docs/gitattributes
+
+# Useful Templates
+#   https://github.com/alexkaratarakis/gitattributes
+
+# Everything in this repo is a text file
+* text eol=lf
+
+###############################################################################

@@ -1,9 +1,11 @@
-#    Copyright 2017, 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-#
-#        http://aws.amazon.com/apache2.0/
-#
-#    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+from rdk.version import __version__
 
-MY_VERSION = "0.8.3"
+# Package metadata
+NAME = "rdk"
+DIST_NAME = "rdk"
+CLI_NAME = "rdk"
+VERSION = __version__
+DESCRIPTION = "The AWS Config Rules Development Kit helps developers set up, author and test custom Config rules. It contains scripts to enable AWS Config, create a Config rule and test it with sample ConfigurationItems."
+MAINTAINER = "RDK maintainer"
+MAINTAINER_EMAIL = "rdk-maintainers@amazon.com"
+URL = "https://github.com/awslabs/aws-config-rdk"

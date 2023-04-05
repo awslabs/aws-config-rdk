@@ -1,0 +1,21 @@
+###############################################################################
+# gitlint CONFIGURATIONS
+###############################################################################
+
+#
+# Reference:
+# https://jorisroovers.com/gitlint/configuration/
+#
+
+[general]
+verbosity = 3
+contrib   = contrib-title-conventional-commits
+ignore    = body-is-missing
+
+[title-max-length]
+line-length = 72
+
+[body-max-line-length]
+line-length = 80
+
+###############################################################################

@@ -1,40 +1,43 @@
-#    Copyright 2017-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-#
-#    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-#
-#        http://aws.amazon.com/apache2.0/
-#
-#    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-from setuptools import setup
+from setuptools import find_packages, setup
 
-import rdk
-from rdk import MY_VERSION
-
-
-def readme():
-    with open("README.rst") as f:
-        return f.read()
-
+import rdk as this_pkg
 
 setup(
-    name="rdk",
-    version=MY_VERSION,
-    description="Rule Development Kit CLI for AWS Config",
-    long_description=readme(),
-    url="https://github.com/awslabs/aws-config-rdk/",
-    author="RDK maintainer",
-    author_email="rdk-maintainers@amazon.com",
-    license="Apache License Version 2.0",
-    packages=["rdk"],
+    name=this_pkg.DIST_NAME,
+    version=this_pkg.VERSION,
+    description=this_pkg.DESCRIPTION,
+    long_description=this_pkg.DESCRIPTION,
+    long_description_content_type="text/plain",
+    url=this_pkg.URL,
+    license="Apache-2.0",
+    author=this_pkg.MAINTAINER,
+    author_email=this_pkg.MAINTAINER_EMAIL,
+    maintainer=this_pkg.MAINTAINER,
+    maintainer_email=this_pkg.MAINTAINER_EMAIL,
+    python_requires=">=3.8",
+    zip_safe=False,
+    packages=find_packages(include=[f"{this_pkg.NAME}", f"{this_pkg.NAME}.*"]),
+    package_data={
+        this_pkg.NAME: ["py.typed"],
+    },
     install_requires=[
-        "boto3",
-        "pyyaml",
+        "aiofiles<1",
+        # "aws-cdk<2",
+        "aws-cdk-lib>=2",
+        "constructs>=10,<11",
+        # "boto3>=1,<2",
+        # "c1-p13rlib>=2,<3",
+        # "c7n",
+        "colorlog>=4,<5",
+        "httpx<1",
+        "mergedeep>=1,<2",
+        "pytest>=6,<7",
+        "semver>=2,<3",
     ],
     entry_points={
         "console_scripts": [
-            "rdk=rdk.cli:main",
+            f"{this_pkg.CLI_NAME}={this_pkg.NAME}.cli.main:main",
         ],
+        "pytest11": [f"pytest_{this_pkg.NAME}={this_pkg.NAME}.pytest.fixture"],
     },
-    zip_safe=False,
-    include_package_data=True,
 )
