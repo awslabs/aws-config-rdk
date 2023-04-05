@@ -1,0 +1,20 @@
+policies:
+
+- name: my-policy-name-existing
+  resource: ec2
+
+- name: my-policy-name-net-new
+  resource: ec2
+  mode:
+    type: cloudtrail
+    events:
+      - RunInstances
+
+- name: my-policy-name-net-change
+  resource: sns
+  mode:
+    type: cloudtrail
+    events:
+      - source: sns.amazonaws.com
+        event: SetTopicAttributes
+        ids: "requestParameters.topicArn"

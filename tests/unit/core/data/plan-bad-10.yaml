@@ -1,0 +1,11 @@
+tests:
+  - name: my-test-name
+    policy:
+      file: policy.yaml
+      name: my-policy-name-existing
+      resource_state: existing
+    terraform:
+      huh: tf-root-module
+    pytest:
+      file_or_dir:
+        - my-pytest.py

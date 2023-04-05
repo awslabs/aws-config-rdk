@@ -1,0 +1,7 @@
+tests:
+  - name: my-test-name
+    terraform:
+      root: tf-root-module
+    pytest:
+      file_or_dir:
+        - my-pytest.py

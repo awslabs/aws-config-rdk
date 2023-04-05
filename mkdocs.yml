@@ -1,0 +1,62 @@
+################################################################################
+# MKDOCS CONFIGURATIONS
+################################################################################
+
+#
+# Reference:
+# https://www.mkdocs.org/user-guide/configuration/
+#
+
+# ------------------------------------------------------------------------------
+# SITE CONFIGURATIONS
+# ------------------------------------------------------------------------------
+
+site_name: RDK User Guide
+site_url: 
+
+repo_url: https://github.com/awslabs/aws-config-rdk
+repo_name: Github
+
+theme:
+  name: material
+  palette:
+  - media: '(prefers-color-scheme: light)'
+    scheme: default
+    primary: blue
+    accent: red
+    toggle:
+      icon: material/toggle-switch-off-outline
+      name: Switch to dark mode
+  - media: '(prefers-color-scheme: dark)'
+    scheme: slate
+    primary: blue
+    accent: red
+    toggle:
+      icon: material/toggle-switch
+      name: Switch to light mode
+  features:
+  - navigation.sections
+  - navigation.top
+
+markdown_extensions:
+- toc:
+    permalink: true
+
+# ------------------------------------------------------------------------------
+# NAVIGATION
+# ------------------------------------------------------------------------------
+
+nav:
+- Home: index.md
+- Install: install.md
+- FAQ: faq.md
+- Usage:
+  - Getting Started: usage/getting-started.md
+  - AWS Configurations: usage/aws-configurations.md
+  - Developing Test Cases: usage/development.md
+- Reference:
+  - Command Line: reference/cli.md
+  - Test Case: reference/test-case.md
+  - API: reference/api/
+
+################################################################################
