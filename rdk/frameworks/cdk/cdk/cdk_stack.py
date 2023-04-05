@@ -19,9 +19,10 @@ class CdkStack(Stack):
         #     self, "RdkCdkQueue",
         #     visibility_timeout=Duration.seconds(300),
         # )
-        rule_name = "MyRuleCFNGuard"
-        rule_dir = "../"
-        sample_policy_text = Path(f'{rule_dir}/{rule_name}/rule_code.guard').read_text()
+        # rule_name = "MyRuleCFNGuard"
+        # rule_dir = Path().absolute()
+        # sample_policy_text = Path(f'{rule_dir}/{rule_name}/rule_code.guard').read_text()
+        sample_policy_text = Path(self.node.try_get_context("rules_dir")).joinpath("rule_code.guard").read_text()
 
         # sample_policy_text = """
         # rule checkcompliance when 

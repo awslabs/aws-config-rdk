@@ -29,12 +29,13 @@ class CdkRunner(BaseRunner):
 
     def __post_init__(self):
         super().__post_init__()
-        cdk_source_dir = Path(__file__).resolve().parent.parent /'frameworks' / 'cdk'
-        self.logger.info("Getting latest deployment framework from " + cdk_source_dir.as_posix())
-        self.logger.info("Deploying latest deployment framework in " + self.root_module.as_posix())
-        shutil.rmtree(self.root_module / "cdk")
-        shutil.copytree(Path(__file__).resolve().parent.parent /'frameworks' / 'cdk', self.root_module / 'cdk')
-        self.cdk_app_dir = self.root_module / "cdk"
+        # cdk_source_dir = Path(__file__).resolve().parent.parent /'frameworks' / 'cdk'
+        # self.logger.info("Getting latest deployment framework from " + cdk_source_dir.as_posix())
+        # self.logger.info("Deploying latest deployment framework in " + self.root_module.as_posix())
+        # shutil.rmtree(self.root_module / "cdk")
+        # shutil.copytree(Path(__file__).resolve().parent.parent /'frameworks' / 'cdk', self.root_module / 'cdk')
+        # self.cdk_app_dir = self.root_module / "cdk"
+        self.cdk_app_dir = Path(__file__).resolve().parent.parent /'frameworks' / 'cdk'
 
     def synthesize(self):
         """
@@ -44,7 +45,9 @@ class CdkRunner(BaseRunner):
         """
         cmd = [
             "cdk",
-            "synth"
+            "synth",
+            "--context",
+            "rules_dir=" + Path().absolute().as_posix() + "/" + "MyRuleCFNGuard"
         ]
 
 
@@ -64,11 +67,13 @@ class CdkRunner(BaseRunner):
         """
         cmd = [
             "cdk",
-            "bootstrap"
+            "bootstrap",
+            "--context",
+            "rules_dir=" + Path().absolute().as_posix() + "/" + "MyRuleCFNGuard"
         ]
 
 
-        self.logger.info("CDK Envrionment Bootstrapping ...")
+        self.logger.info("Envrionment Bootstrapping ...")
 
         self.run_cmd(
             cmd=cmd,
@@ -85,6 +90,8 @@ class CdkRunner(BaseRunner):
         cmd = [
             "cdk",
             "deploy",
+            "--context",
+            "rules_dir=" + Path().absolute().as_posix() + "/" + "MyRuleCFNGuard",
             "--require-approval",
             "never"
         ]
