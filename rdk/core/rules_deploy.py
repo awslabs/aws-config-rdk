@@ -7,18 +7,6 @@ from typing import List, Optional, Union
 import rdk.utils.logger as rdk_logger
 from rdk.runners.cdk import CdkRunner
 
-def _resolve_path(
-    root: Path,
-    thing: Union[str, Path],
-) -> Path:
-    """
-    Helper to resolve and verify paths.
-    """
-    resolved = (root / thing).resolve().absolute()
-    if not resolved.exists():
-        raise FileNotFoundError(resolved.as_posix())
-    return resolved
-
 @dataclass
 class RulesDeploy:
     """
@@ -43,13 +31,15 @@ class RulesDeploy:
         Runs Rules Deployment
         """
 
-        rules_dir = Path(self.rulenames[0])
+        if len(self.rulenames) > 0:
+            rules_dir = Path(self.rulenames[0])
+        else:
+            rules_dir=Path().absolute() 
 
         cdk_runner = CdkRunner(
-            root_module=Path().absolute() ,
             rules_dir=rules_dir
         )
 
         cdk_runner.synthesize()
-        cdk_runner.bootstrap()
-        cdk_runner.deploy()
+        # cdk_runner.bootstrap()
+        # cdk_runner.deploy()

@@ -23,7 +23,6 @@ class CdkRunner(BaseRunner):
 
     """
 
-    root_module: Path
     rules_dir: Path
     cdk_app_dir: Path = field(init=False)
 
@@ -47,7 +46,7 @@ class CdkRunner(BaseRunner):
             "cdk",
             "synth",
             "--context",
-            "rules_dir=" + Path().absolute().as_posix() + "/" + "MyRuleCFNGuard"
+            "rules_dir=" + self.rules_dir.as_posix()
         ]
 
 
@@ -69,7 +68,7 @@ class CdkRunner(BaseRunner):
             "cdk",
             "bootstrap",
             "--context",
-            "rules_dir=" + Path().absolute().as_posix() + "/" + "MyRuleCFNGuard"
+            "rules_dir=" + self.rules_dir.as_posix()
         ]
 
 
@@ -91,7 +90,7 @@ class CdkRunner(BaseRunner):
             "cdk",
             "deploy",
             "--context",
-            "rules_dir=" + Path().absolute().as_posix() + "/" + "MyRuleCFNGuard",
+            "rules_dir=" + self.rules_dir.as_posix(),
             "--require-approval",
             "never"
         ]
