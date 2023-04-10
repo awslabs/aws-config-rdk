@@ -89,15 +89,15 @@ Note: It might take up to 2 hours to get the information about the CIS benchmark
   * Click "Save"
 
 ## Task 4: Add Remediation Action
-3. Edit the rule for remediation
+4. Edit the rule for remediation
   * Select the previosly created "s3-bucket-versioning-enabled" rule 
   * Edit the remediation action
   * Select "AWS-ConfigureS3BucketVersioning" in the remediation action drop-down
   * Select "No" for Auto remediation
   * Click "Save changes"
 
-## Task 4: Remediate a Noncompliant resource
-4. Visualize the results for the rule "s3-bucket-versioning-enabled"
+## Task 5: Remediate a Noncompliant resource
+5. Visualize the results for the rule "s3-bucket-versioning-enabled"
   * Navigate to the Config Service.
   * On the left panel, click on "Rules"
   * Search for "s3-bucket-versioning-enabled" in the list of rule (scroll down if necessary).
@@ -105,15 +105,15 @@ Note: It might take up to 2 hours to get the information about the CIS benchmark
   * Refresh the page until there is no banner ["No results available" or "Evaluating"] on the top (meaning that the rule has been executed)
   * Search for the evaluation result on a bucket named "my-bucket-to-remediate-*accountid*-*regionname*"
 
-5. Remediate the non-compliant bucket "my-bucket-to-remediate-*accountid*-*regionname*"
+6. Remediate the non-compliant bucket "my-bucket-to-remediate-*accountid*-*regionname*"
   * Check the box next to the line showing **Noncompliant**
   * Click on "Remediate"
   * Refresh (with double arrow button) until completion. Note 1: the "Action executed successfully" and showing **Compliant** is not at the same time (it takes up to ~5 min), keep refreshing. Note 2: on the console, the filter of the result show the "noncompliant" by default, you will need to switch the compliance status filter to see the "compliant".
 
 ## (Optional) Going further
-6. Discover all the available [Managed Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html).
+7. Discover all the available [Managed Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html).
 
-7. Navigate to [AWS System Manager Automation Documents](https://eu-west-1.console.aws.amazon.com/systems-manager/documents?region=eu-west-1) to discover all existing remediations actions.
+8. Navigate to [AWS System Manager Automation Documents](https://eu-west-1.console.aws.amazon.com/systems-manager/documents?region=eu-west-1) to discover all existing remediations actions.
 
 
 # Lab 2: Writing Your First Config Rule
