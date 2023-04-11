@@ -206,12 +206,7 @@ class BaseRunner:
     def _check_if_command_is_allowed(self, cmd: str):
         if cmd not in [
             "cdk",
-            "ls",
-            "pwd",
-            # "custodian",
-            # "git",
-            # "pytest",
-            # "terraform",
+            "cfn-guard",
             self.get_python_executable(),
         ]:
             raise RdkCommandNotAllowedError(f"Unsupported command provided: {cmd}")

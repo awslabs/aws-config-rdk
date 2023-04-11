@@ -25,7 +25,7 @@ SHELL := /usr/bin/env bash
 # This is intended to run as early as possible to ensure that various things
 # that is Makefile depends on is available.
 
-override prereq_binaries := git python3 pipenv
+override prereq_binaries := git python3 pipenv cfn-guard
 $(foreach bin,$(prereq_binaries),\
 	$(if $(shell command -v $(bin) 2>/dev/null),,\
 		$(error '$(bin)' is not installed or available in PATH)\

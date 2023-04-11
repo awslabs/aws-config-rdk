@@ -18,8 +18,8 @@ class CdkRunner(BaseRunner):
 
     Parameters:
 
-    * **`root_module`** (_Path_): Path to the cdk root module
-    * **`config`** (_Config_): `rdk.core.config.Config` object
+    * **`rules_dir`** (_Path_): Path to the rules directory for deployment
+    * **`cdk_app_dir`** (_Path_): Path to the embedded CDK framework root directory
 
     """
 

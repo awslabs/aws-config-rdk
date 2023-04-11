@@ -6,6 +6,7 @@ from pathlib import Path
 import rdk as this_pkg
 import rdk.cli.commands.init as init_cmd
 import rdk.cli.commands.deploy as deploy_cmd
+import rdk.cli.commands.test as test_cmd
 import rdk.utils.logger as rdk_logger
 
 
@@ -54,13 +55,13 @@ def main():
         help=f"Use {this_pkg.NAME} <command> --help for detailed usage",
     )
 
-    # deploy
+    # init
     commands_parser.add_parser(
         "init",
         help="Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.",
     )
 
-    # # test
+    # deploy
     commands_parser_deploy = commands_parser.add_parser(
         "deploy",
         help="deploy AWS Config Rules",
@@ -80,6 +81,28 @@ def main():
         action="store_true",
         default=False,
         help="Dry run mode",
+    )
+
+    # test
+    commands_parser_test = commands_parser.add_parser(
+        "test",
+        help="deploy AWS Config Rules",
+    )
+
+    commands_parser_test.add_argument(
+        "rulename", 
+        metavar="<rulename>",
+        nargs="*", 
+        default="",
+        help="Rule name(s) to test. Unit test of the rule(s) will be executed."
+    )
+
+    commands_parser_test.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="Verbose mode",
     )
 
     # _pytest -- hidden command used by pytests
@@ -112,4 +135,11 @@ def main():
         deploy_cmd.run(
             rulenames=args.rulename,
             dryrun=args.dryrun,
+        )
+
+    # handle: deploy
+    if args.command == "test":
+        test_cmd.run(
+            rulenames=args.rulename,
+            verbose=args.verbose,
         )

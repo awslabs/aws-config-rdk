@@ -28,10 +28,11 @@ def get_rule_parameters(rule_dir: Path):
     return validate(parameters_json)
 
 def get_rule_name(rule_path: Path):
+    rule_parameters = get_rule_parameters(rule_path)
     try:
-        rule_name = get_rule_parameters(rule_path)["Parameters"]["RuleName"]
+        rule_name = rule_parameters["Parameters"]["RuleName"]
     except Exception as e:
-        raise  RdkParametersInvalidError("Invalid parameters found in Parameters.RuleName")
+        raise  RdkParametersInvalidError(f"Invalid parameters found in Parameters.RuleName in {rule_path}")
     if len(rule_name) > 128:
         raise RdkParametersInvalidError("Error: Found Rule with name over 128 characters: {rule_name} \n Recreate the Rule with a shorter name.")
 
@@ -39,7 +40,6 @@ def get_rule_name(rule_path: Path):
 
 def get_deploy_rules_list(rules_dir: Path, deployment_mode: str = "all",):
     deploy_rules_list = []
-    print(rules_dir.absolute())
     for path in rules_dir.absolute().glob("**/parameters.json"):
         print(path)
         if rules_dir.absolute().joinpath("rdk").as_posix() not in path.as_posix():
@@ -56,7 +56,6 @@ def get_deploy_rules_list(rules_dir: Path, deployment_mode: str = "all",):
             else:
                 raise RdkNotSupportedError('Invalid Option: Specify Rule Name or RuleSet or empty for all.')
     
-    print(deploy_rules_list)
     return deploy_rules_list
 
 def validate(parameters_json: dict):

@@ -3,9 +3,12 @@ from aws_cdk import (
     aws_config as config,
     aws_lambda as lambda_,
 )
+from dataclasses import asdict
 from constructs import Construct
 from pathlib import Path
 from .core.rule_parameters import get_rule_parameters, get_deploy_rules_list, get_rule_name, rdk_supported_custom_rule_runtime
+from .core.custom_policy import CustomPolicy
+from .core.managed_rule import ManagedRule
 from .core.errors import RdkRuleTypesInvalidError, RdkParametersInvalidError
 import json
 
@@ -22,36 +25,11 @@ class CdkStack(Stack):
             rule_parameters = get_rule_parameters(rule_path)
 
             if rule_parameters["Parameters"]["SourceRuntime"] == "cloudformation-guard2.0":
-                policy_text = rule_path.joinpath("rule_code.guard").read_text()
-
-                try:
-                    source_events = getattr(config.ResourceType, rule_parameters["Parameters"]["SourceEvents"].upper().replace("AWS::", "").replace("::", "_"))
-                except:
-                    raise RdkParametersInvalidError("Invalid parameters found in Parameters.SourceEvents. Please review https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html")
-                
-                config.CustomPolicy(self, rule_name,
-                    policy_text=policy_text,
-                    enable_debug_log=True,
-                    rule_scope=config.RuleScope.from_resources([source_events])
-                )
+                arg = CustomPolicy(policy_text=rule_path.joinpath("rule_code.rules").read_text(), rule_parameters=rule_parameters)
+                config.CustomPolicy(self, rule_name, **asdict(arg))
             elif rule_parameters["Parameters"]["SourceIdentifier"]:
-                try:
-                    source_identifier = getattr(config.ManagedRuleIdentifiers, rule_parameters["Parameters"]["SourceIdentifier"].upper().replace("-", "_"))
-                except:
-                    raise RdkParametersInvalidError("Invalid parameters found in Parameters.SourceIdentifier. Please review https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html")
-
-                try:
-                    source_events = getattr(config.ResourceType, rule_parameters["Parameters"]["SourceEvents"].upper().replace("AWS::", "").replace("::", "_"))
-                except:
-                    raise RdkParametersInvalidError("Invalid parameters found in Parameters.SourceEvents. Please review https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html")
-                
-                config.ManagedRule(self, rule_name,
-                    identifier=source_identifier,
-                    input_parameters={
-                        "max_access_key_age": 60
-                    },
-                    rule_scope=config.RuleScope.from_resources([source_events])
-                )
+                arg = ManagedRule(rule_parameters=rule_parameters)
+                config.ManagedRule(self, rule_name, **asdict(arg))
             # elif rule_parameters["Parameters"]["SourceRuntime"] in rdk_supported_custom_rule_runtime:
             #     # Lambda function containing logic that evaluates compliance with the rule.
             #     eval_compliance_fn = lambda_.Function(self, "CustomFunction",

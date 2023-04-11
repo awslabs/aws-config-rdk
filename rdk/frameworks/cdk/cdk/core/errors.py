@@ -7,12 +7,6 @@ class RdkParametersInvalidError(Exception):
     """
     Raise invalid parameters error when rdk failed to retrieve the parameters from parameters.json
     """
-    def __init__(self, rule_dir):
-        message = (
-            f"Invalid parameters found in {rule_dir}"
-        )
-
-        super().__init__(message)
 
 class RdkJsonInvalidError(Exception):
     """
