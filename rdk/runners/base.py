@@ -22,9 +22,9 @@ from rdk.core.errors import (
     RdkCommandInvokeError,
     RdkCommandNotAllowedError,
 )
+
 # from rdk.utils.logger import get_testcase_logger
 from rdk.utils.logger import get_main_logger
-
 
 
 @dataclass

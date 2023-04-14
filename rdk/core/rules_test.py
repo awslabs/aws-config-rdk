@@ -1,15 +1,20 @@
+import json
 import logging
 import time
+import unittest
 from dataclasses import dataclass, field
-from pathlib import Path
 from io import StringIO
-from typing import List, Dict, Any
-import json
+from pathlib import Path
+from typing import Any, Dict, List
 
 import rdk.utils.logger as rdk_logger
+from rdk.frameworks.cdk.cdk.core.rule_parameters import (
+    get_deploy_rules_list,
+    get_rule_name,
+    get_rule_parameters,
+)
 from rdk.runners.cfn_guard import CfnGuardRunner
-import unittest
-from rdk.frameworks.cdk.cdk.core.rule_parameters import get_rule_name, get_deploy_rules_list, get_rule_parameters
+
 
 @dataclass
 class RulesTest:
@@ -64,7 +69,7 @@ class RulesTest:
                 "python3.9-lib",
             ):
                 test_report["pytest_results"].append(self._run_pytest(test_dir))
-            elif runtime == "cloudformation-guard2.0":
+            elif runtime in ["cloudformation-guard2.0", "guard-2.x.x"]:
                 test_report["cfn_guard_results"] += self._run_cfn_guard_test(test_dir)
             else:
                 self.logger.info(f"Skipping {rule_name} - The Custom Rule Runtime or Managed Rule are not supported for unit testing.")
@@ -83,36 +88,47 @@ class RulesTest:
 
     def _run_cfn_guard_test(self, test_dir: Path):
         report = []
+        results = ""
         for test_path in test_dir.glob("**/*"):
-            if any(filetype in test_path.as_posix() for filetype in ["json", "yaml", "yml"]) and "parameters.json" not in test_path.as_posix():
-                cfn_guard_runner = CfnGuardRunner(rules_file=test_dir.joinpath("rule_code.rules"), test_data=test_path, verbose=self.verbose)
+            self.logger.info(f"Running test {test_path}")
+            self.logger.info(f"Test file: {test_path.suffix} {test_path.name}")
+            if test_path.suffix in [".json", ".yaml", ".yml"] and test_path.name != "parameters.json":
+                cfn_guard_runner = CfnGuardRunner(rules_file=test_dir.joinpath("rule_code.guard"), test_data=test_path, verbose=self.verbose)
                 try:
                     results = cfn_guard_runner.test()
                     report.append({"rule_dir": f"{test_dir.name}/{test_path.name}", "status": "PASSED", "test_run": results.count("Test Case #"), "errors": [], "failures": []})
                 except Exception as e:
-                    self.logger.info(results)
                     report.append({"rule_dir": f"{test_dir.name}/{test_path.name}", "status": "FAILED", "test_run": results.count("Test Case #"), "errors": [e], "failures": [results]})
         return report
     
     def _result_summary(self, test_report: Dict[str, Any]):
         pytest_results = test_report["pytest_results"]
         cfn_guard_results = test_report["cfn_guard_results"]
-        self.logger.info(test_report)
+
+        self.logger.info("")
+        self.logger.info("Test Summary:")
+        self.logger.info("===============")
+        self.logger.info("Pytest Results")
+        self.logger.info("===============")
         exit_code = self._show_result(pytest_results)
+        self.logger.info("================")
+        self.logger.info("CfnGuard Results")
+        self.logger.info("================")
         exit_code = self._show_result(cfn_guard_results) and exit_code
         return exit_code
 
     def _show_result(self, report_results: Dict[str, Any]):    
         exit_code = 0
         for result in report_results:
-            self.logger.info(f"{result['rule_dir']} - status: {result['status']} tests_run:{result['test_run']}")
+            self.logger.info(f"{result['rule_dir']} - ")
+            self.logger.info(f"\tStatus: {result['status']} tests_run:{result['test_run']}")
             if result["errors"]:
                 exit_code = 1
                 for error in result["errors"]:
-                    self.logger.info(f"    Error found: {error}")
+                    self.logger.info(f"\tError found: {error}")
             if result["failures"]:
                 exit_code = 2
                 for failure in result["failures"]:
-                    self.logger.info(f"    Test failures found: {failure}")
+                    if failure != "":
+                        self.logger.info(f"\tTest failures found: {failure}") 
         return exit_code
-        

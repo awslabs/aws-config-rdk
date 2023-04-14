@@ -33,7 +33,6 @@ def test_get_python_executable(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_run_cmd_basic(mocker: MockerFixture):
-
     # Init
     runner = BaseRunner()
     subprocess_popen_mock = mocker.patch("subprocess.Popen")

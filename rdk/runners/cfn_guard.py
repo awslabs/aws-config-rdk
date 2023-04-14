@@ -1,9 +1,9 @@
 import copy
 import json
 import os
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-import shutil
 from typing import Any, Dict, List, Optional
 
 import rdk as this_pkg
@@ -13,8 +13,8 @@ from rdk.runners.base import BaseRunner
 @dataclass
 class CfnGuardRunner(BaseRunner):
     """
-    Helper class to run cfn-guard commands.
-    https://docs.aws.amazon.com/cfn-guard/latest/ug/testing-rules.html
+    Helper class to run cfn-guard commands. https://docs.aws.amazon.com/cfn-
+    guard/latest/ug/testing-rules.html.
 
     Parameters:
 
@@ -35,6 +35,7 @@ class CfnGuardRunner(BaseRunner):
         Executes `cfn-guard test`.
 
         Parameters:
+
         """
         cmd = [
             "cfn-guard",

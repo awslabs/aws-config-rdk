@@ -113,7 +113,6 @@ def add_file_handler(logger: logging.Logger, logfile_dir: Path):
     """
     Add a file handler to an existing logger once the location is known.
     """
-
     friendly_name = logger.name.split(".")[-1]
     logfile_dir.mkdir(parents=True, exist_ok=True)
 

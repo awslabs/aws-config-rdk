@@ -1,10 +1,11 @@
-from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, List
-from aws_cdk import (
-    aws_config as config
-)
-from .errors import RdkParametersInvalidError
 import json
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
+
+from aws_cdk import aws_config as config
+
+from ..errors import RdkParametersInvalidError
+
 
 @dataclass
 class CustomPolicy:

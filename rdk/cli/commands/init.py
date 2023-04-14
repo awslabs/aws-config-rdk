@@ -8,7 +8,6 @@ def run():
     """
     init sub-command handler.
     """
-
     logger = get_main_logger()
     logger.info("AWS Config initializing is starting ...")
 

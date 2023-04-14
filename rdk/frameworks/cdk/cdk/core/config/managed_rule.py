@@ -1,10 +1,11 @@
-from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, List
-from aws_cdk import (
-    aws_config as config
-)
-from .errors import RdkParametersInvalidError
 import json
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
+
+from aws_cdk import aws_config as config
+
+from ..errors import RdkParametersInvalidError
+
 
 @dataclass
 class ManagedRule:
@@ -32,10 +33,22 @@ class ManagedRule:
     def __init__(self, rule_parameters: dict):
         param = rule_parameters["Parameters"]
         if param["SourceIdentifier"]:
+            identifier = param["SourceIdentifier"].upper().replace("-", "_")
             try:
-                self.identifier = getattr(config.ManagedRuleIdentifiers, param["SourceIdentifier"].upper().replace("-", "_"))
+                self.identifier = getattr(config.ManagedRuleIdentifiers, identifier)
             except:
-                raise RdkParametersInvalidError("Invalid parameters found in Parameters.SourceIdentifier. Please review https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html")
+                if identifier in [
+                    # exception list for unmatching identifiers https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_config/ManagedRuleIdentifiers.html
+                        "MULTI_REGION_CLOUD_TRAIL_ENABLED",
+                        "ENCRYPTED_VOLUMES",
+                        "DESIRED_INSTANCE_TENANCY",
+                        "DESIRED_INSTANCE_TYPE",
+                        "INSTANCES_IN_VPC",
+                        "INCOMING_SSH_DISABLED"
+                    ]:
+                    self.identifier = identifier
+                else:
+                    raise RdkParametersInvalidError("Invalid parameters found in Parameters.SourceIdentifier. Please review https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html")
         if "Description" in param:
             self.description = param["Description"]
         if "InputParameters" in param:

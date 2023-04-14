@@ -1,7 +1,15 @@
-from aws_cdk import Stack
-from pathlib import Path
-from .errors import RdkJsonInvalidError, RdkJsonLoadFailure, RdkDuplicatedRuleNameError, RdkParametersInvalidError, RdkNotSupportedError
 import json
+from pathlib import Path
+
+from aws_cdk import Stack
+
+from .errors import (
+    RdkDuplicatedRuleNameError,
+    RdkJsonInvalidError,
+    RdkJsonLoadFailure,
+    RdkNotSupportedError,
+    RdkParametersInvalidError,
+)
 
 rdk_supported_custom_rule_runtime = [
         "python3.7",
@@ -25,7 +33,7 @@ def get_rule_parameters(rule_dir: Path):
     except Exception as e:
         raise RdkJsonLoadFailure(rule_dir)
 
-    return validate(parameters_json)
+    return validate(rule_dir, parameters_json)
 
 def get_rule_name(rule_path: Path):
     rule_parameters = get_rule_parameters(rule_path)
@@ -41,7 +49,6 @@ def get_rule_name(rule_path: Path):
 def get_deploy_rules_list(rules_dir: Path, deployment_mode: str = "all",):
     deploy_rules_list = []
     for path in rules_dir.absolute().glob("**/parameters.json"):
-        print(path)
         if rules_dir.absolute().joinpath("rdk").as_posix() not in path.as_posix():
             if deployment_mode == "all":
                 deploy_rules_list.append(path.parent)
@@ -58,6 +65,15 @@ def get_deploy_rules_list(rules_dir: Path, deployment_mode: str = "all",):
     
     return deploy_rules_list
 
-def validate(parameters_json: dict):
+def validate(rule_dir: Path, parameters_json: dict):
     #TODO
+    latest_schema_version = "1.0"
+    if "Parameters" not in parameters_json:
+        raise RdkParametersInvalidError(f"Error in {rule_dir}: Missing Parameters Key")
+    if "Version" not in parameters_json and parameters_json["Version"] != latest_schema_version:
+        raise RdkParametersInvalidError(f"Error in {rule_dir}: Missing Version Key. The latest supported schema version is {latest_schema_version}")
+    if "SourceIdentifier" not in parameters_json["Parameters"] and "SourceRuntime" not in parameters_json["Parameters"]:
+        raise RdkParametersInvalidError(f"Error in {rule_dir}: Missing Parameters.SourceIdentifier or Parameters.SourceRuntime is required")
+    if "SourcePeriodic" not in parameters_json["Parameters"] and "SourceEvents" not in parameters_json["Parameters"]:
+        raise RdkParametersInvalidError(f"Error in {rule_dir}: Missing Parameters.SourcePeriodic or Parameters.SourceEvents is required")
     return parameters_json

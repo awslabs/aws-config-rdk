@@ -1,16 +1,24 @@
-from aws_cdk import (
-    Stack,
-    aws_config as config,
-    aws_lambda as lambda_,
-)
-from dataclasses import asdict
-from constructs import Construct
-from pathlib import Path
-from .core.rule_parameters import get_rule_parameters, get_deploy_rules_list, get_rule_name, rdk_supported_custom_rule_runtime
-from .core.custom_policy import CustomPolicy
-from .core.managed_rule import ManagedRule
-from .core.errors import RdkRuleTypesInvalidError, RdkParametersInvalidError
 import json
+from dataclasses import asdict
+from pathlib import Path
+
+from aws_cdk import Stack
+from aws_cdk import aws_config as config
+from aws_cdk import aws_lambda as lambda_
+from constructs import Construct
+
+from .core.config.custom_policy import CustomPolicy
+from .core.config.managed_rule import ManagedRule
+from .core.config.remediation_configuration import RemediationConfiguration
+
+from .core.errors import RdkParametersInvalidError, RdkRuleTypesInvalidError
+from .core.rule_parameters import (
+    get_deploy_rules_list,
+    get_rule_name,
+    get_rule_parameters,
+    rdk_supported_custom_rule_runtime,
+)
+
 
 class CdkStack(Stack):
 
@@ -23,13 +31,14 @@ class CdkStack(Stack):
         for rule_path in rules_list:
             rule_name = get_rule_name(rule_path)
             rule_parameters = get_rule_parameters(rule_path)
+            generated_rule_name = ""
 
-            if rule_parameters["Parameters"]["SourceRuntime"] == "cloudformation-guard2.0":
-                arg = CustomPolicy(policy_text=rule_path.joinpath("rule_code.rules").read_text(), rule_parameters=rule_parameters)
-                config.CustomPolicy(self, rule_name, **asdict(arg))
-            elif rule_parameters["Parameters"]["SourceIdentifier"]:
+            if "SourceRuntime" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["SourceRuntime"] in ["cloudformation-guard2.0", "guard-2.x.x"]:
+                arg = CustomPolicy(policy_text=rule_path.joinpath("rule_code.guard").read_text(), rule_parameters=rule_parameters)
+                generated_rule_name = config.CustomPolicy(self, rule_name, **asdict(arg)).config_rule_name
+            elif "SourceIdentifier" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["SourceIdentifier"]:
                 arg = ManagedRule(rule_parameters=rule_parameters)
-                config.ManagedRule(self, rule_name, **asdict(arg))
+                generated_rule_name = config.ManagedRule(self, rule_name, **asdict(arg)).config_rule_name
             # elif rule_parameters["Parameters"]["SourceRuntime"] in rdk_supported_custom_rule_runtime:
             #     # Lambda function containing logic that evaluates compliance with the rule.
             #     eval_compliance_fn = lambda_.Function(self, "CustomFunction",
@@ -45,8 +54,13 @@ class CdkStack(Stack):
             #         rule_scope=config.RuleScope.from_resource(config.ResourceType.EC2_INSTANCE)
             #     )
             else:
-                raise RdkRuleTypesInvalidError(f"Error loading parameters file for Rule {rule_name}")
-
+                print(f"Rule type not supported for Rule {rule_name}")
+                continue
+                # raise RdkRuleTypesInvalidError(f"Error loading parameters file for Rule {rule_name}")
+            
+            if "Remediation" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["Remediation"]:
+                arg = RemediationConfiguration(rule_parameters=rule_parameters)
+                config.CfnRemediationConfiguration(self, "MyCfnRemediationConfiguration", config_rule_name=generated_rule_name, **asdict(arg))
             # # A rule to detect stack drifts
             # drift_rule = config.CloudFormationStackDriftDetectionCheck(self, "Drift")
 

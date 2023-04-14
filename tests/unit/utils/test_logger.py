@@ -123,7 +123,6 @@ def test_update_stream_handler_level():
 
 
 def test_get_testcase_logger(monkeypatch: pytest.MonkeyPatch):
-
     with monkeypatch.context() as m:
         logger = rdk_logger.get_testcase_logger()
         assert "unknown" in logger.name

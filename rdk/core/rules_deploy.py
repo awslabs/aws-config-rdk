@@ -7,6 +7,7 @@ from typing import List, Optional, Union
 import rdk.utils.logger as rdk_logger
 from rdk.runners.cdk import CdkRunner
 
+
 @dataclass
 class RulesDeploy:
     """
@@ -28,9 +29,8 @@ class RulesDeploy:
 
     def run(self):
         """
-        Runs Rules Deployment
+        Runs Rules Deployment.
         """
-
         if len(self.rulenames) > 0:
             rules_dir = Path(self.rulenames[0])
         else:

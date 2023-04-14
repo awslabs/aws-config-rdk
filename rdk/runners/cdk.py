@@ -1,9 +1,9 @@
 import copy
 import json
 import os
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-import shutil
 from typing import Any, Dict, List, Optional
 
 import rdk as this_pkg
@@ -14,7 +14,7 @@ from rdk.runners.base import BaseRunner
 class CdkRunner(BaseRunner):
     """
     Helper class to run cdk commands.
-    https://docs.aws.amazon.com/cdk/v2/guide/hello_world.html
+    https://docs.aws.amazon.com/cdk/v2/guide/hello_world.html.
 
     Parameters:
 
@@ -41,6 +41,7 @@ class CdkRunner(BaseRunner):
         Executes `cdk synth`.
 
         Parameters:
+
         """
         cmd = [
             "cdk",
@@ -63,6 +64,7 @@ class CdkRunner(BaseRunner):
         Executes `cdk bootstrap`.
 
         Parameters:
+
         """
         cmd = [
             "cdk",
@@ -85,6 +87,7 @@ class CdkRunner(BaseRunner):
         Executes `cdk deploy`.
 
         Parameters:
+
         """
         cmd = [
             "cdk",

@@ -4,8 +4,8 @@ import os
 from pathlib import Path
 
 import rdk as this_pkg
-import rdk.cli.commands.init as init_cmd
 import rdk.cli.commands.deploy as deploy_cmd
+import rdk.cli.commands.init as init_cmd
 import rdk.cli.commands.test as test_cmd
 import rdk.utils.logger as rdk_logger
 
@@ -14,7 +14,6 @@ def main():
     """
     Main CLI handler.
     """
-
     # Main parser
     main_parser = argparse.ArgumentParser(
         prog=this_pkg.CLI_NAME,
