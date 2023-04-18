@@ -15,7 +15,7 @@ class ManagedRule:
     Parameters:
 
     * **`identifier`** (_str_): The policy definition containing the logic for your AWS Config Custom Policy rule.
-    * **`config_rule_name`** (_str_): Optional - A name for the AWS Config rule. Default: - CloudFormation generated name
+    * **`config_rule_name`** (_str_):  A name for the AWS Config rule. Default: - CloudFormation generated name
     * **`description`** (_str_): Optional - A description about this AWS Config rule. Default: - No description
     * **`input_parameters`** (_Dict[str, Any]_): Optional - Input parameter values that are passed to the AWS Config rule. Default: - No input parameters
     * **`maximum_execution_frequency`** (_MaximumExecutionFrequency_): Optional - The maximum frequency at which the AWS Config rule runs evaluations. Default: MaximumExecutionFrequency.TWENTY_FOUR_HOURS
@@ -24,7 +24,7 @@ class ManagedRule:
     """
 
     identifier: config.ManagedRuleIdentifiers = field(init=False)
-    config_rule_name: Optional[str] = None
+    config_rule_name: str = field(init=False)
     description: Optional[str] = None
     input_parameters: Optional[Dict[str, Any]] = None
     maximum_execution_frequency: Optional[config.MaximumExecutionFrequency] = config.MaximumExecutionFrequency.TWENTY_FOUR_HOURS
@@ -32,6 +32,8 @@ class ManagedRule:
 
     def __init__(self, rule_parameters: dict):
         param = rule_parameters["Parameters"]
+        if "RuleName" in param:
+            self.config_rule_name = param["RuleName"]
         if param["SourceIdentifier"]:
             identifier = param["SourceIdentifier"].upper().replace("-", "_")
             try:
@@ -61,7 +63,7 @@ class ManagedRule:
             self.maximum_execution_frequency = maximum_execution_frequency
         if "SourceEvents" in param:
             try:
-                source_events = getattr(config.ResourceType, param["SourceEvents"].upper().replace("AWS::", "").replace("::", "_"))
+                source_events = getattr(config.ResourceType, param["SourceEvents"].upper().replace("AWS::", "").replace("::", "_").replace("EC2_VOLUME", "EBS_VOLUME")) # cdk use EBS Volume instead of EC2 Volume
             except:
                 raise RdkParametersInvalidError("Invalid parameters found in Parameters.SourceEvents. Please review https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html")                
             self.rule_scope = config.RuleScope.from_resources([source_events])

@@ -15,6 +15,7 @@ class RemediationConfiguration:
 
     Parameters:
 
+    * **`config_rule_name `** (_str_): The name of the AWS Config rule.
     * **`target_id `** (_str_): Target ID is the name of the SSM document.
     * **`target_type `** (_str_): The type of the target. Target executes remediation. For example, SSM document.
     * **`automatic`** (_Union[bool, IResolvable, None]_) : Optional - The remediation is triggered automatically.
@@ -27,6 +28,7 @@ class RemediationConfiguration:
     
 
     """
+    config_rule_name: str = field(init=False)
     target_id: str = field(init=False)
     target_type: str = field(init=False)
     automatic: Optional[Union[bool, IResolvable, None]] = None
@@ -42,6 +44,8 @@ class RemediationConfiguration:
         param = rule_parameters["Parameters"]['Remediation']
         self.target_id = param["TargetId"]
         self.target_type = param["TargetType"]
+        if "RuleName" in rule_parameters["Parameters"]:
+            self.config_rule_name = rule_parameters["Parameters"]["RuleName"]
         if "Automatic" in param:
             self.automatic = param["Automatic"]
         if "ExecutionControls" in param:
