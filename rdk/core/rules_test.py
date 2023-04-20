@@ -72,7 +72,7 @@ class RulesTest:
             elif runtime in ["cloudformation-guard2.0", "guard-2.x.x"]:
                 test_report["cfn_guard_results"] += self._run_cfn_guard_test(test_dir)
             else:
-                self.logger.info(f"Skipping {rule_name} - The Custom Rule Runtime or Managed Rule are not supported for unit testing.")
+                self.logger.info(f"Skipping {rule_name} - The Custom Rule Runtime provided or Managed Rule is not supported for unit testing.")
 
         exit(self._result_summary(test_report))
 

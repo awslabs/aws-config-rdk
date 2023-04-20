@@ -46,6 +46,15 @@ class CdkRunner(BaseRunner):
         cmd = [
             "cdk",
             "synth",
+            "--validation",
+            "--output",
+            self.rules_dir.joinpath("build/").as_posix(),
+            # "--version-reporting",
+            # "false",
+            # "--path-metadata",
+            # "false",
+            # "--asset-metadata",
+            # "false",
             "--context",
             "rules_dir=" + self.rules_dir.as_posix()
         ]
@@ -100,6 +109,30 @@ class CdkRunner(BaseRunner):
 
 
         self.logger.info("Deploying AWS Config Rules ...")
+
+        self.run_cmd(
+            cmd=cmd,
+            cwd=self.cdk_app_dir.as_posix(),
+            allowed_return_codes=[0, 2],
+        )
+
+    def destroy(self):
+        """
+        Executes `cdk destroy`.
+
+        Parameters:
+
+        """
+        cmd = [
+            "cdk",
+            "destroy",
+            "--context",
+            "rules_dir=" + self.rules_dir.as_posix(),
+            "--force"
+        ]
+
+
+        self.logger.info("Destroying AWS Config Rules ...")
 
         self.run_cmd(
             cmd=cmd,

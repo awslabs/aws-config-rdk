@@ -7,6 +7,7 @@ import rdk as this_pkg
 import rdk.cli.commands.deploy as deploy_cmd
 import rdk.cli.commands.init as init_cmd
 import rdk.cli.commands.test as test_cmd
+import rdk.cli.commands.destroy as destroy_cmd
 import rdk.utils.logger as rdk_logger
 
 
@@ -104,6 +105,28 @@ def main():
         help="Verbose mode",
     )
 
+    # destroy
+    commands_parser_destroy = commands_parser.add_parser(
+        "destroy",
+        help="destroy AWS Config Rules",
+    )
+
+    commands_parser_destroy.add_argument(
+        "rulename", 
+        metavar="<rulename>",
+        nargs="*", 
+        default="",
+        help="Rule name(s) to destroy.  Rule(s) will be removed."
+    )
+
+    commands_parser_destroy.add_argument(
+        "-n",
+        "--dryrun",
+        action="store_true",
+        default=False,
+        help="Dry run mode",
+    )
+
     # _pytest -- hidden command used by pytests
     commands_parser.add_parser(
         "_pytest",
@@ -136,9 +159,16 @@ def main():
             dryrun=args.dryrun,
         )
 
-    # handle: deploy
+    # handle: test
     if args.command == "test":
         test_cmd.run(
             rulenames=args.rulename,
             verbose=args.verbose,
+        )
+
+    # handle: destroy
+    if args.command == "destroy":
+        destroy_cmd.run(
+            rulenames=args.rulename,
+            dryrun=args.dryrun,
         )

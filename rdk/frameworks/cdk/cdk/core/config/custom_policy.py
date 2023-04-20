@@ -19,7 +19,7 @@ class CustomPolicy:
     * **`config_rule_name`** (_str_): A name for the AWS Config rule. Default: - CloudFormation generated name
     * **`description`** (_str_): Optional - A description about this AWS Config rule. Default: - No description
     * **`input_parameters`** (_Dict[str, Any]_): Optional - Input parameter values that are passed to the AWS Config rule. Default: - No input parameters
-    * **`maximum_execution_frequency`** (_MaximumExecutionFrequency_): Optional - The maximum frequency at which the AWS Config rule runs evaluations. Default: MaximumExecutionFrequency.TWENTY_FOUR_HOURS
+    * **`maximum_execution_frequency`** (_MaximumExecutionFrequency_): Optional - The maximum frequency at which the AWS Config rule runs evaluations.
     * **`rule_scope`** (_RuleScope_): Optional - Defines which resources trigger an evaluation for an AWS Config rule. Default: - evaluations for the rule are triggered when any resource in the recording group changes.
 
     """
@@ -29,7 +29,7 @@ class CustomPolicy:
     config_rule_name: str = field(init=False)
     description: Optional[str] = None
     input_parameters: Optional[Dict[str, Any]] = None
-    maximum_execution_frequency: Optional[config.MaximumExecutionFrequency] = config.MaximumExecutionFrequency.TWENTY_FOUR_HOURS
+    maximum_execution_frequency: Optional[config.MaximumExecutionFrequency] = None
     rule_scope: Optional[config.RuleScope] = None
 
     def __init__(self, policy_text: str, rule_parameters: dict):
@@ -40,7 +40,6 @@ class CustomPolicy:
         if "EnableDebugLogDelivery" in param:
             self.enable_debug_log = True
         if "Description" in param:
-            print(param["Description"])
             self.description = param["Description"]
         if "InputParameters" in param:
             self.input_parameters = json.loads(param["InputParameters"])

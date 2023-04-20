@@ -41,5 +41,19 @@ class RulesDeploy:
         )
 
         cdk_runner.synthesize()
-        # cdk_runner.bootstrap()
-        # cdk_runner.deploy()
+        cdk_runner.bootstrap()
+        cdk_runner.deploy()
+
+    def destroy(self):
+        """
+        Destroy Rules Deployment.
+        """
+        if len(self.rulenames) > 0:
+            rules_dir = Path(self.rulenames[0])
+        else:
+            rules_dir=Path().absolute() 
+
+        cdk_runner = CdkRunner(
+            rules_dir=rules_dir
+        )
+        cdk_runner.destroy()

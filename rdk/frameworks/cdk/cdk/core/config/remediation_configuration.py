@@ -41,31 +41,32 @@ class RemediationConfiguration:
 
 
     def __init__(self, rule_parameters: dict):
-        param = rule_parameters["Parameters"]['Remediation']
-        self.target_id = param["TargetId"]
-        self.target_type = param["TargetType"]
+        param = rule_parameters["Parameters"]
+        reme_param = param['Remediation']
+        self.target_id = reme_param["TargetId"]
+        self.target_type = reme_param["TargetType"]
         if "RuleName" in rule_parameters["Parameters"]:
             self.config_rule_name = rule_parameters["Parameters"]["RuleName"]
-        if "Automatic" in param:
-            self.automatic = param["Automatic"]
-        if "ExecutionControls" in param:
-            if "SsmControls" in param["ExecutionControls"]:
-                if "ConcurrentExecutionRatePercentage" in param["ExecutionControls"]["SsmControls"]:
-                    concurrent_execution_rate_percentage = param["ExecutionControls"]["SsmControls"]["ConcurrentExecutionRatePercentage"]
-                if "ErrorPercentage" in param["ExecutionControls"]["SsmControls"]:
-                    error_percentage = param["ExecutionControls"]["SsmControls"]["ErrorPercentage"]
+        if "Automatic" in reme_param:
+            self.automatic = reme_param["Automatic"]
+        if "ExecutionControls" in reme_param:
+            if "SsmControls" in reme_param["ExecutionControls"]:
+                if "ConcurrentExecutionRatePercentage" in reme_param["ExecutionControls"]["SsmControls"]:
+                    concurrent_execution_rate_percentage = reme_param["ExecutionControls"]["SsmControls"]["ConcurrentExecutionRatePercentage"]
+                if "ErrorPercentage" in reme_param["ExecutionControls"]["SsmControls"]:
+                    error_percentage = reme_param["ExecutionControls"]["SsmControls"]["ErrorPercentage"]
                 ssm_controls = config.CfnRemediationConfiguration.SsmControlsProperty(
                     concurrent_execution_rate_percentage=concurrent_execution_rate_percentage,
                     error_percentage=error_percentage
                 )
             self.execution_controls = config.CfnRemediationConfiguration.ExecutionControlsProperty(ssm_controls)
-        if "MaximumAutomaticAttempts" in param:
-            self.maximum_automatic_attempts = int(param["MaximumAutomaticAttempts"])
-        if "Parameters" in param:
-            self.parameters = param["Parameters"]
-        if "ResourceType" in param:
-            self.resource_type = param["ResourceType"]
-        if "RetryAttemptSeconds" in param:
-            self.retry_attempt_seconds = int(param["RetryAttemptSeconds"])
-        if "TargetVersion" in param:
-            self.target_version = param["TargetVersion"]
+        if "MaximumAutomaticAttempts" in reme_param:
+            self.maximum_automatic_attempts = int(reme_param["MaximumAutomaticAttempts"])
+        if "Parameters" in reme_param:
+            self.parameters = reme_param["Parameters"]
+        if "ResourceType" in reme_param:
+            self.resource_type = reme_param["ResourceType"]
+        if "RetryAttemptSeconds" in reme_param:
+            self.retry_attempt_seconds = int(reme_param["RetryAttemptSeconds"])
+        if "TargetVersion" in reme_param:
+            self.target_version = reme_param["TargetVersion"]

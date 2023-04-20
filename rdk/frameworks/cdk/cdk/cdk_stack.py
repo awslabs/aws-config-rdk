@@ -33,11 +33,11 @@ class CdkStack(Stack):
             rule_parameters = get_rule_parameters(rule_path)
 
             if "SourceRuntime" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["SourceRuntime"] in ["cloudformation-guard2.0", "guard-2.x.x"]:
-                arg = CustomPolicy(policy_text=rule_path.joinpath("rule_code.guard").read_text(), rule_parameters=rule_parameters, config_rule_name = rule_name)
-                config.CustomPolicy(self, rule_name, **asdict(arg)).config_rule_name
+                arg = CustomPolicy(policy_text=rule_path.joinpath("rule_code.guard").read_text(), rule_parameters=rule_parameters)
+                config.CustomPolicy(self, rule_name, **asdict(arg))
             elif "SourceIdentifier" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["SourceIdentifier"]:
-                arg = ManagedRule(rule_parameters=rule_parameters, config_rule_name = rule_name)
-                config.ManagedRule(self, rule_name, **asdict(arg)).config_rule_name
+                arg = ManagedRule(rule_parameters=rule_parameters)
+                config.ManagedRule(self, rule_name, **asdict(arg))
             # elif rule_parameters["Parameters"]["SourceRuntime"] in rdk_supported_custom_rule_runtime:
             #     # Lambda function containing logic that evaluates compliance with the rule.
             #     eval_compliance_fn = lambda_.Function(self, "CustomFunction",
@@ -58,7 +58,7 @@ class CdkStack(Stack):
                 # raise RdkRuleTypesInvalidError(f"Error loading parameters file for Rule {rule_name}")
             
             if "Remediation" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["Remediation"]:
-                arg = RemediationConfiguration(rule_parameters=rule_parameters, config_rule_name = rule_name)
+                arg = RemediationConfiguration(rule_parameters=rule_parameters)
                 config.CfnRemediationConfiguration(self, "MyCfnRemediationConfiguration", **asdict(arg))
             # # A rule to detect stack drifts
             # drift_rule = config.CloudFormationStackDriftDetectionCheck(self, "Drift")
