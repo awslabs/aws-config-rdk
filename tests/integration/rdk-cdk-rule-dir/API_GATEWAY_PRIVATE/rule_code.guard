@@ -1,0 +1,39 @@
+#
+# Select all AWS::ApiGateway::RestApi resources
+#     present in the Resources section of the template. 
+#
+let api_gws = Resources.*[ Type == 'AWS::ApiGateway::RestApi']
+
+#
+# Rule intent:         
+# 1) All AWS::ApiGateway::RestApi resources deployed must be private.                                            
+# 2) All AWS::ApiGateway::RestApi resources deployed must have at least one AWS Identity and Access Management (IAM) policy condition key to allow access from a VPC.
+#
+# Expectations:        
+# 1) SKIP when there are no AWS::ApiGateway::RestApi resources in the template.  
+# 2) PASS when:
+#     ALL AWS::ApiGateway::RestApi resources in the template have the EndpointConfiguration property set to Type: PRIVATE. 
+#     ALL AWS::ApiGateway::RestApi resources in the template have one IAM condition key specified in the Policy property with aws:sourceVpc or :SourceVpc.    
+# 3) FAIL otherwise.                                                                                  
+#
+#
+
+rule check_rest_api_is_private when %api_gws !empty {     
+    %api_gws {
+        Properties.EndpointConfiguration.Types[*] == "PRIVATE"                             
+    }  
+}       
+
+rule check_rest_api_has_vpc_access when check_rest_api_is_private {
+    %api_gws {
+        Properties {
+            #
+            # ALL AWS::ApiGateway::RestApi resources in the template have one IAM condition key specified in the Policy property with 
+            #     aws:sourceVpc or :SourceVpc
+            #           
+            some Policy.Statement[*] {
+                Condition.*[ keys == /aws:[sS]ource(Vpc|VPC|Vpce|VPCE)/ ] !empty
+            }
+        }
+    }
+}
