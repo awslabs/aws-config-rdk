@@ -40,6 +40,7 @@ class RulesDeploy:
             rules_dir=rules_dir
         )
 
+        cdk_runner.diff()
         cdk_runner.synthesize()
         cdk_runner.bootstrap()
         cdk_runner.deploy()

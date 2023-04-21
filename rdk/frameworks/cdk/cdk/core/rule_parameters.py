@@ -18,8 +18,10 @@ rdk_supported_custom_rule_runtime = [
         "python3.8-lib",
         "python3.9",
         "python3.9-lib",
-        "nodejs6.10",
-        "nodejs8.10",
+        "python3.10",
+        "python3.10-lib",
+        # "nodejs6.10",
+        # "nodejs8.10",
     ]
 
 def get_rule_parameters(rule_dir: Path):
@@ -49,7 +51,7 @@ def get_rule_name(rule_path: Path):
 def get_deploy_rules_list(rules_dir: Path, deployment_mode: str = "all",):
     deploy_rules_list = []
     for path in rules_dir.absolute().glob("**/parameters.json"):
-        if rules_dir.absolute().joinpath("rdk").as_posix() not in path.as_posix():
+        if "build/" not in path.as_posix():
             if deployment_mode == "all":
                 deploy_rules_list.append(path.parent)
                     # Add support for java and cs 

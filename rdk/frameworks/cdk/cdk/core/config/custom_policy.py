@@ -10,7 +10,7 @@ from ..errors import RdkParametersInvalidError
 @dataclass
 class CustomPolicy:
     """
-    Defines Custom Policy.
+    Defines AWS Config Custom Policy.
 
     Parameters:
 
@@ -45,10 +45,9 @@ class CustomPolicy:
             self.input_parameters = json.loads(param["InputParameters"])
         if "MaximumExecutionFrequency" in param:
             try:
-                maximum_execution_frequency = getattr(config.MaximumExecutionFrequency, param["SourcePeriodic"].upper())
+                self.maximum_execution_frequency = getattr(config.MaximumExecutionFrequency, param["SourcePeriodic"].upper())
             except:
                 raise RdkParametersInvalidError("Invalid parameters found in Parameters.MaximumExecutionFrequency. Please review https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-config-configrule.html#cfn-config-configrule-maximumexecutionfrequency")                
-            self.maximum_execution_frequency = maximum_execution_frequency
         if "SourceEvents" in param:
             try:
                 source_events = getattr(config.ResourceType, param["SourceEvents"].upper().replace("AWS::", "").replace("::", "_"))

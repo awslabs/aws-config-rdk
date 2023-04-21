@@ -11,7 +11,7 @@ from ..errors import RdkParametersInvalidError
 @dataclass
 class RemediationConfiguration:
     """
-    Defines Remediation Configuration.
+    Defines AWS Config Rule Remediation Configuration.
 
     Parameters:
 

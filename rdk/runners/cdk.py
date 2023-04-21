@@ -68,6 +68,29 @@ class CdkRunner(BaseRunner):
             allowed_return_codes=[0, 2],
         )
 
+    def diff(self):
+        """
+        Executes `cdk diff`.
+
+        Parameters:
+
+        """
+        cmd = [
+            "cdk",
+            "diff",
+            "--context",
+            "rules_dir=" + self.rules_dir.as_posix()
+        ]
+
+
+        self.logger.info("Showing differences on CloudFormation template(s)...")
+
+        self.run_cmd(
+            cmd=cmd,
+            cwd=self.cdk_app_dir.as_posix(),
+            allowed_return_codes=[0, 2],
+        )
+
     def bootstrap(self):
         """
         Executes `cdk bootstrap`.
