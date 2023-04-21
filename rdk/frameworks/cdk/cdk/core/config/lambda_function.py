@@ -1,7 +1,9 @@
 import json
+import boto3
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence
 
+from constructs import Construct
 from aws_cdk import aws_lambda as lambda_
 
 from ..errors import RdkParametersInvalidError
@@ -29,7 +31,7 @@ class LambdaFunction:
     code: lambda_.Code = field(init=False)
     handler: str = field(init=False)
     runtime: lambda_.Runtime = field(init=False)
-    layers: Optional[Sequence[lambda_.ILayerVersion]]
+    # layers: Optional[Sequence[lambda_.ILayerVersion]]
     
     # TODO: add support for more lambda configuration. 
 
@@ -37,10 +39,15 @@ class LambdaFunction:
         param = rule_parameters["Parameters"]
         self.code = code
         self.handler= f"{param['RuleName']}.lambda_handler"
+        # self.layers = []
         if "SourceRuntime" in param:
             try:
                 self.runtime=getattr(lambda_.Runtime, param["SourceRuntime"].replace("-lib", "").replace("3.", "_3_").upper())
             except:
                 raise RdkParametersInvalidError(f"Invalid parameters found in Parameters.SourceRuntime. Current supported Lambda Runtime: {rdk_supported_custom_rule_runtime}")
-            if "-lib" in param["SourceRuntime"]:
-                self.layers = []
+    
+    def get_latest_rdklib_lambda_layer_version_arn(self, layer_name: str = "rdklib-layer"):
+        response = boto3.client("lambda").list_layer_versions(LayerName=layer_name)
+        layer_versions = response["LayerVersions"]
+        latest_version = sorted(layer_versions, key=lambda d: d['Version'])[-1]
+        return latest_version["LayerVersionArn"]

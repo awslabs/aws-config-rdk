@@ -41,19 +41,13 @@ class CdkStack(Stack):
                 config.CustomPolicy(self, rule_name, **asdict(arg))
             elif "SourceRuntime" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["SourceRuntime"] in rdk_supported_custom_rule_runtime:
                 # Lambda function containing logic that evaluates compliance with the rule.
-                fn_arg = LambdaFunction(code=lambda_.Code.from_asset(rule_path.as_posix()
-                    #                                                  , 
-                    # bundling=cdk.BundlingOptions(
-                    # image=lambda_.Runtime.PYTHON_3_9.bundling_image,
-                    # command=[
-                    #     'bash',
-                    #     '-c',
-                    #     'pip install -r requirements.txt -t /asset-output && cp -au . /asset-output',
-                    # ]
-                    # )
-                    ), 
+                fn_arg = LambdaFunction(code=lambda_.Code.from_asset(rule_path.as_posix()), 
                     rule_parameters=rule_parameters)
-                eval_compliance_fn = lambda_.Function(self, f"{rule_name}Function", **asdict(fn_arg))
+                if "-lib" in rule_parameters["Parameters"]["SourceRuntime"]:
+                    layer_version_arn = fn_arg.get_latest_rdklib_lambda_layer_version_arn()
+                    latest_layer = lambda_.LayerVersion.from_layer_version_arn(scope=self, id='rdklayerversion', layer_version_arn=layer_version_arn)
+                    # fn_arg.layers.append(latest_layer)
+                eval_compliance_fn = lambda_.Function(self, f"{rule_name}Function", **asdict(fn_arg), layers=[latest_layer])
 
                 # A custom rule that runs on configuration changes of EC2 instances
                 arg = CustomRule(lambda_function=eval_compliance_fn, rule_parameters=rule_parameters)
