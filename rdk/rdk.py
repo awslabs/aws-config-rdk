@@ -442,7 +442,7 @@ def get_command_parser():
     parser.add_argument(
         "command",
         metavar="<command>",
-        help=f"Command to run.  Refer to the usage instructions for each command for more details. Commands are: {rdk_commands})",
+        help=f"Command to run.  Refer to the usage instructions for each command for more details. Commands are: {rdk_commands}",
         choices=rdk_commands,
     )
     parser.add_argument(
