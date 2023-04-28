@@ -15,24 +15,16 @@ def test_errors_hierarchy():
     assert issubclass(rdk_errors.RdkCommandNotAllowedError, rdk_errors.RdkError)
 
     assert issubclass(rdk_errors.RdkCustodianPolicyReadError, rdk_errors.RdkError)
-    assert issubclass(
-        rdk_errors.RdkCustodianUnsupportedModeError, rdk_errors.RdkError
-    )
-    assert issubclass(
-        rdk_errors.RdkCustodianLambdaMonitorError, rdk_errors.RdkError
-    )
+    assert issubclass(rdk_errors.RdkCustodianUnsupportedModeError, rdk_errors.RdkError)
+    assert issubclass(rdk_errors.RdkCustodianLambdaMonitorError, rdk_errors.RdkError)
     assert issubclass(rdk_errors.RdkCustodianLambdaInvokeError, rdk_errors.RdkError)
 
     assert issubclass(rdk_errors.RdkMalformedPlanFile, rdk_errors.RdkError)
     assert issubclass(rdk_errors.RdkPyTestFixtureInitError, rdk_errors.RdkError)
 
     assert issubclass(rdk_errors.RdkTerraformMalformedPlanData, rdk_errors.RdkError)
-    assert issubclass(
-        rdk_errors.RdkTerraformMalformedStateData, rdk_errors.RdkError
-    )
-    assert issubclass(
-        rdk_errors.RdkTerraformAvenueDownloadError, rdk_errors.RdkError
-    )
+    assert issubclass(rdk_errors.RdkTerraformMalformedStateData, rdk_errors.RdkError)
+    assert issubclass(rdk_errors.RdkTerraformAvenueDownloadError, rdk_errors.RdkError)
 
     assert issubclass(
         rdk_errors.RdkReportUploadInvalidEnvironmentError, rdk_errors.RdkError

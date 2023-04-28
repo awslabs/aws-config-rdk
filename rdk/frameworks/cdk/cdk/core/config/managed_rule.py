@@ -41,28 +41,43 @@ class ManagedRule:
             except:
                 if identifier in [
                     # exception list for unmatching identifiers https://docs.aws.amazon.com/cdk/api/v2/python/aws_cdk.aws_config/ManagedRuleIdentifiers.html
-                        "MULTI_REGION_CLOUD_TRAIL_ENABLED",
-                        "ENCRYPTED_VOLUMES",
-                        "DESIRED_INSTANCE_TENANCY",
-                        "DESIRED_INSTANCE_TYPE",
-                        "INSTANCES_IN_VPC",
-                        "INCOMING_SSH_DISABLED"
-                    ]:
+                    "MULTI_REGION_CLOUD_TRAIL_ENABLED",
+                    "ENCRYPTED_VOLUMES",
+                    "DESIRED_INSTANCE_TENANCY",
+                    "DESIRED_INSTANCE_TYPE",
+                    "INSTANCES_IN_VPC",
+                    "INCOMING_SSH_DISABLED",
+                ]:
                     self.identifier = identifier
                 else:
-                    raise RdkParametersInvalidError("Invalid parameters found in Parameters.SourceIdentifier. Please review https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html")
+                    raise RdkParametersInvalidError(
+                        "Invalid parameters found in Parameters.SourceIdentifier. Please review https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html"
+                    )
         if "Description" in param:
             self.description = param["Description"]
         if "InputParameters" in param:
             self.input_parameters = json.loads(param["InputParameters"])
         if "MaximumExecutionFrequency" in param:
             try:
-                self.maximum_execution_frequency = getattr(config.MaximumExecutionFrequency, param["SourcePeriodic"].upper())
+                self.maximum_execution_frequency = getattr(
+                    config.MaximumExecutionFrequency, param["SourcePeriodic"].upper()
+                )
             except:
-                raise RdkParametersInvalidError("Invalid parameters found in Parameters.MaximumExecutionFrequency. Please review https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-config-configrule.html#cfn-config-configrule-maximumexecutionfrequency")                
+                raise RdkParametersInvalidError(
+                    "Invalid parameters found in Parameters.MaximumExecutionFrequency. Please review https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-config-configrule.html#cfn-config-configrule-maximumexecutionfrequency"
+                )
         if "SourceEvents" in param:
             try:
-                source_events = getattr(config.ResourceType, param["SourceEvents"].upper().replace("AWS::", "").replace("::", "_").replace("EC2_VOLUME", "EBS_VOLUME")) # cdk use EBS Volume instead of EC2 Volume
+                source_events = getattr(
+                    config.ResourceType,
+                    param["SourceEvents"]
+                    .upper()
+                    .replace("AWS::", "")
+                    .replace("::", "_")
+                    .replace("EC2_VOLUME", "EBS_VOLUME"),
+                )  # cdk use EBS Volume instead of EC2 Volume
             except:
-                raise RdkParametersInvalidError("Invalid parameters found in Parameters.SourceEvents. Please review https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html")                
+                raise RdkParametersInvalidError(
+                    "Invalid parameters found in Parameters.SourceEvents. Please review https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html"
+                )
             self.rule_scope = config.RuleScope.from_resources([source_events])

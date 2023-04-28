@@ -39,7 +39,6 @@ class BaseRunner:
         # self.logger = get_testcase_logger()
         self.logger = get_main_logger()
 
-
     # Linter notes:
     # * Yes pylint, we know this method is complicated.
     # * bandit does not like subprocess. See note at the top of this file

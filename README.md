@@ -1,16 +1,23 @@
 
+# Developer Instructions
 
-# Steps to setup your local environment 
-make freeze
-make init
+These steps are used for developers who want to make and test changes to the RDK source code.
 
-# Editorable mode by activate pipenv
-pipenv shell
+## Prerequisites
 
-# Navigagte to rules dir in integration test
-cd tests/rdk-cdk-int-rules-dir
+Install cfn-guard: https://docs.aws.amazon.com/cfn-guard/latest/ug/setting-up-linux.html
+
+## Set up your local environment
+`make freeze`
+`make init`
+
+# Activate pipenv
+`pipenv shell`
+
+# Navigate to rules dir in integration test
+`cd tests/integration/rdk-cdk-int-rules-dir`
 
 # Run RDK command for testing
-rdk test
-rdk deploy
-rdk destroy
+`rdk test`
+`rdk deploy`
+`rdk destroy`

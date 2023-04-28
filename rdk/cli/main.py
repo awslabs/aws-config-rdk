@@ -68,11 +68,11 @@ def main():
     )
 
     commands_parser_deploy.add_argument(
-        "rulename", 
+        "rulename",
         metavar="<rulename>",
-        nargs="*", 
+        nargs="*",
         default="",
-        help="Rule name(s) to deploy.  Rule(s) will be pushed to AWS."
+        help="Rule name(s) to deploy.  Rule(s) will be pushed to AWS.",
     )
 
     commands_parser_deploy.add_argument(
@@ -90,11 +90,11 @@ def main():
     )
 
     commands_parser_test.add_argument(
-        "rulename", 
+        "rulename",
         metavar="<rulename>",
-        nargs="*", 
+        nargs="*",
         default="",
-        help="Rule name(s) to test. Unit test of the rule(s) will be executed."
+        help="Rule name(s) to test. Unit test of the rule(s) will be executed.",
     )
 
     commands_parser_test.add_argument(
@@ -112,11 +112,11 @@ def main():
     )
 
     commands_parser_destroy.add_argument(
-        "rulename", 
+        "rulename",
         metavar="<rulename>",
-        nargs="*", 
+        nargs="*",
         default="",
-        help="Rule name(s) to destroy.  Rule(s) will be removed."
+        help="Rule name(s) to destroy.  Rule(s) will be removed.",
     )
 
     commands_parser_destroy.add_argument(

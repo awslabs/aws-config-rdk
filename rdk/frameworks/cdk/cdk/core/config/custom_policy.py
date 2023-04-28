@@ -45,12 +45,24 @@ class CustomPolicy:
             self.input_parameters = json.loads(param["InputParameters"])
         if "MaximumExecutionFrequency" in param:
             try:
-                self.maximum_execution_frequency = getattr(config.MaximumExecutionFrequency, param["SourcePeriodic"].upper())
+                self.maximum_execution_frequency = getattr(
+                    config.MaximumExecutionFrequency, param["SourcePeriodic"].upper()
+                )
             except:
-                raise RdkParametersInvalidError("Invalid parameters found in Parameters.MaximumExecutionFrequency. Please review https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-config-configrule.html#cfn-config-configrule-maximumexecutionfrequency")                
+                raise RdkParametersInvalidError(
+                    "Invalid parameters found in Parameters.MaximumExecutionFrequency. Please review https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-config-configrule.html#cfn-config-configrule-maximumexecutionfrequency"
+                )
         if "SourceEvents" in param:
             try:
-                source_events = getattr(config.ResourceType, param["SourceEvents"].upper().replace("AWS::", "").replace("::", "_"))
+                source_events = getattr(
+                    config.ResourceType,
+                    param["SourceEvents"]
+                    .upper()
+                    .replace("AWS::", "")
+                    .replace("::", "_"),
+                )
             except:
-                raise RdkParametersInvalidError("Invalid parameters found in Parameters.SourceEvents. Please review https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html")                
+                raise RdkParametersInvalidError(
+                    "Invalid parameters found in Parameters.SourceEvents. Please review https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html"
+                )
             self.rule_scope = config.RuleScope.from_resources([source_events])

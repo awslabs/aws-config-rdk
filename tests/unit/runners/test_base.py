@@ -48,7 +48,7 @@ def test_run_cmd_basic(mocker: MockerFixture):
         },
     )
     subprocess_popen_mock.assert_called_with(
-        args=["cdk", "--version"],,
+        args=["cdk", "--version"],
         stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -63,13 +63,15 @@ def test_run_cmd_basic(mocker: MockerFixture):
     subprocess_popen_mock.reset_mock(return_value=True, side_effect=True)
     subprocess_popen_mock.side_effect = FileNotFoundError("File foo does not exist")
     with pytest.raises(RdkCommandInvokeError):
-        runner.run_cmd(cmd=["cdk", "--version"],)
+        runner.run_cmd(
+            cmd=["cdk", "--version"],
+        )
 
     # Test return codes
     subprocess_popen_mock.reset_mock(return_value=True, side_effect=True)
     subprocess_popen_mock.return_value.__enter__().returncode = 2
     with pytest.raises(RdkCommandExecutionError):
-        runner.run_cmd(cmd=["cdk", "--version"],, allowed_return_codes=[1])
+        runner.run_cmd(cmd=["cdk", "--version"], allowed_return_codes=[1])
 
 
 def test_run_cmd_logging(

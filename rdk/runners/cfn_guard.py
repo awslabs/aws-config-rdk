@@ -42,18 +42,17 @@ class CfnGuardRunner(BaseRunner):
             "test",
             "--rules-file",
             self.rules_file.as_posix(),
-            "--test-data", 
-            self.test_data.as_posix()
+            "--test-data",
+            self.test_data.as_posix(),
         ]
 
         if self.verbose:
             cmd.append("--verbose")
 
-        self.logger.info(f"Running cfn-guard unit test on {self.rules_file.relative_to(self.rules_file.parent.parent)} with testing data: {self.test_data.relative_to(self.rules_file.parent.parent)}")
-
-        return self.run_cmd(
-            cmd=cmd,
-            cwd=Path().absolute().as_posix(),
-            capture_output=True
+        self.logger.info(
+            f"Running cfn-guard unit test on {self.rules_file.relative_to(self.rules_file.parent.parent)} with testing data: {self.test_data.relative_to(self.rules_file.parent.parent)}"
         )
 
+        return self.run_cmd(
+            cmd=cmd, cwd=Path().absolute().as_posix(), capture_output=True
+        )

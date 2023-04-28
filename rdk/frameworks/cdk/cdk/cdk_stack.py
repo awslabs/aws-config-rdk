@@ -25,7 +25,6 @@ from .core.rule_parameters import (
 
 
 class CdkStack(Stack):
-
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -36,33 +35,65 @@ class CdkStack(Stack):
             rule_name = get_rule_name(rule_path)
             rule_parameters = get_rule_parameters(rule_path)
             print(f"Adding Rule {rule_name} ...")
-            if "SourceRuntime" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["SourceRuntime"] in ["cloudformation-guard2.0", "guard-2.x.x"]:
-                arg = CustomPolicy(policy_text=rule_path.joinpath("rule_code.guard").read_text(), rule_parameters=rule_parameters)
+            if "SourceRuntime" in rule_parameters["Parameters"] and rule_parameters[
+                "Parameters"
+            ]["SourceRuntime"] in ["cloudformation-guard2.0", "guard-2.x.x"]:
+                arg = CustomPolicy(
+                    policy_text=rule_path.joinpath("rule_code.guard").read_text(),
+                    rule_parameters=rule_parameters,
+                )
                 config.CustomPolicy(self, rule_name, **asdict(arg))
-            elif "SourceRuntime" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["SourceRuntime"] in rdk_supported_custom_rule_runtime:
+            elif (
+                "SourceRuntime" in rule_parameters["Parameters"]
+                and rule_parameters["Parameters"]["SourceRuntime"]
+                in rdk_supported_custom_rule_runtime
+            ):
                 # Lambda function containing logic that evaluates compliance with the rule.
-                fn_arg = LambdaFunction(code=lambda_.Code.from_asset(rule_path.as_posix()), 
-                    rule_parameters=rule_parameters)
+                fn_arg = LambdaFunction(
+                    code=lambda_.Code.from_asset(rule_path.as_posix()),
+                    rule_parameters=rule_parameters,
+                )
                 if "-lib" in rule_parameters["Parameters"]["SourceRuntime"]:
-                    layer_version_arn = fn_arg.get_latest_rdklib_lambda_layer_version_arn()
-                    latest_layer = lambda_.LayerVersion.from_layer_version_arn(scope=self, id='rdklayerversion', layer_version_arn=layer_version_arn)
+                    layer_version_arn = (
+                        fn_arg.get_latest_rdklib_lambda_layer_version_arn()
+                    )
+                    latest_layer = lambda_.LayerVersion.from_layer_version_arn(
+                        scope=self,
+                        id="rdklayerversion",
+                        layer_version_arn=layer_version_arn,
+                    )
                     # fn_arg.layers.append(latest_layer)
-                eval_compliance_fn = lambda_.Function(self, f"{rule_name}Function", **asdict(fn_arg), layers=[latest_layer])
+                eval_compliance_fn = lambda_.Function(
+                    self,
+                    f"{rule_name}Function",
+                    **asdict(fn_arg),
+                    layers=[latest_layer],
+                )
 
                 # A custom rule that runs on configuration changes of EC2 instances
-                arg = CustomRule(lambda_function=eval_compliance_fn, rule_parameters=rule_parameters)
+                arg = CustomRule(
+                    lambda_function=eval_compliance_fn, rule_parameters=rule_parameters
+                )
                 config.CustomRule(self, rule_name, **asdict(arg))
-            elif "SourceIdentifier" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["SourceIdentifier"]:
+            elif (
+                "SourceIdentifier" in rule_parameters["Parameters"]
+                and rule_parameters["Parameters"]["SourceIdentifier"]
+            ):
                 arg = ManagedRule(rule_parameters=rule_parameters)
                 config.ManagedRule(self, rule_name, **asdict(arg))
             else:
                 print(f"Rule type not supported for Rule {rule_name}")
                 continue
                 # raise RdkRuleTypesInvalidError(f"Error loading parameters file for Rule {rule_name}")
-            
-            if "Remediation" in rule_parameters["Parameters"] and rule_parameters["Parameters"]["Remediation"]:
+
+            if (
+                "Remediation" in rule_parameters["Parameters"]
+                and rule_parameters["Parameters"]["Remediation"]
+            ):
                 arg = RemediationConfiguration(rule_parameters=rule_parameters)
-                config.CfnRemediationConfiguration(self, f"{rule_name}RemediationConfiguration", **asdict(arg))
+                config.CfnRemediationConfiguration(
+                    self, f"{rule_name}RemediationConfiguration", **asdict(arg)
+                )
             # # A rule to detect stack drifts
             # drift_rule = config.CloudFormationStackDriftDetectionCheck(self, "Drift")
 

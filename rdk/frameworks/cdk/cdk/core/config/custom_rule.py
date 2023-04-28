@@ -24,7 +24,7 @@ class CustomRule:
     * **`maximum_execution_frequency`** (_MaximumExecutionFrequency_): Optional - The maximum frequency at which the AWS Config rule runs evaluations.
     * **`rule_scope`** (_RuleScope_): Optional - Defines which resources trigger an evaluation for an AWS Config rule. Default: - evaluations for the rule are triggered when any resource in the recording group changes.
 
-    
+
 
     """
 
@@ -52,13 +52,25 @@ class CustomRule:
             self.input_parameters = json.loads(param["InputParameters"])
         if "MaximumExecutionFrequency" in param:
             try:
-                self.maximum_execution_frequency = getattr(config.MaximumExecutionFrequency, param["SourcePeriodic"].upper())
+                self.maximum_execution_frequency = getattr(
+                    config.MaximumExecutionFrequency, param["SourcePeriodic"].upper()
+                )
             except:
-                raise RdkParametersInvalidError("Invalid parameters found in Parameters.MaximumExecutionFrequency. Please review https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-config-configrule.html#cfn-config-configrule-maximumexecutionfrequency")                
+                raise RdkParametersInvalidError(
+                    "Invalid parameters found in Parameters.MaximumExecutionFrequency. Please review https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-config-configrule.html#cfn-config-configrule-maximumexecutionfrequency"
+                )
         if "SourceEvents" in param:
             try:
                 self.configuration_changes = True
-                source_events = getattr(config.ResourceType, param["SourceEvents"].upper().replace("AWS::", "").replace("::", "_"))
+                source_events = getattr(
+                    config.ResourceType,
+                    param["SourceEvents"]
+                    .upper()
+                    .replace("AWS::", "")
+                    .replace("::", "_"),
+                )
             except:
-                raise RdkParametersInvalidError("Invalid parameters found in Parameters.SourceEvents. Please review https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html")                
+                raise RdkParametersInvalidError(
+                    "Invalid parameters found in Parameters.SourceEvents. Please review https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html"
+                )
             self.rule_scope = config.RuleScope.from_resources([source_events])

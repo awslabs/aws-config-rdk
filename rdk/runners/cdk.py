@@ -34,7 +34,7 @@ class CdkRunner(BaseRunner):
         # shutil.rmtree(self.root_module / "cdk")
         # shutil.copytree(Path(__file__).resolve().parent.parent /'frameworks' / 'cdk', self.root_module / 'cdk')
         # self.cdk_app_dir = self.root_module / "cdk"
-        self.cdk_app_dir = Path(__file__).resolve().parent.parent /'frameworks' / 'cdk'
+        self.cdk_app_dir = Path(__file__).resolve().parent.parent / "frameworks" / "cdk"
 
     def synthesize(self):
         """
@@ -56,9 +56,8 @@ class CdkRunner(BaseRunner):
             # "--asset-metadata",
             # "false",
             "--context",
-            "rules_dir=" + self.rules_dir.as_posix()
+            "rules_dir=" + self.rules_dir.as_posix(),
         ]
-
 
         self.logger.info("Synthesizing CloudFormation template(s)...")
 
@@ -75,13 +74,7 @@ class CdkRunner(BaseRunner):
         Parameters:
 
         """
-        cmd = [
-            "cdk",
-            "diff",
-            "--context",
-            "rules_dir=" + self.rules_dir.as_posix()
-        ]
-
+        cmd = ["cdk", "diff", "--context", "rules_dir=" + self.rules_dir.as_posix()]
 
         self.logger.info("Showing differences on CloudFormation template(s)...")
 
@@ -102,9 +95,8 @@ class CdkRunner(BaseRunner):
             "cdk",
             "bootstrap",
             "--context",
-            "rules_dir=" + self.rules_dir.as_posix()
+            "rules_dir=" + self.rules_dir.as_posix(),
         ]
-
 
         self.logger.info("Envrionment Bootstrapping ...")
 
@@ -127,9 +119,8 @@ class CdkRunner(BaseRunner):
             "--context",
             "rules_dir=" + self.rules_dir.as_posix(),
             "--require-approval",
-            "never"
+            "never",
         ]
-
 
         self.logger.info("Deploying AWS Config Rules ...")
 
@@ -151,9 +142,8 @@ class CdkRunner(BaseRunner):
             "destroy",
             "--context",
             "rules_dir=" + self.rules_dir.as_posix(),
-            "--force"
+            "--force",
         ]
-
 
         self.logger.info("Destroying AWS Config Rules ...")
 

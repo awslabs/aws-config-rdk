@@ -8,6 +8,8 @@ aws-cdk.asset-kubectl-v20==2.1.1 ; python_version ~= '3.7'
 aws-cdk.asset-node-proxy-agent-v5==2.0.105 ; python_version ~= '3.7'
 cattrs==22.2.0 ; python_version >= '3.7'
 certifi==2022.12.7 ; python_version >= '3.6'
+# cfn-guard - while cfn-guard must be installed, there is no pip installer for it as of April 2023
+# Install guide for cfn-guard: https://docs.aws.amazon.com/cfn-guard/latest/ug/setting-up-linux.html
 colorlog==4.8.0
 constructs==10.1.302
 exceptiongroup==1.1.1 ; python_version < '3.11'
