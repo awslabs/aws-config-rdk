@@ -74,7 +74,7 @@ function convertApiConfiguration(apiConfiguration) {
     return apiConfiguration;
 }
 
-// Based on the type of message get the configuration item either from configurationItem in the invoking event or using the getResourceConfigHistiry API in getConfiguration function.
+// Based on the type of message get the configuration item either from configurationItem in the invoking event or using the getResourceConfigHistory API in getConfiguration function.
 function getConfigurationItem(invokingEvent, callback) {
     checkDefined(invokingEvent, 'invokingEvent');
     if (isOverSizedChangeNotification(invokingEvent.messageType)) {
