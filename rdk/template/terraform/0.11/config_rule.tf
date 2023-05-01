@@ -9,13 +9,6 @@ data "aws_iam_policy" "read_only_access" {
 }
 
 data "aws_iam_policy_document" "config_iam_policy" {
-
-    statement{
-      actions=["s3:GetObject"]
-      resources =["arn:${data.aws_partition.current.partition}:s3:::${var.source_bucket}/${var.rule_name}.zip"]
-      effect = "Allow"
-      sid= "1"
-    }
     statement{
       actions=[
                 "logs:CreateLogGroup",
@@ -36,7 +29,6 @@ data "aws_iam_policy_document" "config_iam_policy" {
     statement{
       actions=[
                 "iam:List*",
-                "iam:Describe*",
                 "iam:Get*"
             ]
       resources = ["*"]
