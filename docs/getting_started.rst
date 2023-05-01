@@ -124,7 +124,7 @@ If you need to change the parameters of a Config rule in your working directory 
 
 ::
 
-  $ rdk modify MyRule --runtime python3.9 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
+  $ rdk modify MyRule --runtime python3.10 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
   Running modify!
   Modified Rule 'MyRule'.  Use the `deploy` command to push your changes to AWS.
 

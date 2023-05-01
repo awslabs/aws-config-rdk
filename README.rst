@@ -18,7 +18,7 @@ For complete documentation, including command reference, check out the `ReadTheD
 
 Getting Started
 ===============
-Uses python 3.7/3.8/3.9 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
+Uses python 3.7/3.8/3.9/3.10 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
 
 Under the hood, rdk uses boto3 to make API calls to AWS, so you can set your credentials any way that boto3 recognizes (options 3 through 8 here: http://boto3.readthedocs.io/en/latest/guide/configuration.html) or pass them in with the command-line parameters --profile, --region, --access-key-id, or --secret-access-key
 
@@ -148,7 +148,7 @@ If you need to change the parameters of a Config rule in your working directory 
 
 ::
 
-  $ rdk modify MyRule --runtime python3.9 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
+  $ rdk modify MyRule --runtime python3.10 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
   Running modify!
   Modified Rule 'MyRule'.  Use the `deploy` command to push your changes to AWS.
 
@@ -220,7 +220,7 @@ You can use the ``-n`` and ``-f`` command line flags just like the UNIX ``tail``
 Running the tests
 =================
 
-The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environments (currently Ubuntu linux running python 3.7/3.8/3.9, and Windows Server running python3.9).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
+The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environments (currently Ubuntu linux running python 3.7/3.8/3.9/3.10, and Windows Server running python3.10).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
 
 
 Advanced Features

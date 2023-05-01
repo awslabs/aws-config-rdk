@@ -25,6 +25,7 @@ classifiers = [
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
 ]
 include = [
     "README.rst",
@@ -46,6 +47,8 @@ include = [
     "rdk/template/runtime/python3.8-lib/*",
     "rdk/template/runtime/python3.9/*",
     "rdk/template/runtime/python3.9-lib/*",
+    "rdk/template/runtime/python3.10/*",
+    "rdk/template/runtime/python3.10-lib/*",
     "rdk/template/runtime/dotnetcore1.0/*",
     "rdk/template/runtime/dotnetcore1.0/bin/*",
     "rdk/template/runtime/dotnetcore1.0/obj/*",
