@@ -90,7 +90,7 @@ Note: It might take up to 2 hours to get the information about the CIS benchmark
 
 ## Task 4: Add Remediation Action
 4. Edit the rule for remediation
-  * Select the previosly created "s3-bucket-versioning-enabled" rule 
+  * Select the previously created "s3-bucket-versioning-enabled" rule 
   * Edit the remediation action
   * Select "AWS-ConfigureS3BucketVersioning" in the remediation action drop-down
   * Select "No" for Auto remediation
@@ -113,7 +113,7 @@ Note: It might take up to 2 hours to get the information about the CIS benchmark
 ## (Optional) Going further
 7. Discover all the available [Managed Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html).
 
-8. Navigate to [AWS System Manager Automation Documents](https://eu-west-1.console.aws.amazon.com/systems-manager/documents?region=eu-west-1) to discover all existing remediations actions.
+8. Navigate to [AWS System Manager Automation Documents](https://eu-west-1.console.aws.amazon.com/systems-manager/documents?region=eu-west-1) to discover all existing remediation actions.
 
 
 # Lab 2: Writing Your First Config Rule
@@ -258,7 +258,7 @@ rdk modify MFA_ENABLED_RULE --maximum-frequency One_Hour
 
 2. In your text editor, open up the MFA_ENABLED_RULE.py file.  If you do not yet have a working version of this Rule from the last lab, go ahead and copy it from the solutions section at the end of this lab guide.
 
-3. Remember that in a Periodic invocation of the Rule the configuration_item passed in to your evaluate_compliance function will be empty so we'll need to make an API call to retrieve all of the IAM users in the account and evaluate them all using the same logic as we used in the previous exercise.
+3. Remember that in a Periodic invocation of the Rule the configuration_item passed in to your evaluate_compliance function will be empty, so we'll need to make an API call to retrieve all the IAM users in the account and evaluate them all using the same logic as we used in the previous exercise.
 
 4. To make that a little easier, let's refactor what we've got to make a trigger-independent `evaluate_user(username)` function out of your existing compliance evaluation logic, which we will conditionally call if the configuration_item is present.  This will preserve our existing functionality, and should look something like the following pseudo-code:
 

@@ -108,7 +108,7 @@ def get_client(service, event, region=None):
     )
 
 
-# This generate an evaluation for config
+# This generates an evaluation for config
 def build_evaluation(resource_id, compliance_type, event, resource_type=DEFAULT_RESOURCE_TYPE, annotation=None):
     """Form an evaluation as a dictionary. Usually suited to report on scheduled rules.
 
@@ -221,7 +221,7 @@ def convert_api_configuration(configuration_item):
 
 # Based on the type of message get the configuration item
 # either from configurationItem in the invoking event
-# or using the getResourceConfigHistiry API in getConfiguration function.
+# or using the getResourceConfigHistory API in getConfiguration function.
 def get_configuration_item(invoking_event):
     check_defined(invoking_event, "invokingEvent")
     if is_oversized_changed_notification(invoking_event["messageType"]):
