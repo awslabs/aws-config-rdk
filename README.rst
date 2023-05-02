@@ -14,7 +14,7 @@ We greatly appreciate feedback and bug reports at rdk-maintainers@amazon.com! Yo
 
 The RDK is designed to support a "Compliance-as-Code" workflow that is intuitive and productive.  It abstracts away much of the undifferentiated heavy lifting associated with deploying AWS Config rules backed by custom lambda functions, and provides a streamlined develop-deploy-monitor iterative process.
 
-For complete documentation, including command reference, check out the `ReadTheDocs documentation <https://rdk.readthedocs.io/en/latest/>`_.
+For complete documentation, including command reference, check out the `ReadTheDocs documentation <https://aws-config-rdk.readthedocs.io/en/latest/>`_.
 
 Getting Started
 ===============
