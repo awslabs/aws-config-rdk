@@ -8,6 +8,8 @@ rdk
 .. |downloadsbadge| image:: https://img.shields.io/pypi/v/rdk
   :alt: PyPI
 
+
+
 Rule Development Kit
 
 We greatly appreciate feedback and bug reports at rdk-maintainers@amazon.com! You may also create an issue on this repo.
@@ -18,17 +20,20 @@ For complete documentation, including command reference, check out the `ReadTheD
 
 Getting Started
 ===============
-Uses python 3.7/3.8/3.9 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at policy/rdk-minimum-permissions.json.
+Uses python 3.7/3.8/3.9 and is installed via pip.  Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions.  An AWS IAM Policy Document that describes the minimum necessary permissions can be found at ``policy/rdk-minimum-permissions.json``.
 
-Under the hood, rdk uses boto3 to make API calls to AWS, so you can set your credentials any way that boto3 recognizes (options 3 through 8 here: http://boto3.readthedocs.io/en/latest/guide/configuration.html) or pass them in with the command-line parameters --profile, --region, --access-key-id, or --secret-access-key
+Under the hood, rdk uses boto3 to make API calls to AWS, so you can set your credentials any way that boto3 recognizes (options 3 through 8 `here <https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#guide-credentials>`_) or pass them in with the command-line parameters ``--profile``, ``--region``, ``--access-key-id``, or ``--secret-access-key``
 
-If you just want to use the RDK, go ahead and install it using pip::
+If you just want to use the RDK, go ahead and install it using pip.
+
+::
 
 $ pip install rdk
 
-Alternately, if you want to see the code and/or contribute you can clone the git repo, and then from the repo directory use pip to install the package.  Use the '-e' flag to generate symlinks so that any edits you make will be reflected when you run the installed package.
+Alternately, if you want to see the code and/or contribute you can clone the git repo, and then from the repo directory use pip to install the package.  Use the ``-e`` flag to generate symlinks so that any edits you make will be reflected when you run the installed package.
 
 If you are going to author your Lambda functions using Java you will need to have Java 8 and gradle installed.  If you are going to author your Lambda functions in C# you will need to have the dotnet CLI and the .NET Core Runtime 1.08 installed.
+
 ::
 
   $ pip install -e .
@@ -38,9 +43,9 @@ To make sure the rdk is installed correctly, running the package from the comman
 ::
 
   $ rdk
-  usage: rdk [-h] [-p PROFILE] [-k ACCESS_KEY] [-s SECRET_ACCESS_KEY]
-           [-r REGION]
-           <command> ...
+  usage: rdk [-h] [-p PROFILE] [-k ACCESS_KEY_ID] [-s SECRET_ACCESS_KEY]
+           [-r REGION] [-f REGION_FILE] [--region-set REGION_SET]
+           [-v] <command> ...
   rdk: error: the following arguments are required: <command>, <command arguments>
 
 
@@ -64,20 +69,30 @@ To use the RDK, it's recommended to create a directory that will be your working
 
 Running ``init`` subsequent times will validate your AWS Config setup and re-create any S3 buckets or IAM resources that are needed.
 
-- If you have config delivery bucket already present in some other AWS account then use **--config-bucket-exists-in-another-account** as argument:::
+- If you have config delivery bucket already present in some other AWS account then use ``--config-bucket-exists-in-another-account`` as argument.
+
+::
 
   $ rdk init --config-bucket-exists-in-another-account
-- If you have AWS Organizations/ControlTower Setup in your AWS environment then additionally, use **--control-tower** as argument:::
+- If you have AWS Organizations/ControlTower Setup in your AWS environment then additionally, use ``--control-tower`` as argument.
+
+::
 
   $ rdk init --control-tower --config-bucket-exists-in-another-account
-- If bucket for custom lambda code is already present in current account then use **--skip-code-bucket-creation** argument:::
+- If bucket for custom lambda code is already present in current account then use ``--skip-code-bucket-creation`` argument.
+
+::
 
   $ rdk init --skip-code-bucket-creation
 
-- If you want rdk to create/update and upload the rdklib-layer for you, then use **--generate-lambda-layer** argument. In supported regions, rdk will deploy the layer using the Serverless Application Repository, otherwise it will build a local lambda layer archive and upload it for use:::
+- If you want rdk to create/update and upload the rdklib-layer for you, then use ``--generate-lambda-layer`` argument. In supported regions, rdk will deploy the layer using the Serverless Application Repository, otherwise it will build a local lambda layer archive and upload it for use.
+
+::
 
   $ rdk init --generate-lambda-layer 
-- If you want rdk to give a custom name to the lambda layer for you, then use **--custom-layer-namer** argument. The Serverless Application Repository currently cannot be used for custom lambda layers.:::
+- If you want rdk to give a custom name to the lambda layer for you, then use ``--custom-layer-namer`` argument. The Serverless Application Repository currently cannot be used for custom lambda layers.
+
+::
 
   $ rdk init --generate-lambda-layer --custom-layer-name <LAYER_NAME>
 
@@ -91,7 +106,7 @@ In your working directory, use the ``create`` command to start creating a new cu
   Running create!
   Local Rule files created.
 
-On Windows it is necessary to escape the double-quotes when specifying input parameters, so the `--input-parameters` argument would instead look something like this::
+On Windows it is necessary to escape the double-quotes when specifying input parameters, so the ``--input-parameters`` argument would instead look something like this::
 
   '{\"desiredInstanceType\":\"t2.micro\"}'
 
@@ -99,7 +114,9 @@ Note that you can create rules that use EITHER resource-types OR maximum-frequen
 
 Edit Rules Locally
 ---------------------------
-Once you have created the rule, edit the python file in your rule directory (in the above example it would be ``MyRule/MyRule.py``, but may be deeper into the rule directory tree depending on your chosen Lambda runtime) to add whatever logic your Rule requires in the ``evaluate_compliance`` function.  You will have access to the CI that was sent by Config, as well as any parameters configured for the Config Rule.  Your function should return either a simple compliance status (one of ``COMPLIANT``, ``NONCOMPLIANT``, or ``NOT_APPLICABLE``), or if you're using the python or node runtimes you can return a JSON object with multiple evaluation responses that the RDK will send back to AWS Config.  An example would look like::
+Once you have created the rule, edit the python file in your rule directory (in the above example it would be ``MyRule/MyRule.py``, but may be deeper into the rule directory tree depending on your chosen Lambda runtime) to add whatever logic your Rule requires in the ``evaluate_compliance`` function.  You will have access to the CI that was sent by Config, as well as any parameters configured for the Config Rule.  Your function should return either a simple compliance status (one of ``COMPLIANT``, ``NON_COMPLIANT``, or ``NOT_APPLICABLE``), or if you're using the python or node runtimes you can return a JSON object with multiple evaluation responses that the RDK will send back to AWS Config.  An example would look like
+
+::
 
   for sg in response['SecurityGroups']:
         evaluations.append(
@@ -126,7 +143,7 @@ to output a formatted JSON document.
 
 Write and Run Unit Tests
 ------------------------
-If you are writing Config Rules using either of the Python runtimes there will be a <rule name>_test.py file deployed along with your Lambda function skeleton.  This can be used to write unit tests according to the standard Python unittest framework (documented here: https://docs.python.org/3/library/unittest.html), which can be run using the `test-local` rdk command::
+If you are writing Config Rules using either of the Python runtimes there will be a ``<rule name>_test.py`` file deployed along with your Lambda function skeleton.  This can be used to write unit tests according to the standard Python unittest framework (documented `here <https://docs.python.org/3/library/unittest.html>`_), which can be run using the ``test-local`` rdk command::
 
   $ rdk test-local MyTestRule
   Running local test!
@@ -174,7 +191,7 @@ Once you have completed your compliance validation code and set your Rule's conf
   Waiting for CloudFormation stack operation to complete...
   Config deploy complete.
 
-The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.  If you used the --generate-lambda-layer flag in rdk init, use the --generated-lambda-layer flag for rdk deploy.
+The exact output will vary depending on Lambda runtime.  You can use the ``--all`` flag to deploy all of the rules in your working directory.  If you used the ``--generate-lambda-layer`` flag in rdk init, use the ``--generated-lambda-layer`` flag for rdk deploy.
 
 Deploy Organization Rule
 ------------------------
@@ -196,8 +213,8 @@ For successful evaluation of custom rules in child accounts, please make sure yo
   Waiting for CloudFormation stack operation to complete...
   Config deploy complete.
 
-The exact output will vary depending on Lambda runtime.  You can use the --all flag to deploy all of the rules in your working directory.
-This command uses 'PutOrganizationConfigRule' API for the rule deployment. If a new account joins an organization, the rule is deployed to that account. When an account leaves an organization, the rule is removed. Deployment of existing organizational AWS Config Rules will only be retried for 7 hours after an account is added to your organization if a recorder is not available. You are expected to create a recorder if one doesn't exist within 7 hours of adding an account to your organization.
+The exact output will vary depending on Lambda runtime.  You can use the ``--all`` flag to deploy all of the rules in your working directory.
+This command uses ``PutOrganizationConfigRule`` API for the rule deployment. If a new account joins an organization, the rule is deployed to that account. When an account leaves an organization, the rule is removed. Deployment of existing organizational AWS Config Rules will only be retried for 7 hours after an account is added to your organization if a recorder is not available. You are expected to create a recorder if one doesn't exist within 7 hours of adding an account to your organization.
 
 View Logs For Deployed Rule
 ---------------------------
@@ -220,22 +237,25 @@ You can use the ``-n`` and ``-f`` command line flags just like the UNIX ``tail``
 Running the tests
 =================
 
-The `testing` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environments (currently Ubuntu linux running python 3.7/3.8/3.9, and Windows Server running python3.9).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
+The ``testing`` directory contains scripts and buildspec files that I use to run basic functionality tests across a variety of CLI environments (currently Ubuntu linux running python 3.7/3.8/3.9, and Windows Server running python3.9).  If there is interest I can release a CloudFormation template that could be used to build the test environment, let me know if this is something you want!
 
 
 Advanced Features
 =================
 Cross-Account Deployments
 -------------------------
-Features have been added to the RDK to facilitate the cross-account deployment pattern that enterprise customers have standardized on for custom Config Rules. A cross-account architecture is one in which the Lambda functions are deployed to a single central "Compliance" account (which may be the same as a central "Security" account), and the Config Rules are deployed to any number of "Satellite" accounts that are used by other teams or departments.  This gives the compliance team confidence that their Rule logic cannot be tampered with and makes it much easier for them to modify rule logic without having to go through a complex deployment process to potentially hundreds of AWS accounts.  The cross-account pattern uses two advanced RDK features - functions-only deployments and the `create-rule-template` command.
+Features have been added to the RDK to facilitate the cross-account deployment pattern that enterprise customers have standardized for custom Config Rules. A cross-account architecture is one in which the Lambda functions are deployed to a single central "Compliance" account (which may be the same as a central "Security" account), and the Config Rules are deployed to any number of "Satellite" accounts that are used by other teams or departments.  This gives the compliance team confidence that their rule logic cannot be tampered with and makes it much easier for them to modify rule logic without having to go through a complex deployment process to potentially hundreds of AWS accounts.  The cross-account pattern uses two advanced RDK features
 
-**Function-Only Deployment**
+- Functions-only deployment
+- create-rule-template command
 
-By using the `-f` or `--functions-only` flag on the `deploy` command the RDK will deploy only the necessary Lambda Functions, Lambda Execution Role, and Lambda Permissions to the account specified by the execution credentials.  It accomplishes this by batching up all of the Lambda function CloudFormation snippets for the selected Rule(s) into a single dynamically generated template and deploy that CloudFormation template.  One consequence of this is that subsequent deployments that specify a different set of Rules for the same stack name will update that CloudFormation stack, and any Rules that were included in the first deployment but not in the second will be removed.  You can use the `--stack-name` parameter to override the default CloudFormation stack name if you need to manage different subsets of your Lambda Functions independently.  The intended usage is to deploy the functions for all of the Config rules in the Security/Compliance account, which can be done simply by using `rdk deploy -f --all` from your working directory.
+**Functions-Only Deployment**
 
-**`create-rule-template` command**
+By using the ``-f`` or ``--functions-only`` flag on the ``deploy`` command the RDK will deploy only the necessary Lambda Functions, Lambda Execution Role, and Lambda Permissions to the account specified by the execution credentials.  It accomplishes this by batching up all of the Lambda function CloudFormation snippets for the selected Rule(s) into a single dynamically generated template and deploy that CloudFormation template.  One consequence of this is that subsequent deployments that specify a different set of rules for the same stack name will update that CloudFormation stack, and any Rules that were included in the first deployment but not in the second will be removed.  You can use the ``--stack-name`` parameter to override the default CloudFormation stack name if you need to manage different subsets of your Lambda Functions independently.  The intended usage is to deploy the functions for all of the Config rules in the Security/Compliance account, which can be done simply by using ``rdk deploy -f --all`` from your working directory.
 
-This command generates a CloudFormation template that defines the AWS Config rules themselves, along with the Config Role, Config data bucket, Configuration Recorder, and Delivery channel necessary for the Config rules to work in a satellite account.  You must specify the file name for the generated template using the `--output-file` or `o` command line flags.  The generated template takes a single parameter of the AccountID of the central compliance account that contains the Lambda functions that will back your custom Config Rules.  The generated template can be deployed in the desired satellite accounts through any of the means that you can deploy any other CloudFormation template, including the console, the CLI, as a CodePipeline task, or using StackSets.  The `create-rule-template` command takes all of the standard arguments for selecting Rules to include in the generated template, including lists of individual Rule names, an `--all` flag, or using the RuleSets feature described below.
+**create-rule-template command**
+
+This command generates a CloudFormation template that defines the AWS Config rules themselves, along with the Config Role, Config data bucket, Configuration Recorder, and Delivery channel necessary for the Config rules to work in a satellite account.  You must specify the file name for the generated template using the `--output-file` or `o` command line flags.  The generated template takes a single parameter of the AccountID of the central compliance account that contains the Lambda functions that will back your custom Config Rules.  The generated template can be deployed in the desired satellite accounts through any of the means that you can deploy any other CloudFormation template, including the console, the CLI, as a CodePipeline task, or using StackSets.  The ``create-rule-template`` command takes all of the standard arguments for selecting Rules to include in the generated template, including lists of individual Rule names, an ``--all`` flag, or using the RuleSets feature described below.
 
 ::
 
@@ -258,7 +278,7 @@ It is now possible to define a resource type that is not yet supported by rdk. T
 
 Custom Lambda Function Name
 ---------------------------
-As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Rule-Function-<RULE_NAME>' it is possible to customize the name for the Lambda function to any 64 characters string as per Lambda's naming standards using the optional '--custom-lambda-name' flag while performing rdk create. This opens up new features like :
+As of version 0.7.14, instead of defaulting the lambda function names to ``RDK-Rule-Function-<RULE_NAME>`` it is possible to customize the name for the Lambda function to any 64 characters string as per Lambda's naming standards using the optional ``--custom-lambda-name`` flag while performing ``rdk create``. This opens up new features like :
 
 1. Longer config rule name.
 2. Custom lambda function naming as per personal or enterprise standards.
@@ -269,15 +289,15 @@ As of version 0.7.14, instead of defaulting the lambda function names to 'RDK-Ru
   Running create!
   Local Rule files created.
 
-The above example would create files with config rule name as 'MyLongerRuleName' and lambda function with the name 'custom-prefix-for-MyLongerRuleName' instead of 'RDK-Rule-Function-MyLongerRuleName'
+The above example would create files with config rule name as ``MyLongerRuleName`` and lambda function with the name ``custom-prefix-for-MyLongerRuleName`` instead of ``RDK-Rule-Function-MyLongerRuleName``
 
 RuleSets
 --------
 New as of version 0.3.11, it is possible to add RuleSet tags to rules that can be used to deploy and test groups of rules together.  Rules can belong to multiple RuleSets, and RuleSet membership is stored only in the parameters.json metadata.  The `deploy`, `create-rule-template`, and `test-local` commands are RuleSet-aware such that a RuleSet can be passed in as the target instead of `--all` or a specific named Rule.
 
-A comma-delimited list of RuleSets can be added to a Rule when you create it (using the `--rulesets` flag), as part of a `modify` command, or using new `ruleset` subcommands to add or remove individual rules from a RuleSet.
+A comma-delimited list of RuleSets can be added to a Rule when you create it (using the ``--rulesets`` flag), as part of a ``modify`` command, or using new ``ruleset`` subcommands to add or remove individual rules from a RuleSet.
 
-Running `rdk rulesets list` will display a list of the RuleSets currently defined across all of the Rules in the working directory
+Running ``rdk rulesets list`` will display a list of the RuleSets currently defined across all of the Rules in the working directory
 
 ::
 
@@ -291,7 +311,7 @@ Naming a specific RuleSet will list all of the Rules that are part of that RuleS
   rdk-dev $ rdk rulesets list AnotherRuleSet
   Rules in AnotherRuleSet :  RSTest
 
-Rules can be added to or removed from RuleSets using the `add` and `remove` subcommands:
+Rules can be added to or removed from RuleSets using the ``add`` and ``remove`` subcommands:
 
 ::
 
@@ -307,23 +327,23 @@ Managed Rules
 -------------
 The RDK is able to deploy AWS Managed Rules.
 
-To do so, create a rule using "rdk create" and provide a valid SourceIdentifier via the --source-identifier CLI option. The list of Managed Rules can be found here: https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html, and note that the Identifier can be obtained by replacing the dashes with underscores and using all capitals (for example, the "guardduty-enabled-centralized" rule has the SourceIdentifier "GUARDDUTY_ENABLED_CENTRALIZED").  Just like custom Rules you will need to specify source events and/or a maximum evaluation frequency, and also pass in any Rule parameters.  The resulting Rule directory will contain only the parameters.json file, but using `rdk deploy` or `rdk create-rule-template` can be used to deploy the Managed Rule like any other Custom Rule.
+To do so, create a rule using ``rdk create`` and provide a valid SourceIdentifier via the ``--source-identifier`` CLI option. The list of Managed Rules can be found `here <https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html>`_ , and note that the Identifier can be obtained by replacing the dashes with underscores and using all capitals (for example, the "guardduty-enabled-centralized" rule has the SourceIdentifier "GUARDDUTY_ENABLED_CENTRALIZED").  Just like custom Rules you will need to specify source events and/or a maximum evaluation frequency, and also pass in any Rule parameters.  The resulting Rule directory will contain only the parameters.json file, but using ``rdk deploy`` or ``rdk create-rule-template`` can be used to deploy the Managed Rule like any other Custom Rule.
 
 Deploying Rules Across Multiple Regions
 ---------------------------------------
-The RDK is able to run init/deploy/undeploy across multiple regions with a `rdk -f <region file> -t <region set>`
+The RDK is able to run init/deploy/undeploy across multiple regions with a ``rdk -f <region file> -t <region set>``
 
-If no region group is specified, rdk will deploy to the `default` region set
+If no region group is specified, rdk will deploy to the ``default`` region set.
 
-To create a sample starter region group, run `rdk create-region-set` to specify the filename, add the `-o <region set output file name>` this will create a region set with the following tests and regions `"default":["us-east-1","us-west-1","eu-north-1","ap-east-1"],"aws-cn-region-set":["cn-north-1","cn-northwest-1"]`
+To create a sample starter region group, run ``rdk create-region-set`` to specify the filename, add the ``-o <region set output file name>`` this will create a region set with the following tests and regions ``"default":["us-east-1","us-west-1","eu-north-1","ap-east-1"],"aws-cn-region-set":["cn-north-1","cn-northwest-1"]``
 
 Using RDK to Generate a Lambda Layer in a region (Python3)
 ----------------------------------------------------------
-By default `rdk init --generate-lambda-layer` will generate an rdklib lambda layer while running init in whatever region it is run, to force re-generation of the layer, run `rdk init --generate-lambda-layer` again over a region
+By default ``rdk init --generate-lambda-layer`` will generate an rdklib lambda layer while running init in whatever region it is run, to force re-generation of the layer, run ``rdk init --generate-lambda-layer`` again over a region
 
-To use this generated lambda layer, add the flag `--generated-lambda-layer` when running `rdk deploy`. For example: `rdk -f regions.yaml deploy LP3_TestRule_P39_lib --generated-lambda-layer`
+To use this generated lambda layer, add the flag ``--generated-lambda-layer`` when running ``rdk deploy``. For example: ``rdk -f regions.yaml deploy LP3_TestRule_P39_lib --generated-lambda-layer``
 
-If you created layer with a custom name (by running `rdk init --custom-lambda-layer`, add a similar `custom-lambda-layer` flag when running deploy.
+If you created layer with a custom name (by running ``rdk init --custom-lambda-layer``, add a similar ``custom-lambda-layer`` flag when running deploy.
 
 Contributing
 ============
@@ -339,8 +359,8 @@ Contacts
 
 Past Contributors
 =================
-* **Michael Borchert** - *Orignal Python version*
-* **Jonathan Rault** - *Orignal Design, testing, feedback*
+* **Michael Borchert** - *Original Python version*
+* **Jonathan Rault** - *Original Design, testing, feedback*
 * **Greg Kim and Chris Gutierrez** - *Initial work and CI definitions*
 * **Henry Huang** - *Original CFN templates and other code*
 * **Santosh Kumar** - *maintainer*
