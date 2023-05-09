@@ -371,4 +371,5 @@ docs/CHANGELOG.md
 # CDK
 **/cdk.out/
 cdk.out
+cdk.out/
 cdk.out/**
