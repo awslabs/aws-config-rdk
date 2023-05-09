@@ -1,0 +1,167 @@
+{
+  "version": "31.0.0",
+  "artifacts": {
+    "CdkStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "CdkStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "CdkStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "CdkStack.template.json",
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/1f66503cc1455d71cbdf4d10ceddc706d2016dc01b701a1e11d88204bc108317.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "CdkStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "CdkStack.assets"
+      ],
+      "metadata": {
+        "/CdkStack/API_GATEWAY_PRIVATE/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "APIGATEWAYPRIVATEC8B60F10",
+            "trace": [
+              "new CustomPolicy (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\aws-config\\lib\\rule.js:1:7302)",
+              "Kernel._create (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9964:29)",
+              "Kernel.create (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9693:29)",
+              "KernelHost.processRequest (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11544:36)",
+              "KernelHost.run (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11504:22)",
+              "Immediate._onImmediate (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11505:46)",
+              "process.processImmediate (node:internal/timers:471:21)"
+            ]
+          }
+        ],
+        "/CdkStack/API_GATEWAY_PRIVATERemediationConfiguration": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "APIGATEWAYPRIVATERemediationConfiguration",
+            "trace": [
+              "Kernel._create (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9964:29)",
+              "Kernel.create (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9693:29)",
+              "KernelHost.processRequest (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11544:36)",
+              "KernelHost.run (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11504:22)",
+              "Immediate._onImmediate (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11505:46)",
+              "process.processImmediate (node:internal/timers:471:21)"
+            ]
+          }
+        ],
+        "/CdkStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata",
+            "trace": [
+              "new MetadataResource (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\metadata-resource.js:1:707)",
+              "C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:2:2847",
+              "visit (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:4:368)",
+              "visit (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:4:330)",
+              "injectMetadataResources (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:2:2662)",
+              "synthesize (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:1:864)",
+              "App.synth (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\stage.js:1:2052)",
+              "C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9769:105",
+              "Kernel._ensureSync (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:10358:28)",
+              "Kernel.invoke (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9769:34)",
+              "KernelHost.processRequest (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11544:36)",
+              "KernelHost.run (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11504:22)",
+              "Immediate._onImmediate (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11505:46)",
+              "process.processImmediate (node:internal/timers:471:21)"
+            ]
+          }
+        ],
+        "/CdkStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable",
+            "trace": [
+              "new MetadataResource (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\metadata-resource.js:1:966)",
+              "C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:2:2847",
+              "visit (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:4:368)",
+              "visit (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:4:330)",
+              "injectMetadataResources (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:2:2662)",
+              "synthesize (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:1:864)",
+              "App.synth (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\stage.js:1:2052)",
+              "C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9769:105",
+              "Kernel._ensureSync (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:10358:28)",
+              "Kernel.invoke (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9769:34)",
+              "KernelHost.processRequest (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11544:36)",
+              "KernelHost.run (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11504:22)",
+              "Immediate._onImmediate (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11505:46)",
+              "process.processImmediate (node:internal/timers:471:21)"
+            ]
+          }
+        ],
+        "/CdkStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion",
+            "trace": [
+              "addBootstrapVersionRule (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\stack-synthesizers\\stack-synthesizer.js:1:5072)",
+              "DefaultStackSynthesizer.addBootstrapVersionRule (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\stack-synthesizers\\stack-synthesizer.js:1:2792)",
+              "DefaultStackSynthesizer.synthesize (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\stack-synthesizers\\default-synthesizer.js:1:5963)",
+              "C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:2:3375",
+              "visit (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:4:368)",
+              "visit (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:4:330)",
+              "synthesizeTree (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:2:3219)",
+              "synthesize (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:1:1083)",
+              "App.synth (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\stage.js:1:2052)",
+              "C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9769:105",
+              "Kernel._ensureSync (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:10358:28)",
+              "Kernel.invoke (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9769:34)",
+              "KernelHost.processRequest (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11544:36)",
+              "KernelHost.run (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11504:22)",
+              "Immediate._onImmediate (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11505:46)",
+              "process.processImmediate (node:internal/timers:471:21)"
+            ]
+          }
+        ],
+        "/CdkStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion",
+            "trace": [
+              "addBootstrapVersionRule (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\stack-synthesizers\\stack-synthesizer.js:1:5425)",
+              "DefaultStackSynthesizer.addBootstrapVersionRule (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\stack-synthesizers\\stack-synthesizer.js:1:2792)",
+              "DefaultStackSynthesizer.synthesize (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\stack-synthesizers\\default-synthesizer.js:1:5963)",
+              "C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:2:3375",
+              "visit (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:4:368)",
+              "visit (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:4:330)",
+              "synthesizeTree (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:2:3219)",
+              "synthesize (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\private\\synthesis.js:1:1083)",
+              "App.synth (C:\\Users\\sirromb\\AppData\\Local\\Temp\\jsii-kernel-RpVQtO\\node_modules\\aws-cdk-lib\\core\\lib\\stage.js:1:2052)",
+              "C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9769:105",
+              "Kernel._ensureSync (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:10358:28)",
+              "Kernel.invoke (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:9769:34)",
+              "KernelHost.processRequest (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11544:36)",
+              "KernelHost.run (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11504:22)",
+              "Immediate._onImmediate (C:\\Users\\sirromb\\AppData\\Local\\Temp\\tmppk0m2get\\lib\\program.js:11505:46)",
+              "process.processImmediate (node:internal/timers:471:21)"
+            ]
+          }
+        ]
+      },
+      "displayName": "CdkStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}

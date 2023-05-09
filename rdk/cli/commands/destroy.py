@@ -5,6 +5,7 @@ from rdk.core.rules_deploy import RulesDeploy
 from rdk.utils.logger import get_main_logger
 
 
+# TODO - should this be named undeploy for consistency with RDK v0?
 def run(rulenames: List[str], dryrun: bool):
     """
     test sub-command handler.

@@ -81,6 +81,7 @@ class BaseRunner:
             "stderr": subprocess.PIPE,
             # We're only dealing with text streams for now
             "universal_newlines": True,
+            "shell": True,  # Added to make this work for Windows environments
         }
         if cwd:
             subprocess_popen_kwargs["cwd"] = cwd
@@ -125,6 +126,13 @@ class BaseRunner:
                     """
                     Log stuff based on stdout or stderr.
                     """
+                    # Log streaming currently fails for Windows
+                    # OSError: [WinError 10038] An operation was attempted on something that is not a socket
+                    # Capture the error for now.
+                    try:
+                        selctr.select()
+                    except Exception as ex:
+                        return  # TODO - actually implement this for Windows
                     for _selkey, _ in selctr.select():
                         # NOTE: Selector key can be empty
                         if _selkey:
@@ -181,6 +189,7 @@ class BaseRunner:
             raise RdkCommandInvokeError("Failed to invoke requested command") from exc
 
         if return_code not in allowed_return_codes:
+            self.logger.info(f"Return code was {return_code}")
             # log any errors
             for _line in captured_stderr_lines:
                 self.logger.error(_line)

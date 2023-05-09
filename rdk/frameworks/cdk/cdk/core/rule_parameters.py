@@ -20,8 +20,6 @@ rdk_supported_custom_rule_runtime = [
     "python3.9-lib",
     "python3.10",
     "python3.10-lib",
-    # "nodejs6.10",
-    # "nodejs8.10",
 ]
 
 
@@ -49,7 +47,7 @@ def get_rule_name(rule_path: Path):
         )
     if len(rule_name) > 128:
         raise RdkParametersInvalidError(
-            "Error: Found Rule with name over 128 characters: {rule_name} \n Recreate the Rule with a shorter name."
+            f"Error: Found Rule with name over 128 characters: {rule_name} \n Recreate the Rule with a shorter name."
         )
 
     return rule_name

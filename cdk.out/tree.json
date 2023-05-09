@@ -1,0 +1,165 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "CdkStack": {
+        "id": "CdkStack",
+        "path": "CdkStack",
+        "children": {
+          "API_GATEWAY_PRIVATE": {
+            "id": "API_GATEWAY_PRIVATE",
+            "path": "CdkStack/API_GATEWAY_PRIVATE",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "CdkStack/API_GATEWAY_PRIVATE/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Config::ConfigRule",
+                  "aws:cdk:cloudformation:props": {
+                    "source": {
+                      "owner": "CUSTOM_POLICY",
+                      "sourceDetails": [
+                        {
+                          "eventSource": "aws.config",
+                          "messageType": "ConfigurationItemChangeNotification"
+                        },
+                        {
+                          "eventSource": "aws.config",
+                          "messageType": "OversizedConfigurationItemChangeNotification"
+                        }
+                      ],
+                      "customPolicyDetails": {
+                        "enableDebugLogDelivery": false,
+                        "policyRuntime": "guard-2.x.x",
+                        "policyText": "#\n# Select all AWS::ApiGateway::RestApi resources\n#     present in the Resources section of the template. \n#\nlet api_gws = Resources.*[ Type == 'AWS::ApiGateway::RestApi']\n\n#\n# Rule intent:         \n# 1) All AWS::ApiGateway::RestApi resources deployed must be private.                                            \n# 2) All AWS::ApiGateway::RestApi resources deployed must have at least one AWS Identity and Access Management (IAM) policy condition key to allow access from a VPC.\n#\n# Expectations:        \n# 1) SKIP when there are no AWS::ApiGateway::RestApi resources in the template.  \n# 2) PASS when:\n#     ALL AWS::ApiGateway::RestApi resources in the template have the EndpointConfiguration property set to Type: PRIVATE. \n#     ALL AWS::ApiGateway::RestApi resources in the template have one IAM condition key specified in the Policy property with aws:sourceVpc or :SourceVpc.    \n# 3) FAIL otherwise.                                                                                  \n#\n#\n\nrule check_rest_api_is_private when %api_gws !empty {     \n    %api_gws {\n        Properties.EndpointConfiguration.Types[*] == \"PRIVATE\"                             \n    }  \n}       \n\nrule check_rest_api_has_vpc_access when check_rest_api_is_private {\n    %api_gws {\n        Properties {\n            #\n            # ALL AWS::ApiGateway::RestApi resources in the template have one IAM condition key specified in the Policy property with \n            #     aws:sourceVpc or :SourceVpc\n            #           \n            some Policy.Statement[*] {\n                Condition.*[ keys == /aws:[sS]ource(Vpc|VPC|Vpce|VPCE)/ ] !empty\n            }\n        }\n    }\n}"
+                      }
+                    },
+                    "configRuleName": "API_GATEWAY_PRIVATE",
+                    "description": "API_GATEWAY_PRIVATE",
+                    "inputParameters": {}
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_config.CfnConfigRule",
+                  "version": "2.78.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_config.CustomPolicy",
+              "version": "2.78.0"
+            }
+          },
+          "API_GATEWAY_PRIVATERemediationConfiguration": {
+            "id": "API_GATEWAY_PRIVATERemediationConfiguration",
+            "path": "CdkStack/API_GATEWAY_PRIVATERemediationConfiguration",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::Config::RemediationConfiguration",
+              "aws:cdk:cloudformation:props": {
+                "configRuleName": "API_GATEWAY_PRIVATE",
+                "targetId": "AWS-PublishSNSNotification",
+                "targetType": "SSM_DOCUMENT",
+                "automatic": true,
+                "maximumAutomaticAttempts": 2,
+                "parameters": {
+                  "AutomationAssumeRole": {
+                    "StaticValue": {
+                      "Values": [
+                        {
+                          "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/sns-access"
+                        }
+                      ]
+                    }
+                  },
+                  "Message": {
+                    "StaticValue": {
+                      "Values": [
+                        "hi"
+                      ]
+                    }
+                  },
+                  "TopicArn": {
+                    "StaticValue": {
+                      "Values": [
+                        {
+                          "Fn::Sub": "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:rules-notification"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "resourceType": "AWS::EC2::Instance",
+                "retryAttemptSeconds": 2,
+                "targetVersion": "1"
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_config.CfnRemediationConfiguration",
+              "version": "2.78.0"
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "CdkStack/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "CdkStack/CDKMetadata/Default",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.78.0"
+                }
+              },
+              "Condition": {
+                "id": "Condition",
+                "path": "CdkStack/CDKMetadata/Condition",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnCondition",
+                  "version": "2.78.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.2.17"
+            }
+          },
+          "BootstrapVersion": {
+            "id": "BootstrapVersion",
+            "path": "CdkStack/BootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnParameter",
+              "version": "2.78.0"
+            }
+          },
+          "CheckBootstrapVersion": {
+            "id": "CheckBootstrapVersion",
+            "path": "CdkStack/CheckBootstrapVersion",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnRule",
+              "version": "2.78.0"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.78.0"
+        }
+      },
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree",
+        "constructInfo": {
+          "fqn": "constructs.Construct",
+          "version": "10.2.17"
+        }
+      }
+    },
+    "constructInfo": {
+      "fqn": "aws-cdk-lib.App",
+      "version": "2.78.0"
+    }
+  }
+}

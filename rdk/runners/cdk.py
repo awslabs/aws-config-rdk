@@ -34,6 +34,7 @@ class CdkRunner(BaseRunner):
         # shutil.rmtree(self.root_module / "cdk")
         # shutil.copytree(Path(__file__).resolve().parent.parent /'frameworks' / 'cdk', self.root_module / 'cdk')
         # self.cdk_app_dir = self.root_module / "cdk"
+        # TODO - should this actually be the CDK application's path? I don't understand what Ricky was doing here.
         self.cdk_app_dir = Path(__file__).resolve().parent.parent / "frameworks" / "cdk"
 
     def synthesize(self):
@@ -74,9 +75,20 @@ class CdkRunner(BaseRunner):
         Parameters:
 
         """
-        cmd = ["cdk", "diff", "--context", "rules_dir=" + self.rules_dir.as_posix()]
+        cmd = [
+            "cdk",
+            "diff",
+            "--context",
+            "rules_dir=" + self.rules_dir.as_posix(),
+        ]
 
-        self.logger.info("Showing differences on CloudFormation template(s)...")
+        self.logger.info(
+            f"Showing differences on CloudFormation template(s) for rule {self.rules_dir.as_posix()}..."
+        )
+
+        self.logger.info(
+            f"Running cmd {cmd} in directory {self.cdk_app_dir.as_posix()}..."
+        )
 
         self.run_cmd(
             cmd=cmd,
@@ -98,7 +110,7 @@ class CdkRunner(BaseRunner):
             "rules_dir=" + self.rules_dir.as_posix(),
         ]
 
-        self.logger.info("Envrionment Bootstrapping ...")
+        self.logger.info("Environment Bootstrapping ...")
 
         self.run_cmd(
             cmd=cmd,
@@ -116,6 +128,8 @@ class CdkRunner(BaseRunner):
         cmd = [
             "cdk",
             "deploy",
+            "--app",
+            (self.cdk_app_dir / "cdk.out").as_posix(),
             "--context",
             "rules_dir=" + self.rules_dir.as_posix(),
             "--require-approval",

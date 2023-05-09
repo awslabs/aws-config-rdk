@@ -8,7 +8,9 @@ import rdk.cli.commands.deploy as deploy_cmd
 import rdk.cli.commands.init as init_cmd
 import rdk.cli.commands.test as test_cmd
 import rdk.cli.commands.destroy as destroy_cmd
+import rdk.cli.commands.sample_ci as sample_ci_cmd
 import rdk.utils.logger as rdk_logger
+from rdk.core.get_accepted_resource_types import get_accepted_resource_types
 
 
 def main():
@@ -132,6 +134,19 @@ def main():
         "_pytest",
     )
 
+    # sample-ci
+    commands_parser_sample_ci = commands_parser.add_parser(
+        "sample-ci",
+        help="Provides a way to see sample configuration items for most supported resource types.",
+    )
+
+    commands_parser_sample_ci.add_argument(
+        "ci_type",
+        metavar="<resource type>",
+        help='Resource name (e.g. "AWS::EC2::Instance") to display a sample CI JSON document for.',
+        choices=get_accepted_resource_types(),
+    )
+
     # Parse all args and commands
     args = main_parser.parse_args()
 
@@ -171,4 +186,10 @@ def main():
         destroy_cmd.run(
             rulenames=args.rulename,
             dryrun=args.dryrun,
+        )
+
+    # handle: sample-ci
+    if args.command == "sample-ci":
+        sample_ci_cmd.run(
+            resource_type=args.ci_type,
         )

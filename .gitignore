@@ -248,6 +248,7 @@ ipython_config.py
 #   having no cross-platform support, pipenv may install dependencies that don't work, or not
 #   install all needed dependencies.
 #Pipfile.lock
+**.lock
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow
 __pypackages__/
@@ -267,6 +268,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+myenv/
 
 # Spyder project settings
 .spyderproject
@@ -364,3 +366,7 @@ docs/reference/cli.md
 docs/CHANGELOG.md
 
 ###############################################################################
+
+
+# CDK
+**/cdk.out/
