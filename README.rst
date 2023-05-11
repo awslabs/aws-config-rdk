@@ -345,6 +345,12 @@ To use this generated lambda layer, add the flag ``--generated-lambda-layer`` wh
 
 If you created layer with a custom name (by running ``rdk init --custom-lambda-layer``, add a similar ``custom-lambda-layer`` flag when running deploy.
 
+Support & Feedback
+==================
+
+This project is maintained by AWS Solution Architects and Consultants. It is not part of an AWS service and support is provided best-effort by the maintainers.
+To post feedback, submit feature ideas, or report bugs, please use the `Issues section <https://github.com/aws-samples/eks-cluster-upgrade/issues>`_ of this repo.
+
 Contributing
 ============
 
