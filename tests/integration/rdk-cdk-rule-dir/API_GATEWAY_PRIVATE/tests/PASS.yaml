@@ -1,0 +1,12 @@
+---
+- name: MyTest4
+  input:
+    Resources: 
+      apiGw:
+        Type: AWS::ApiGateway::RestApi
+        Properties:
+          EndpointConfiguration:
+            Types: "PRIVATE"
+  expectations:
+    rules:
+      check_rest_api_is_private: PASS

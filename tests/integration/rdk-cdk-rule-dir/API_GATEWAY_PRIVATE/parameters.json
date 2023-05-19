@@ -1,0 +1,45 @@
+{
+    "Version": "1.0",
+    "Parameters": {
+      "RuleName": "API_GATEWAY_PRIVATE",
+      "Description": "API_GATEWAY_PRIVATE",
+      "SourceRuntime": "guard-2.x.x",
+      "InputParameters": "{}",
+      "OptionalParameters": "{}",
+      "SourcePeriodic": "TwentyFour_Hours",
+      "Remediation": {
+        "Automatic": true,
+        "ConfigRuleName": "TEST_rule",
+        "MaximumAutomaticAttempts": "2",
+        "Parameters": {
+          "AutomationAssumeRole": {
+            "StaticValue": {
+              "Values": [
+                { "Fn::Sub": "arn:aws:iam::${AWS::AccountId}:role/sns-access" }
+              ]
+            }
+          },
+          "Message": {
+            "StaticValue": {
+              "Values": [
+                "hi"
+              ]
+            }
+          },
+          "TopicArn": {
+            "StaticValue": {
+              "Values": [
+                { "Fn::Sub": "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:rules-notification" }
+              ]
+            }
+          }
+        },
+        "ResourceType": "AWS::EC2::Instance",
+        "RetryAttemptSeconds": "2",
+        "TargetId": "AWS-PublishSNSNotification",
+        "TargetType": "SSM_DOCUMENT",
+        "TargetVersion": "1"
+      }
+    },
+    "Tags": "[]"
+}

@@ -1,0 +1,26 @@
+################################################################################
+# PYTHON COVERAGE CONFIGURATIONS
+################################################################################
+
+#
+# Reference:
+# https://coverage.readthedocs.io/en/latest/config.html
+#
+
+[run]
+branch = True
+
+[report]
+fail_under = 90
+
+[html]
+directory = .reports/coverage-html
+title = Coverage Report for rdk
+
+[xml]
+output = .reports/coverage.xml
+
+[json]
+output = .reports/coverage.json
+
+################################################################################

@@ -1,0 +1,47 @@
+{
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "name": "mborch-test-bucket-config-item",
+      "owner": {
+        "displayName": null,
+        "id": "8ac813c84b8ad4d9f3e35f80aaeb254f85922a902ce87ed6b49ccbfa188f5a12"
+      },
+      "creationDate": "2019-02-12T07:21:45.000Z"
+    },
+    "supplementaryConfiguration": {
+      "AccessControlList": "{\"grantSet\":null,\"grantList\":[{\"grantee\":{\"id\":\"8ac813c84b8ad4d9f3e35f80aaeb254f85922a902ce87ed6b49ccbfa188f5a12\",\"displayName\":null},\"permission\":\"FullControl\"}],\"owner\":{\"displayName\":null,\"id\":\"8ac813c84b8ad4d9f3e35f80aaeb254f85922a902ce87ed6b49ccbfa188f5a12\"},\"isRequesterCharged\":false}",
+      "BucketAccelerateConfiguration": {
+        "status": null
+      },
+      "BucketLoggingConfiguration": {
+        "destinationBucketName": null,
+        "logFilePrefix": null
+      },
+      "BucketNotificationConfiguration": {
+        "configurations": {}
+      },
+      "BucketPolicy": {
+        "policyText": "{\"Version\":\"2012-10-17\",\"Id\":\"Policy1478390053757\",\"Statement\":[{\"Sid\":\"Stmt1478389920384\",\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"s3:*\",\"Resource\":\"arn:aws:s3:::mborch-test-bucket-config-item\",\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"false\"}}}]}"
+      },
+      "BucketVersioningConfiguration": {
+        "status": "Enabled",
+        "isMfaDeleteEnabled": null
+      },
+      "IsRequesterPaysEnabled": false
+    },
+    "tags": {},
+    "configurationItemVersion": "1.3",
+    "configurationItemCaptureTime": "2019-02-12T07:29:16.288Z",
+    "configurationStateId": 1549956556288,
+    "awsAccountId": "934654633380",
+    "configurationItemStatus": "OK",
+    "resourceType": "AWS::S3::Bucket",
+    "resourceId": "mborch-test-bucket-config-item",
+    "resourceName": "mborch-test-bucket-config-item",
+    "ARN": "arn:aws:s3:::mborch-test-bucket-config-item",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Regional",
+    "configurationStateMd5Hash": "",
+    "resourceCreationTime": "2019-02-12T07:21:45.000Z"
+  }

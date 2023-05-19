@@ -1,0 +1,20 @@
+---
+- name: MyTest3
+  input:
+    Resources: 
+      apiGw:
+        Type: AWS::ApiGateway::RestApi
+  expectations:
+    rules:
+      check_rest_api_is_private_and_has_access: FAIL
+- name: MyTest5
+  input:
+    Resources: 
+      apiGw:
+        Type: AWS::ApiGateway::RestApi
+        Properties:
+          EndpointConfiguration:
+            Types: [PRIVATE, REGIONAL]
+  expectations:
+    rules:
+      check_rest_api_is_private: FAIL

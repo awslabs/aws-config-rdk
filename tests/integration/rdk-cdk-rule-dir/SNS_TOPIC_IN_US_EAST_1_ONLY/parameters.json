@@ -1,0 +1,12 @@
+{
+    "Version": "1.0",
+    "Parameters": {
+      "RuleName": "SNS_TOPIC_IN_US_EAST_1_ONLY",
+      "Description": "SNS_TOPIC_IN_US_EAST_1_ONLY",
+      "SourceRuntime": "guard-2.x.x",
+      "InputParameters": "{}",
+      "OptionalParameters": "{}",
+      "SourcePeriodic": "TwentyFour_Hours"
+    },
+    "Tags": "[]"
+  }
