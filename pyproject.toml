@@ -1,124 +1,90 @@
-###############################################################################
-# PYTHON PROJECT CONFIGS
-###############################################################################
-
-# -----------------------------------------------------------------------------
-# BLACK
-# -----------------------------------------------------------------------------
-[tool.black]
-target-version = ["py38"]
-
-# -----------------------------------------------------------------------------
-# ISORT
-# -----------------------------------------------------------------------------
-[tool.isort]
-profile = "black"
-virtual_env = ".venv"
-
-# -----------------------------------------------------------------------------
-# PYLINT
-# -----------------------------------------------------------------------------
-[tool.pylint.MASTER]
-
-# Load Plugins
-# pylint_pytest: Suppress pytest related false-positives
-# pylint_json2html: Support jsonextended output-format
-load-plugins = "pylint_pytest,pylint_json2html"
-
-# Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
-# number of processors available to use.
-jobs = 0
-
-# Pickle collected data for later comparisons.
-persistent = "no"
-
-# Min score threshold
-fail-under = "9.0"
-
-# Files or directories to be skipped. They should be base names, not paths.
-ignore = "mugc.py"
-
-[tool.pylint.BASIC]
-
-# Naming conventions
-# Allowed: lower-cased single words, or snake_case words
-attr-rgx =  "^(?:[a-z0-9_]+)$"
-argument-rgx =  "^(?:[a-z0-9_]+)$"
-variable-rgx =  "^(?:[a-z0-9_]+)$"
-inlinevar-rgx =  "^(?:[a-z0-9_]+)$"
-
-# Display hints on above naming conventions
-include-naming-hint = "yes"
-
-[tool.pylint."MESSAGES CONTROL"]
-
-# Why?
-# * broad-except: We are trying to catch all exceptions
-# * duplicate-code: Caused by similar import statements
-# * line-too-long: black takes care of this
-# * logging-fstring-interpolation: why would we NOT use f-strings ever
-# * missing-module-docstring: we document each function/class/method
-
-disable = """
-broad-except,
-duplicate-code,
-line-too-long,
-logging-fstring-interpolation,
-missing-module-docstring,
-"""
-
-# -----------------------------------------------------------------------------
-# PYTEST
-# -----------------------------------------------------------------------------
-[tool.pytest.ini_options]
-
-# classes called `Test`
-# https://docs.pytest.org/en/latest/example/pythoncollection.html#changing-naming-conventions
-python_files = "test_*.py"
-python_classes = "PyTest"
-python_functions = "test_*"
-
-# CLI Options
-addopts = """\
-  --exitfirst \
-  --strict-config \
-  -vv \
-  -p no:warnings \
-  --junit-xml=.reports/junit.xml \
-  --report-log=.reports/pytest-log.json \
-  --cov=rdk \
-  --cov-config=.coveragerc \
-  --no-cov-on-fail \
-  --cov-report=term \
-  --cov-report=html \
-  --cov-report=xml
-  """
-
-# Enable `pytest` CLI logging
-log_cli       = true
-log_cli_level = "INFO"
-
-# Set package log level
-log_level = "DEBUG"
-log_date_format = "%Y-%m-%dT%H:%M:%S%z"
-log_format = "%(asctime)s | %(levelname)-8s | %(message)s"
-
-# Junit suite-name
-junit_suite_name = "rdk"
-
-# pytest-console-scripts options
-script_launch_mode = "subprocess"
-
-# pytest-env
-env = [
-  # Fake creds for moto
-  "AWS_ACCESS_KEY_ID=testing",
-  "AWS_SECRET_ACCESS_KEY=testing",
-  "AWS_SESSION_TOKEN=testing",
-  "AWS_SECURITY_TOKEN=testing",
-  "AWS_DEFAULT_REGION=us-east-1",
-  "AWS_REGION=us-east-1",
-  "MOTO_ACCOUNT_ID=123456789012",
+#    Copyright 2023 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
+#
+#        http://aws.amazon.com/apache2.0/
+#
+#    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+[tool.poetry]
+name = "rdk"
+version = "0.13.0"
+description = "Rule Development Kit CLI for AWS Config"
+authors = [
+    "AWS RDK Maintainers <rdk-maintainers@amazon.com>",
 ]
+repository = "https://github.com/awslabs/aws-config-rdk"
+homepage = "https://github.com/awslabs/aws-config-rdk"
+readme = "README.rst"
+packages = [{include = "rdk"}]
+keywords = ["amazon", "aws", "awslabs", "rdk", "config", "rules", "compliance"]
+documentation = "https://aws-config-rdk.readthedocs.io"
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+]
+include = [
+    "README.rst",
+    "NOTICE.txt",
+    "LICENSE",
+    "rdk/template/*",
+    "rdk/template/terraform/*",
+    "rdk/template/terraform/0.11/*",
+    "rdk/template/terraform/0.12/*",
+    "rdk/template/example_ci/*",
+    "rdk/template/runtime/*",
+    "rdk/template/runtime/java8/*",
+    "rdk/template/runtime/java8/jars/*",
+    "rdk/template/runtime/java8/src/main/java/com/rdk/*",
+    "rdk/template/runtime/nodejs4.3/*",
+    "rdk/template/runtime/python3.7/*",
+    "rdk/template/runtime/python3.7-lib/*",
+    "rdk/template/runtime/python3.8/*",
+    "rdk/template/runtime/python3.8-lib/*",
+    "rdk/template/runtime/python3.9/*",
+    "rdk/template/runtime/python3.9-lib/*",
+    "rdk/template/runtime/dotnetcore1.0/*",
+    "rdk/template/runtime/dotnetcore1.0/bin/*",
+    "rdk/template/runtime/dotnetcore1.0/obj/*",
+    "rdk/template/runtime/dotnetcore1.0/obj/Debug/*",
+    "rdk/template/runtime/dotnetcore1.0/obj/Release/netcoreapp1.0/*",
+    "rdk/template/runtime/dotnetcore1.0/obj/Release/netcoreapp2.0/*",
+    "rdk/template/runtime/dotnetcore2.0/*",
+    "rdk/template/runtime/dotnetcore2.0/bin/*",
+    "rdk/template/runtime/dotnetcore2.0/obj/*",
+    "rdk/template/runtime/dotnetcore2.0/obj/Debug/*",
+    "rdk/template/runtime/dotnetcore2.0/obj/Release/netcoreapp1.0/*",
+    "rdk/template/runtime/dotnetcore2.0/obj/Release/netcoreapp2.0/*",
+]
+license = "Apache-2.0"
 
-###############################################################################
+[tool.poetry.scripts]
+rdk = "rdk.cli:main"
+
+[tool.poetry.extras]
+rdklib = ["rdklib"]
+
+[tool.poetry.dependencies]
+python = "^3.7.2"
+boto3 = "^1.26.44"
+pyyaml = "^6.0"
+
+[tool.poetry.group.dev.dependencies]
+rdklib = "^0.3.0"
+black = "^22.12.0"
+pydocstyle = "^6.2.2"
+isort = {extras = ["toml"], version = "^5.11.4"}
+mypy = "^0.991"
+pylint = "^2.15.9"
+
+[tool.poetry.group.security.dependencies]
+bandit = "^1.7.4"
+safety = "^2.3.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
