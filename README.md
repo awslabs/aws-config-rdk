@@ -15,7 +15,7 @@ custom lambda functions, and provides a streamlined
 develop-deploy-monitor iterative process.
 
 For complete documentation, including command reference, check out the
-[ReadTheDocs documentation](https://rdk.readthedocs.io/en/latest/).
+[ReadTheDocs documentation](https://aws-config-rdk.readthedocs.io/).
 
 ## Getting Started
 
