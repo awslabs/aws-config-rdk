@@ -95,6 +95,8 @@ ruff = "ruff check --fix rdk"
 safety = "safety check"
 bandit = "bandit -r rdk"
 security = ["safety", "bandit"]
+update-doc-deps = {cmd = "poetry export --only=docs -f requirements.txt > docs/requirements.txt", help = "Generate an updated requirements.txt for docs" }
+serve-docs = {cmd = "mkdocs serve"}
 # requires poethepoet outside of poetry.
 install = "poetry install"
 build = "poetry build"
