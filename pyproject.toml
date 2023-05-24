@@ -14,7 +14,7 @@ authors = [
 ]
 repository = "https://github.com/awslabs/aws-config-rdk"
 homepage = "https://github.com/awslabs/aws-config-rdk"
-readme = "README.rst"
+readme = "README.md"
 packages = [{include = "rdk"}]
 keywords = ["amazon", "aws", "awslabs", "rdk", "config", "rules", "compliance"]
 documentation = "https://aws-config-rdk.readthedocs.io"
@@ -27,7 +27,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
 ]
 include = [
-    "README.rst",
+    "README.md",
     "NOTICE.txt",
     "LICENSE",
     "rdk/template/*",
@@ -95,6 +95,8 @@ ruff = "ruff check --fix rdk"
 safety = "safety check"
 bandit = "bandit -r rdk"
 security = ["safety", "bandit"]
+update-doc-deps = {cmd = "poetry export --only=docs -f requirements.txt > docs/requirements.txt", help = "Generate an updated requirements.txt for docs" }
+serve-docs = {cmd = "mkdocs serve"}
 # requires poethepoet outside of poetry.
 install = "poetry install"
 build = "poetry build"
@@ -120,6 +122,13 @@ safety = "^2.3.5"
 [tool.poetry.group.types.dependencies]
 types-pyyaml = "^6.0.12.10"
 boto3-stubs = {extras = ["cloudformation", "config", "iam", "s3", "sts"], version = "^1.26.139"}
+
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.4.3"
+mkdocs-material = "^9.1.14"
+mkdocstrings-python = "^1.0.0"
+markdown-include = "^0.8.1"
 
 [build-system]
 requires = ["poetry-core"]
