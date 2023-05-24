@@ -7,7 +7,7 @@
 #    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 [tool.poetry]
 name = "rdk"
-version = "0.13.0"
+version = "0.14.0"
 description = "Rule Development Kit CLI for AWS Config"
 authors = [
     "AWS RDK Maintainers <rdk-maintainers@amazon.com>",
@@ -67,23 +67,62 @@ rdk = "rdk.cli:main"
 [tool.poetry.extras]
 rdklib = ["rdklib"]
 
+[tool.bandit]
+exclude_dirs = ["tests"]
+
+# Styling and linting Configurations
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.poe.tasks]
+isort = "isort --profile=black ."
+black = "black ."
+check-black = {cmd = "black . --check --diff", help = "Check code for black styling"}
+check-isort = {cmd = "isort --check --profile=black .", help = "Check code for import styling"}
+check-docstrings = "pydocstyle -e ."
+check-ruff = "ruff check rdk"
+check = ["check-isort", "check-black"]
+lint = ["check-docstrings", "check-ruff"]
+fix = ["isort", "black"]
+# test = "pytest --cov=rdk --cov-report=xml --cov-report=term"
+ruff = "ruff check --fix rdk"
+safety = "safety check"
+bandit = "bandit -r rdk"
+security = ["safety", "bandit"]
+# requires poethepoet outside of poetry.
+install = "poetry install"
+build = "poetry build"
+
 [tool.poetry.dependencies]
 python = "^3.7.2"
-boto3 = "^1.26.44"
+boto3 = "^1.26.139"
 pyyaml = "^6.0"
 
 [tool.poetry.group.dev.dependencies]
 rdklib = "^0.3.0"
 black = "^22.12.0"
-pydocstyle = "^6.2.2"
+pydocstyle = "^6.3.0"
 isort = {extras = ["toml"], version = "^5.11.4"}
-mypy = "^0.991"
-pylint = "^2.15.9"
+mypy = "^1.3.0"
+debugpy = "^1.6.7"
+ruff = "^0.0.269"
 
 [tool.poetry.group.security.dependencies]
-bandit = "^1.7.4"
+bandit = "^1.7.5"
 safety = "^2.3.5"
 
+[tool.poetry.group.types.dependencies]
+types-pyyaml = "^6.0.12.10"
+boto3-stubs = {extras = ["cloudformation", "config", "iam", "s3", "sts"], version = "^1.26.139"}
 
 [build-system]
 requires = ["poetry-core"]
