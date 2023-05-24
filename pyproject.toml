@@ -64,9 +64,6 @@ license = "Apache-2.0"
 [tool.poetry.scripts]
 rdk = "rdk.cli:main"
 
-[tool.poetry.extras]
-rdklib = ["rdklib"]
-
 [tool.bandit]
 exclude_dirs = ["tests"]
 
