@@ -121,6 +121,13 @@ safety = "^2.3.5"
 types-pyyaml = "^6.0.12.10"
 boto3-stubs = {extras = ["cloudformation", "config", "iam", "s3", "sts"], version = "^1.26.139"}
 
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.4.3"
+mkdocs-material = "^9.1.14"
+mkdocstrings-python = "^1.0.0"
+markdown-include = "^0.8.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
