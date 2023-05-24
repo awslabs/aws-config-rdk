@@ -45,7 +45,6 @@ jobs:
         with:
           discussion_category_name: announcements
           generate_release_notes: true
-          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           files: |
             dist/rdk-${{env.MODULE_VERSION}}-py3-none-any.whl
             dist/rdk-${{env.MODULE_VERSION}}.tar.gz
