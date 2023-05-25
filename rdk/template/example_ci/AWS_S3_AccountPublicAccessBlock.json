@@ -1,0 +1,23 @@
+{
+    "version": "1.3",
+    "accountId": "123456789012",
+    "configurationItemCaptureTime": "2022-05-20T15:53:57.732Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1653062037732",
+    "configurationItemMD5Hash": "",
+    "resourceType": "AWS::S3::AccountPublicAccessBlock",
+    "resourceId": "123456789012",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Not Applicable",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+      "blockPublicAcls": true,
+      "ignorePublicAcls": true,
+      "blockPublicPolicy": true,
+      "restrictPublicBuckets": true
+    },
+    "supplementaryConfiguration": {},
+    "resourceTransitionStatus": "None"
+  }
