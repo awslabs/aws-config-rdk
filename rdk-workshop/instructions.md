@@ -113,7 +113,7 @@ Note: It might take up to 2 hours to get the information about the CIS benchmark
 ## (Optional) Going further
 7. Discover all the available [Managed Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html).
 
-8. Navigate to [AWS System Manager Automation Documents](https://eu-west-1.console.aws.amazon.com/systems-manager/documents?region=eu-west-1) to discover all existing remediation actions.
+8. Navigate to [AWS System Manager Automation Documents](https://us-east-1.console.aws.amazon.com/systems-manager/documents?region=us-east-1) to discover all existing remediation actions.
 
 
 # Lab 2: Writing Your First Config Rule

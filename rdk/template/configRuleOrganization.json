@@ -200,14 +200,6 @@
             "Version": "2012-10-17",
             "Statement": [
               {
-                "Sid": "1",
-                "Action": [
-                  "s3:GetObject"
-                ],
-                "Effect": "Allow",
-                "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${SourceBucket}/${SourcePath}" }
-              },
-              {
                 "Sid": "2",
                 "Action": [
                   "logs:CreateLogGroup",
@@ -230,7 +222,6 @@
                 "Sid": "4",
                 "Action": [
                   "iam:List*",
-                  "iam:Describe*",
                   "iam:Get*"
                 ],
                 "Effect": "Allow",

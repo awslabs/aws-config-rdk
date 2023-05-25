@@ -19,7 +19,7 @@ For complete documentation, including command reference, check out the
 
 ## Getting Started
 
-Uses python 3.7/3.8/3.9 and is installed via pip. Requires you to have
+Uses Python 3.7+ and is installed via pip. Requires you to have
 an AWS account and sufficient permissions to manage the Config service,
 and to create S3 Buckets, Roles, and Lambda Functions. An AWS IAM Policy
 Document that describes the minimum necessary permissions can be found
@@ -126,7 +126,7 @@ rule and populate it with several files, including a skeleton of your
 Lambda code.
 
 ```bash
-rdk create MyRule --runtime python3.8 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
+rdk create MyRule --runtime python3.10 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
 Running create!
 Local Rule files created.
 ```
@@ -220,7 +220,7 @@ will overwrite existing values, any that you do not specify will not be
 changed.
 
 ```bash
-rdk modify MyRule --runtime python3.9 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
+rdk modify MyRule --runtime python3.10 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
 Running modify!
 Modified Rule 'MyRule'.  Use the `deploy` command to push your changes to AWS.
 ```
@@ -239,7 +239,7 @@ Once you have completed your compliance validation code and set your
 Rule's configuration, you can deploy the Rule to your account using the
 `deploy` command. This will zip up your code (and the other associated
 code files, if any) into a deployable package (or run a gradle build if
-you have selected the java8 runtime or run the lambda packaging step
+you have selected the java8 runtime or run the Lambda packaging step
 from the dotnet CLI if you have selected the dotnetcore1.0 runtime),
 copy that zip file to S3, and then launch or update a CloudFormation
 stack that defines your Config Rule, Lambda function, and the necessary
@@ -272,8 +272,8 @@ You can also deploy the Rule to your AWS Organization using the
 `deploy-organization` command. For successful evaluation of custom rules
 in child accounts, please make sure you do one of the following:
 
-1. Set ASSUME_ROLE_MODE in Lambda code to True, to get the lambda to assume the Role attached on the Config Service and confirm that the role trusts the master account where the Lambda function is going to be deployed.
-2. Set ASSUME_ROLE_MODE in Lambda code to True, to get the lambda to assume a custom role and define an optional parameter with key as ExecutionRoleName and set the value to your custom role name; confirm that the role trusts the master account of the organization where the Lambda function will be deployed.
+1. Set ASSUME_ROLE_MODE in Lambda code to True, to get the Lambda to assume the Role attached on the Config Service and confirm that the role trusts the master account where the Lambda function is going to be deployed.
+2. Set ASSUME_ROLE_MODE in Lambda code to True, to get the Lambda to assume a custom role and define an optional parameter with key as ExecutionRoleName and set the value to your custom role name; confirm that the role trusts the master account of the organization where the Lambda function will be deployed.
 
 ```bash
 rdk deploy-organization MyRule
@@ -300,7 +300,7 @@ doesn't exist within 7 hours of adding an account to your organization.
 ### View Logs For Deployed Rule
 
 Once the Rule has been deployed to AWS you can get the CloudWatch logs
-associated with your lambda function using the `logs` command.
+associated with your Lambda function using the `logs` command.
 
 ```bash
 rdk logs MyRule -n 5
@@ -321,8 +321,8 @@ make sure it is behaving as expected.
 
 The `testing` directory contains scripts and buildspec files that I use
 to run basic functionality tests across a variety of CLI environments
-(currently Ubuntu linux running python 3.7/3.8/3.9, and Windows Server
-running python3.9). If there is interest I can release a CloudFormation
+(currently Ubuntu Linux running Python 3.7/3.8/3.9/3.10, and Windows Server
+running Python 3.10). If there is interest I can release a CloudFormation
 template that could be used to build the test environment, let me know
 if this is something you want!
 
@@ -340,10 +340,10 @@ are used by other teams or departments. This gives the compliance team
 confidence that their rule logic cannot be tampered with and makes it
 much easier for them to modify rule logic without having to go through a
 complex deployment process to potentially hundreds of AWS accounts. The
-cross-account pattern uses two advanced RDK features
+cross-account pattern uses two advanced RDK features:
 
-- Functions-only deployment
-- create-rule-template command
+- `--functions-only` (`-f`) deployment
+- `create-rule-template` command
 
 #### Functions-Only Deployment
 
@@ -369,8 +369,8 @@ This command generates a CloudFormation template that defines the AWS
 Config rules themselves, along with the Config Role, Config data bucket,
 Configuration Recorder, and Delivery channel necessary for the Config
 rules to work in a satellite account. You must specify the file name for
-the generated template using the [--output-file]{.title-ref} or
-[o]{.title-ref} command line flags. The generated template takes a
+the generated template using the `--output-file` or
+`-o` command line flags. The generated template takes a
 single parameter of the AccountID of the central compliance account that
 contains the Lambda functions that will back your custom Config Rules.
 The generated template can be deployed in the desired satellite accounts
@@ -394,7 +394,7 @@ by rdk. To disable the supported resource check use the optional flag
 '--skip-supported-resource-check' during the create command.
 
 ```bash
-rdk create MyRule --runtime python3.8 --resource-types AWS::New::ResourceType --skip-supported-resource-check
+rdk create MyRule --runtime python3.10 --resource-types AWS::New::ResourceType --skip-supported-resource-check
 'AWS::New::ResourceType' not found in list of accepted resource types.
 Skip-Supported-Resource-Check Flag set (--skip-supported-resource-check), ignoring missing resource type error.
 Running create!
@@ -413,7 +413,7 @@ performing `rdk create`. This opens up new features like :
 2. Custom lambda function naming as per personal or enterprise standards.
 
 ```bash
-rdk create MyLongerRuleName --runtime python3.8 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
+rdk create MyLongerRuleName --runtime python3.10 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
 Running create!
 Local Rule files created.
 ```
@@ -533,21 +533,21 @@ are happy to help and discuss.
 
 ## Contacts
 
-- **Benjamin Morris** - [bmorrissirromb](https://github.com/bmorrissirromb) - *current maintainer*
-- **Julio Delgado Jr** - [tekdj7](https://github.com/tekdj7) - *current maintainer*
+- **Benjamin Morris** - [bmorrissirromb](https://github.com/bmorrissirromb) - _current maintainer_
+- **Julio Delgado Jr** - [tekdj7](https://github.com/tekdj7) - _current maintainer_
 
 ## Past Contributors
 
-- **Michael Borchert** - *Original Python version*
-- **Jonathan Rault** - *Original Design, testing, feedback*
-- **Greg Kim and Chris Gutierrez** - *Initial work and CI definitions*
-- **Henry Huang** - *Original CFN templates and other code*
-- **Santosh Kumar** - *maintainer*
-- **Jose Obando** - *maintainer*
-- **Jarrett Andrulis** - [jarrettandrulis](https://github.com/jarrettandrulis) - *maintainer*
-- **Sandeep Batchu** - [batchus](https://github.com/batchus) - *maintainer*
-- **Mark Beacom** - [mbeacom](https://github.com/mbeacom) - *maintainer*
-- **Ricky Chau** - [rickychau2780](https://github.com/rickychau2780) - *maintainer*
+- **Michael Borchert** - _Original Python version_
+- **Jonathan Rault** - _Original Design, testing, feedback_
+- **Greg Kim and Chris Gutierrez** - _Initial work and CI definitions_
+- **Henry Huang** - _Original CFN templates and other code_
+- **Santosh Kumar** - _maintainer_
+- **Jose Obando** - _maintainer_
+- **Jarrett Andrulis** - [jarrettandrulis](https://github.com/jarrettandrulis) - _maintainer_
+- **Sandeep Batchu** - [batchus](https://github.com/batchus) - _maintainer_
+- **Mark Beacom** - [mbeacom](https://github.com/mbeacom) - _maintainer_
+- **Ricky Chau** - [rickychau2780](https://github.com/rickychau2780) - _maintainer_
 
 ## License
 
