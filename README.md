@@ -13,6 +13,17 @@ Because these changes have the potential to be breaking changes, this will initi
 
 Add README.md from RDK v0 here.
 
+pyproject toml should replace bandit, coverage -- use RDK 0.14.0+ as template
+
+remove python version/terraform
+
+Remove Pipfile configuration, move anything important into the poetry dev grouping
+    doc dependency group, test dependency group (eg. moto, mypy), dev dependency group (eg. pylint)
+    
+Makefile can be replaced by poetry's poethepoet taskrunner 
+    Makefiles are misused!
+    Look to eks-cluster-upgrade for example
+
 
 # Developer Instructions
 
