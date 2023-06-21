@@ -82,6 +82,7 @@ class BaseRunner:
             # We're only dealing with text streams for now
             "universal_newlines": True,
             "shell": True,  # Added to make this work for Windows environments
+            "encoding": "utf8",
         }
         if cwd:
             subprocess_popen_kwargs["cwd"] = cwd
@@ -89,15 +90,13 @@ class BaseRunner:
             subprocess_popen_kwargs["env"] = env
 
         # Command output log handling flags
-        # By default, we log stderr as INFO,
-        # but relog it as ERROR upon a failure
+        #
         loglevel_stdout = logging.INFO
-        loglevel_stderr = logging.INFO
+        loglevel_stderr = logging.ERROR
 
         # What are we doing with outputs?
-        if capture_output or discard_output:
+        if discard_output:
             loglevel_stdout = logging.DEBUG
-            loglevel_stderr = logging.ERROR
 
         # Linter ignores:
         # * mypy is not happy about `subprocess_run_kwargs`, it thinks we are
@@ -113,77 +112,51 @@ class BaseRunner:
 
         # Run
         try:
-            with subprocess.Popen(**subprocess_popen_kwargs) as process:  # type: ignore[call-overload] # nosec
-                # Read stdout and stderr streams
-                selctr = selectors.DefaultSelector()
-                for _maybe_fileobj in [process.stdout, process.stderr]:
-                    if _maybe_fileobj is not None:
-                        selctr.register(
-                            fileobj=_maybe_fileobj, events=selectors.EVENT_READ
+            process = subprocess.Popen(**subprocess_popen_kwargs)  # type: ignore[call-overload] # nosec
+
+            # Parse and log response from the process communicate()
+            def print_parsed_response(input_data: tuple):
+                for input_response in input_data:
+                    if not input_response:
+                        continue
+                    # Prettify lines
+                    _line_no_escapes = re.sub(
+                        # Remove all escape sequences
+                        # https://superuser.com/a/380778
+                        r"\x1b\[[0-9;]*[a-zA-Z]",
+                        "",
+                        input_response,
+                    )
+                    _line_rstripped = _line_no_escapes.rstrip()
+                    _line_stripped = _line_no_escapes.strip()
+
+                    if _line_stripped:  # and capture_output
+                        captured_stdout_lines.append(_line_stripped)
+                    log_level = loglevel_stdout
+                    if re.search("Error", input_response):
+                        log_level = logging.ERROR
+                    if _line_rstripped:
+                        self.logger.log(
+                            level=log_level,
+                            msg=_line_rstripped,
                         )
 
-                def _log_streams(is_final: bool = False):
-                    """
-                    Log stuff based on stdout or stderr.
-                    """
-                    # Log streaming currently fails for Windows
-                    # OSError: [WinError 10038] An operation was attempted on something that is not a socket
-                    # Capture the error for now.
-                    try:
-                        selctr.select()
-                    except Exception as ex:
-                        return  # TODO - actually implement this for Windows
-                    for _selkey, _ in selctr.select():
-                        # NOTE: Selector key can be empty
-                        if _selkey:
-                            this_fileobj: TextIO = _selkey.fileobj  # type: ignore
-                            for _line in iter(this_fileobj.readline, ""):
-                                # Fixup lines
-                                _line_no_escapes = re.sub(
-                                    # Remove all escape sequences
-                                    # https://superuser.com/a/380778
-                                    r"\x1b\[[0-9;]*[a-zA-Z]",
-                                    "",
-                                    _line,
-                                )
-                                _line_rstripped = _line_no_escapes.rstrip()
-                                _line_stripped = _line_no_escapes.strip()
+            def _log_streams():
+                output = process.communicate()
+                print_parsed_response(output)
+                # print_parsed_response(stderr, loglevel_stderr)
+                return
 
-                                # Decide what to do with them ...
-                                if this_fileobj is process.stdout:
-                                    # This line is a stdout
-                                    if capture_output and _line_stripped:
-                                        captured_stdout_lines.append(_line_stripped)
-                                    if _line_rstripped:
-                                        self.logger.log(
-                                            level=loglevel_stdout,
-                                            msg=_line_rstripped,
-                                        )
-                                if this_fileobj is process.stderr:
-                                    # This line is a stderr
-                                    if _line_stripped:
-                                        captured_stderr_lines.append(_line_stripped)
-                                    if _line_rstripped:
-                                        self.logger.log(
-                                            level=loglevel_stderr,
-                                            msg=_line_rstripped,
-                                        )
+            # Process streams while the command is running
+            while process.poll() is None:
+                _log_streams()
 
-                                # If this is not the final call, iterate
-                                # over each selector alternatively
-                                if not is_final:
-                                    break
+            # Again, if stuff is leftover in the file descriptors
+            # time.sleep(0.10)
+            # _log_streams()
 
-                # Process streams while the command is running
-                while process.poll() is None:
-                    _log_streams()
-
-                # Again, if stuff is leftover in the fd's
-                time.sleep(0.10)
-                _log_streams(is_final=True)
-
-                # Get return code
-                return_code = process.returncode
+            # Get return code
+            return_code = process.returncode
         except Exception as exc:
             self.logger.exception(exc)
             raise RdkCommandInvokeError("Failed to invoke requested command") from exc
@@ -200,7 +173,7 @@ class BaseRunner:
         if capture_output:
             return "\n".join(captured_stdout_lines)
 
-        return "OK"
+        return return_code
 
     def get_python_executable(self) -> str:  # pylint: disable=no-self-use
         """

@@ -11,4 +11,4 @@ def run():
     logger = get_main_logger()
     logger.info("AWS Config deploy organization is starting ...")
 
-    sys.exit(print("RDK deploying to organization"))
+    sys.exit(print("NOT IMPLEMENTED YET - RDK would deploy to Organization"))

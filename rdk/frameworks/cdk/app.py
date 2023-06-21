@@ -1,23 +1,40 @@
 #!/usr/bin/env python
 import os
+from pathlib import Path
 
 import aws_cdk as cdk
 from cdk.cdk_stack import CdkStack
+from aws_cdk import DefaultStackSynthesizer
 
+"""
+NOTES
+
+This CDK app is expected to be executed from the `frameworks\cdk` folder.
+
+This module supports two execution modes.
+1. ALL
+Deploys all the rules in the rules directory
+A CFT stack will be created/updated for each rule in the directory
+
+2. Specific Rules
+Deploys the specified rules that were passed to the RDK CLI
+A CFT stack will be created/updated for each specified rule
+"""
 app = cdk.App()
-CdkStack(
-    app,
-    "CdkStack",
-    # If you don't specify 'env', this stack will be environment-agnostic.
-    # Account/Region-dependent features and context lookups will not work,
-    # but a single synthesized template can be deployed anywhere.
-    # Uncomment the next line to specialize this stack for the AWS Account
-    # and Region that are implied by the current CLI configuration.
-    # env=cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION')),
-    # Uncomment the next line if you know exactly what Account and Region you
-    # want to deploy the stack to. */
-    # env=cdk.Environment(account='123456789012', region='us-east-1'),
-    # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
-)
+rules_dir = Path(app.node.try_get_context("rules_dir"))
+rulename_str: str = app.node.try_get_context("rulename")
+rule_names = rulename_str.split("|")  # Assumes a pipe-delimited list of rulenames
+if not rule_names:
+    raise Exception("Need either --all or specific rule name(s).")
+
+for rule_name in rule_names:
+    CdkStack(
+        scope=app,
+        construct_id=rule_name.replace("_", ""),
+        rule_name=rule_name,
+        rules_dir=rules_dir,
+        # Suppresses Bootstrap-related conditions and metadata
+        synthesizer=DefaultStackSynthesizer(generate_bootstrap_version_rule=False),
+    )
 
 app.synth()

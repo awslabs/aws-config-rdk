@@ -11,4 +11,4 @@ def run():
     logger = get_main_logger()
     logger.info("AWS Config create is starting ...")
 
-    sys.exit(print("RDK create"))
+    sys.exit(print("NOT IMPLEMENTED YET - RDK would create a new rule folder"))

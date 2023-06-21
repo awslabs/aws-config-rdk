@@ -1,0 +1,3 @@
+rule MyCustomPolicy when resourceType IN ['AWS::SNS::Topic'] {
+    awsRegion == "us-east-1"
+}

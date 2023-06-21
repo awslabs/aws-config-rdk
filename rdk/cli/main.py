@@ -7,7 +7,7 @@ import rdk as this_pkg
 import rdk.cli.commands.deploy as deploy_cmd
 import rdk.cli.commands.init as init_cmd
 import rdk.cli.commands.test as test_cmd
-import rdk.cli.commands.destroy as destroy_cmd
+import rdk.cli.commands.undeploy as destroy_cmd
 import rdk.cli.commands.sample_ci as sample_ci_cmd
 import rdk.utils.logger as rdk_logger
 from rdk.core.get_accepted_resource_types import get_accepted_resource_types
@@ -57,47 +57,67 @@ def main():
         help=f"Use {this_pkg.NAME} <command> --help for detailed usage",
     )
 
-    # init
+    # Reusable arguments
+    rulename_arg = {
+        "dest": "rulename",
+        "metavar": "<rulename>",
+        "nargs": "*",
+        "default": "",
+        "help": "Rule name(s) to perform this command on.",
+    }
+    dryrun_name_or_flags = [
+        "-n",
+        "--dryrun",
+    ]
+    dryrun_arg = {
+        "dest": "dryrun",
+        "action": "store_true",
+        "default": False,
+        "help": "Dry run mode",
+    }
+
+    all_arg = {
+        "dest": "all",
+        "action": "store_true",
+        "default": False,
+        "help": "If specified, runs the RDK command for all rules in the directory.",
+    }
+
+    rule_dir_arg = {
+        "dest": "rules_dir",
+        "default": os.getcwd(),
+        "help": "This arg is mainly used for testing -- it allows you to specify a different rule directory than the CWD as the holder of RDK rule folders",
+    }
+
+    # COMMAND-SPECIFIC PARSERS
+
+    # INIT
     commands_parser.add_parser(
         "init",
         help="Sets up AWS Config.  This will enable configuration recording in AWS and ensure necessary S3 buckets and IAM Roles are created.",
     )
 
-    # deploy
+    # DEPLOY
     commands_parser_deploy = commands_parser.add_parser(
         "deploy",
         help="deploy AWS Config Rules",
     )
 
-    commands_parser_deploy.add_argument(
-        "rulename",
-        metavar="<rulename>",
-        nargs="*",
-        default="",
-        help="Rule name(s) to deploy.  Rule(s) will be pushed to AWS.",
-    )
+    # Can either specify rule names or --all
+    rule_args_parser_deploy = commands_parser_deploy.add_mutually_exclusive_group()
+    rule_args_parser_deploy.add_argument(**rulename_arg)
+    rule_args_parser_deploy.add_argument("--all", **all_arg)
 
-    commands_parser_deploy.add_argument(
-        "-n",
-        "--dryrun",
-        action="store_true",
-        default=False,
-        help="Dry run mode",
-    )
+    commands_parser_deploy.add_argument("--rules-dir", **rule_dir_arg)
+    commands_parser_deploy.add_argument(*dryrun_name_or_flags, **dryrun_arg)
 
-    # test
+    # TEST
     commands_parser_test = commands_parser.add_parser(
         "test",
         help="deploy AWS Config Rules",
     )
 
-    commands_parser_test.add_argument(
-        "rulename",
-        metavar="<rulename>",
-        nargs="*",
-        default="",
-        help="Rule name(s) to test. Unit test of the rule(s) will be executed.",
-    )
+    commands_parser_test.add_argument(**rulename_arg)
 
     commands_parser_test.add_argument(
         "-v",
@@ -107,34 +127,20 @@ def main():
         help="Verbose mode",
     )
 
-    # destroy
+    # UNDEPLOY
     commands_parser_destroy = commands_parser.add_parser(
-        "destroy",
+        "undeploy",
         help="destroy AWS Config Rules",
     )
 
-    commands_parser_destroy.add_argument(
-        "rulename",
-        metavar="<rulename>",
-        nargs="*",
-        default="",
-        help="Rule name(s) to destroy.  Rule(s) will be removed.",
-    )
+    rule_args_parser_destroy = commands_parser_destroy.add_mutually_exclusive_group()
+    rule_args_parser_destroy.add_argument(**rulename_arg)
+    rule_args_parser_destroy.add_argument("--all", **all_arg)
 
-    commands_parser_destroy.add_argument(
-        "-n",
-        "--dryrun",
-        action="store_true",
-        default=False,
-        help="Dry run mode",
-    )
+    commands_parser_destroy.add_argument("--rules-dir", **rule_dir_arg)
+    commands_parser_destroy.add_argument(*dryrun_name_or_flags, **dryrun_arg)
 
-    # _pytest -- hidden command used by pytests
-    commands_parser.add_parser(
-        "_pytest",
-    )
-
-    # sample-ci
+    # SAMPLE-CI
     commands_parser_sample_ci = commands_parser.add_parser(
         "sample-ci",
         help="Provides a way to see sample configuration items for most supported resource types.",
@@ -145,6 +151,11 @@ def main():
         metavar="<resource type>",
         help='Resource name (e.g. "AWS::EC2::Instance") to display a sample CI JSON document for.',
         choices=get_accepted_resource_types(),
+    )
+
+    # _pytest -- hidden command used by pytests
+    commands_parser.add_parser(
+        "_pytest",
     )
 
     # Parse all args and commands
@@ -169,9 +180,17 @@ def main():
 
     # handle: deploy
     if args.command == "deploy":
+        # Any subdirectory of rules_dir with a parameters.json file in it is assumed to be a Rule
+        if args.all:
+            rulenames = [
+                f.name
+                for f in os.scandir(args.rules_dir)
+                if f.is_dir() and os.path.exists(os.path.join(f, "parameters.json"))
+            ]
+        else:
+            rulenames = args.rulename
         deploy_cmd.run(
-            rulenames=args.rulename,
-            dryrun=args.dryrun,
+            rulenames=rulenames, dryrun=args.dryrun, rules_dir=args.rules_dir
         )
 
     # handle: test
@@ -181,11 +200,14 @@ def main():
             verbose=args.verbose,
         )
 
-    # handle: destroy
-    if args.command == "destroy":
+    # handle: undeploy
+    if args.command == "undeploy":
+        if args.all:
+            rulenames = [f.name for f in os.scandir(args.rules_dir) if f.is_dir()]
+        else:
+            rulenames = args.rulename
         destroy_cmd.run(
-            rulenames=args.rulename,
-            dryrun=args.dryrun,
+            rulenames=args.rulename, dryrun=args.dryrun, rules_dir=args.rules_dir
         )
 
     # handle: sample-ci
