@@ -108,3 +108,13 @@ rdk>=1,<2
 - Validate that all the requirements, etc. are contained in the `pyproject.toml` file. The goal is to keep the project lightweight (not a lot of random configuration files) but keep a good level of functionality.
 
 - Verify that `rdklib` and `rdk` runtimes both function correctly.
+
+- pyproject toml should replace bandit, coverage -- use RDK 0.14.0+ as template
+
+- remove python version/terraform
+
+- Remove Pipfile configuration, move anything important into the poetry dev grouping
+  - doc dependency group, test dependency group (eg. moto, mypy), dev dependency group (eg. pylint)
+- Makefile can be replaced by poetry's poethepoet taskrunner
+  - Makefiles are misused!
+  - Look to eks-cluster-upgrade for example
