@@ -118,3 +118,5 @@ rdk>=1,<2
 - Makefile can be replaced by poetry's poethepoet taskrunner
   - Makefiles are misused!
   - Look to eks-cluster-upgrade for example
+
+- Review any other files that should be kept/removed, such as examples, workshops, and guidelines like minimum required permissions.
