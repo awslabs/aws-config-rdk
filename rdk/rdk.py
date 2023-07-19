@@ -1407,7 +1407,7 @@ class rdk:
                 "arn:" + partition + ":iam::" + account_id + ":role/rdk/config-role"
             )
 
-        if not control_tower:
+        if not control_tower and not config_recorder_exists:
             my_config.put_configuration_recorder(
                 ConfigurationRecorder={
                     "name": config_recorder_name,
