@@ -40,4 +40,4 @@ To release a new version of RDK...
 1. Update `pyproject.toml` with the new version number
 2. Update `rdk/__init__.py`  with the new version number
 3. Locally `git pull origin master` to ensure you have the latest code
-4. Locally `git push --tags <new version number>` to create a tagged version, which will kick off the remaining workflows.
+4. Locally `git tag <new version number> && git push origin <new version number>` to create a tagged version, which will kick off the remaining workflows.
