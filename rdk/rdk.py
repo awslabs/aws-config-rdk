@@ -87,6 +87,7 @@ PARALLEL_COMMAND_THROTTLE_PERIOD = (
 # This need to be update whenever config service supports more resource types
 # See: https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
 accepted_resource_types = [
+    "ALL",
     "AWS::ACM::Certificate",
     "AWS::AccessAnalyzer::Analyzer",
     "AWS::AmazonMQ::Broker",
@@ -644,7 +645,7 @@ def get_rule_parser(is_required, command):
         "-r",
         "--resource-types",
         required=False,
-        help="[optional] Resource types that will trigger event-based Rule evaluation",
+        help="[optional] Resource types that will trigger event-based Rule evaluation. You can also specify 'ALL' to scope to all resources.",
     )
     parser.add_argument(
         "-m",
@@ -2560,6 +2561,10 @@ class rdk:
                     "ParameterKey": "Timeout",
                     "ParameterValue": str(self.args.lambda_timeout),
                 },
+                {
+                    "ParameterKey": "ScopeIsAllResources",
+                    "ParameterValue": str(bool(source_events == "ALL")).lower()
+                }
             ]
             layers = self.__get_lambda_layers(my_session, self.args, rule_params)
 
