@@ -194,7 +194,7 @@
           "Fn::If": [
             {
               "Fn::And": [
-                { "Fn::Not": { "Condition": "AllResources" } },
+                { "Fn::Not": [{ "Condition": "AllResources" }] },
                 { "Condition": "EventTriggered" }
               ]
             },
