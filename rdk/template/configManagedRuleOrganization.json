@@ -76,14 +76,12 @@
         }
       ]
     },
-    "ExludedAccountsPresent": {
+    "ExcludedAccountsPresent": {
       "Fn::Not": [
         {
           "Fn::Equals": [
-            {
-              "Ref": "ExcludedAccounts"
-            },
-            "NONE"
+            { "Fn::Join": [",", { "Ref": "ExcludedAccounts" }] },
+            ""
           ]
         }
       ]
@@ -110,9 +108,7 @@
             "Fn::If": [
               "AllResources",
               {
-                "ComplianceResourceTypes": {
-                  "Ref": "SourceEvents"
-                }
+                "Ref": "SourceEvents"
               },
               {
                 "Ref": "AWS::NoValue"

@@ -948,7 +948,11 @@ class rdk:
 
         my_s3 = my_session.client("s3")
 
-        if not config_bucket_exists:
+        if control_tower and not config_bucket_exists:
+            print(
+                "Skipping Config Bucket check since this is part of a Control Tower, which automatically creates a Config bucket."
+            )
+        if not control_tower and not config_bucket_exists:
             # check whether bucket exists if not create config bucket
             response = my_s3.list_buckets()
             bucket_exists = False
@@ -2018,7 +2022,6 @@ class rdk:
                     "ParameterKey": "Timeout",
                     "ParameterValue": str(self.args.lambda_timeout),
                 },
-                {"ParameterKey": "ScopeIsAllResources", "ParameterValue": str(bool(source_events == "ALL")).lower()},
             ]
             layers = self.__get_lambda_layers(my_session, self.args, rule_params)
 
@@ -2228,7 +2231,12 @@ class rdk:
                 combined_input_parameters.update(optional_parameters_json)
 
             if self.args.excluded_accounts or "ExcludedAccounts" in rule_params:
-                combined_excluded_accounts = set(rule_params.get("ExcludedAccounts", []), self.args.excluded_accounts)
+                combined_excluded_accounts_set = set(
+                    rule_params.get("ExcludedAccounts", []).split(",") + self.args.excluded_accounts
+                )
+                combined_excluded_accounts_str = ",".join(combined_excluded_accounts_set)
+            else:
+                combined_excluded_accounts_str = ""
 
             if "SourceIdentifier" in rule_params:
                 print("Found Managed Rule.")
@@ -2265,7 +2273,7 @@ class rdk:
                     },
                     {
                         "ParameterKey": "ExcludedAccounts",
-                        "ParameterValue": combined_excluded_accounts,
+                        "ParameterValue": combined_excluded_accounts_str,
                     },
                 ]
                 my_cfn = my_session.client("cloudformation")
@@ -2411,7 +2419,7 @@ class rdk:
                 },
                 {
                     "ParameterKey": "ExcludedAccounts",
-                    "ParameterValue": combined_excluded_accounts,
+                    "ParameterValue": combined_excluded_accounts_str,
                 },
             ]
             layers = self.__get_lambda_layers(my_session, self.args, rule_params)
@@ -3429,7 +3437,7 @@ class rdk:
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
 
         max_resource_types = 100
-        if self.args.resource_types and len(self.args.resource_types.split(",") > max_resource_types):
+        if self.args.resource_types and (len(self.args.resource_types.split(",")) > max_resource_types):
             print(f"Number of specified resource types exceeds Config service maximum of {max_resource_types}.")
             sys.exit(1)
 
@@ -3467,7 +3475,7 @@ class rdk:
                 print(self.args.input_parameters)
                 input_params_dict = json.loads(self.args.input_parameters, strict=False)
             except Exception as e:
-                print("Failed to parse input parameters.")
+                print("Failed to parse input parameters. Remember to escape double-quotes if using Windows.")
                 sys.exit(1)
 
         if self.args.optional_parameters:

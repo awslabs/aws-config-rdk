@@ -92,7 +92,7 @@
     },
     "ExcludedAccounts": {
       "Description": "Comma-separated list of account IDs where the Org Config rule should not be deployed to",
-      "Type": "String",
+      "Type": "CommaDelimitedList",
       "Default": ""
     }
   },
@@ -135,7 +135,14 @@
       ]
     },
     "ExcludedAccountsPresent": {
-      "Fn::Not": [{ "Fn::Equals": [{ "Ref": "ExcludedAccounts" }, ""] }]
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            { "Fn::Join": [",", { "Ref": "ExcludedAccounts" }] },
+            ""
+          ]
+        }
+      ]
     }
   },
   "Resources": {
@@ -206,7 +213,7 @@
           "ResourceTypesScope": {
             "Fn::If": [
               "AllResources",
-              { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },
+              { "Ref": "SourceEvents" },
               { "Ref": "AWS::NoValue" }
             ]
           },
@@ -227,14 +234,14 @@
               { "Ref": "AWS::NoValue" }
             ]
           }
+        },
+        "ExcludedAccounts": {
+          "Fn::If": [
+            "ExcludedAccountsPresent",
+            { "Ref": "ExcludedAccounts" },
+            { "Ref": "AWS::NoValue" }
+          ]
         }
-      },
-      "ExcludedAccounts": {
-        "Fn::If": [
-          "ExcludedAccountsPresent",
-          { "Ref": "ExcludedAccounts" },
-          { "Ref": "AWS::NoValue" }
-        ]
       }
     },
     "rdkLambdaRole": {
