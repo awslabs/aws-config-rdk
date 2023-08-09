@@ -137,6 +137,8 @@ look something like this:
 
 `'{\"desiredInstanceType\":\"t2.micro\"}'`
 
+As of RDK v0.17.0, you can also specify `--resource-types ALL` to include all resource types.
+
 Note that you can create rules that use EITHER resource-types OR
 maximum-frequency, but not both. We have found that rules that try to be
 both event-triggered as well as periodic wind up being very complicated
