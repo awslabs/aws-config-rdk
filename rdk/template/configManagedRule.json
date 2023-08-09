@@ -37,11 +37,22 @@
       "Description": "Input Parameters",
       "Type": "String",
       "Default": "{}"
-    },
+    }
   },
   "Conditions": {
-    "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
-    "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]}
+    "EventTriggered": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            { "Fn::Join": [",", { "Ref": "SourceEvents" }] },
+            "NONE"
+          ]
+        }
+      ]
+    },
+    "PeriodicTriggered": {
+      "Fn::Not": [{ "Fn::Equals": [{ "Ref": "SourcePeriodic" }, "NONE"] }]
+    }
   },
   "Resources": {
     "rdkConfigRule": {
@@ -50,20 +61,22 @@
         "ConfigRuleName": { "Ref": "RuleName" },
         "Description": { "Ref": "Description" },
         "Scope": {
-          "Fn::If": [ "EventTriggered",
+          "Fn::If": [
+            "EventTriggered",
             { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },
             { "Ref": "AWS::NoValue" }
           ]
         },
         "MaximumExecutionFrequency": {
-          "Fn::If": [ "PeriodicTriggered",
+          "Fn::If": [
+            "PeriodicTriggered",
             { "Ref": "SourcePeriodic" },
             { "Ref": "AWS::NoValue" }
           ]
         },
         "Source": {
           "Owner": "AWS",
-          "SourceIdentifier": { "Ref": "SourceIdentifier" },
+          "SourceIdentifier": { "Ref": "SourceIdentifier" }
         },
         "InputParameters": { "Ref": "SourceInputParameters" }
       }

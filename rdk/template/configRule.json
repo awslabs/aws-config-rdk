@@ -89,17 +89,19 @@
       "Description": "Lambda Function timeout",
       "Type": "String",
       "Default": 60
-    },
-    "ScopeIsAllResources": {
-      "Description": "For configuration-change based rules that should apply to all resource changes",
-      "Type": "String",
-      "Default": "false",
-      "AllowedValues": ["true", "false"]
     }
   },
   "Conditions": {
     "AllResources": {
-      "Fn::Equals": [{ "Ref": "ScopeIsAllResources" }, "true"]
+      "Fn::Or": [
+        { "Condition": "EventTriggered" },
+        {
+          "Fn::Equals": [
+            { "Fn::Join": [",", { "Ref": "SourceEvents" }] },
+            "ALL"
+          ]
+        }
+      ]
     },
     "CreateNewLambdaRole": { "Fn::Equals": [{ "Ref": "LambdaRoleArn" }, ""] },
     "UseBoundaryPolicyInRole": {
@@ -192,12 +194,7 @@
         "Description": { "Ref": "Description" },
         "Scope": {
           "Fn::If": [
-            {
-              "Fn::And": [
-                { "Fn::Not": [{ "Condition": "AllResources" }] },
-                { "Condition": "EventTriggered" }
-              ]
-            },
+            "AllResources",
             { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },
             { "Ref": "AWS::NoValue" }
           ]

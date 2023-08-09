@@ -163,7 +163,7 @@
           "Description": { "Ref": "Description" },
           "InputParameters": { "Ref": "SourceInputParameters" },
           "LambdaFunctionArn": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
-          "ResourceTypesScope": { "Ref": "SourceEvents" },
+          "ResourceTypesScope": { "Ref": "SourceEvents" }, // If SourceEvents is 'ALL' then remove this field
           "OrganizationConfigRuleTriggerTypes": {"Fn::If": [
             "PeriodicTriggered",
             [ "ScheduledNotification" ],
