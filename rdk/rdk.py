@@ -17,6 +17,7 @@ import fileinput
 import fnmatch
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -389,6 +390,11 @@ def get_rule_parser(is_required, command):
         action="store_true",
         help="[optional] Skip the check for whether the resource type is supported or not.",
     )
+    parser.add_argument(
+        "--excluded-accounts",
+        required=False,
+        help="[optional] Comma-separated list of AWS accounts to exclude from the rule. Will only be used for organizational rules.",
+    )
 
     return parser
 
@@ -603,6 +609,11 @@ def get_deployment_organization_parser(ForceArgument=False, Command="deploy-orga
         required=False,
         default="rdklib-layer",
         help='[optional] To use with --generated-lambda-layer, forces the flag to look for a specific lambda-layer name. If omitted, "rdklib-layer" will be used',
+    )
+    parser.add_argument(
+        "--excluded-accounts",
+        required=False,
+        help="[optional] Comma-separated list of account IDs to exclude from the organization rule deployment.",
     )
 
     if ForceArgument:
@@ -2216,6 +2227,9 @@ class rdk:
                     del optional_parameters_json[key]
                 combined_input_parameters.update(optional_parameters_json)
 
+            if self.args.excluded_accounts or "ExcludedAccounts" in rule_params:
+                combined_excluded_accounts = set(rule_params.get("ExcludedAccounts", []), self.args.excluded_accounts)
+
             if "SourceIdentifier" in rule_params:
                 print("Found Managed Rule.")
                 # create CFN Parameters for Managed Rules
@@ -2248,6 +2262,10 @@ class rdk:
                     {
                         "ParameterKey": "SourceIdentifier",
                         "ParameterValue": rule_params["SourceIdentifier"],
+                    },
+                    {
+                        "ParameterKey": "ExcludedAccounts",
+                        "ParameterValue": combined_excluded_accounts,
                     },
                 ]
                 my_cfn = my_session.client("cloudformation")
@@ -2390,6 +2408,10 @@ class rdk:
                 {
                     "ParameterKey": "Timeout",
                     "ParameterValue": str(self.args.lambda_timeout),
+                },
+                {
+                    "ParameterKey": "ExcludedAccounts",
+                    "ParameterValue": combined_excluded_accounts,
                 },
             ]
             layers = self.__get_lambda_layers(my_session, self.args, rule_params)
@@ -3411,6 +3433,10 @@ class rdk:
             print(f"Number of specified resource types exceeds Config service maximum of {max_resource_types}.")
             sys.exit(1)
 
+        if self.args.excluded_accounts and not re.match(r"^(\d{12})(,\d{12})*$", self.args.excluded_accounts):
+            print("Invalid Excluded Accounts. Must be 12-digit account numbers, separated by commas and no spaces.")
+            sys.exit(1)
+
         if self.args.rulename:
             if len(self.args.rulename) > 128:
                 print("Rule names must be 128 characters or fewer.")
@@ -3558,6 +3584,12 @@ class rdk:
 
         if self.args.rulesets:
             self.args.rulesets = self.args.rulesets.split(",")
+
+        if self.args.excluded_accounts:
+            if not re.match(r"^(\d{12})(,\d{12})*$", self.args.excluded_accounts):
+                print("Invalid excluded accounts.  Must be a comma-separated list of 12-digit account numbers.")
+                sys.exit(1)
+            self.args.excluded_accounts = self.args.excluded_accounts.split(",")
 
     def __parse_export_args(self, ForceArgument=False):
         self.args = get_export_parser(ForceArgument).parse_args(self.args.command_args, self.args)
@@ -3719,6 +3751,9 @@ class rdk:
             parameters["SourceIdentifier"] = self.args.source_identifier
             parameters["CodeKey"] = None
             parameters["SourceRuntime"] = None
+
+        if self.args.excluded_accounts:
+            parameters["ExcludedAccounts"] = self.args.excluded_accounts
 
         if my_remediation:
             parameters["Remediation"] = my_remediation
