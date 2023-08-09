@@ -3406,6 +3406,11 @@ class rdk:
     def __parse_rule_args(self, is_required):
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
 
+        max_resource_types = 100
+        if self.args.resource_types and len(self.args.resource_types.split(",") > max_resource_types):
+            print(f"Number of specified resource types exceeds Config service maximum of {max_resource_types}.")
+            sys.exit(1)
+
         if self.args.rulename:
             if len(self.args.rulename) > 128:
                 print("Rule names must be 128 characters or fewer.")
@@ -3468,7 +3473,7 @@ class rdk:
         if bool(self.args.lambda_security_groups) != bool(self.args.lambda_subnets):
             print("You must specify both lambda-security-groups and lambda-subnets, or neither.")
             sys.exit(1)
-            
+
         if self.args.stack_name and not self.args.functions_only:
             print("--stack-name can only be specified when using the --functions-only feature.")
             sys.exit(1)

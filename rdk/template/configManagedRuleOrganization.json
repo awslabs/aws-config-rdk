@@ -1,7 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "AWS CloudFormation template to create Managed AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template.",
-
   "Parameters": {
     "RuleName": {
       "Description": "Name of the Rule",
@@ -45,36 +44,102 @@
     }
   },
   "Conditions": {
-    "PeriodicTriggered": {
-      "Fn::Not": [{ "Fn::Equals": [{ "Ref": "SourcePeriodic" }, "NONE"] }]
+    "AllResources": {
+      "Fn::Or": [
+        {
+          "Condition": "EventTriggered"
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Fn::Join": [
+                ",",
+                {
+                  "Ref": "SourceEvents"
+                }
+              ]
+            },
+            "ALL"
+          ]
+        }
+      ]
     },
-    "ExcludesAccounts": {
-      "Fn::Not": [{ "Fn::Equals": [{ "Ref": "ExcludedAccounts" }, "NONE"] }]
+    "PeriodicTriggered": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "SourcePeriodic"
+            },
+            "NONE"
+          ]
+        }
+      ]
+    },
+    "ExludedAccountsPresent": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "ExcludedAccounts"
+            },
+            "NONE"
+          ]
+        }
+      ]
     }
   },
   "Resources": {
     "rdkConfigRule": {
       "Type": "AWS::Config::OrganizationConfigRule",
       "Properties": {
-        "OrganizationConfigRuleName": { "Ref": "RuleName" },
+        "OrganizationConfigRuleName": {
+          "Ref": "RuleName"
+        },
         "OrganizationManagedRuleMetadata": {
-          "Description": { "Ref": "Description" },
-          "RuleIdentifier": { "Ref": "SourceIdentifier" },
-          "InputParameters": { "Ref": "SourceInputParameters" },
-          "ResourceTypesScope": { "Ref": "SourceEvents" },
+          "Description": {
+            "Ref": "Description"
+          },
+          "RuleIdentifier": {
+            "Ref": "SourceIdentifier"
+          },
+          "InputParameters": {
+            "Ref": "SourceInputParameters"
+          },
+          "ResourceTypesScope": {
+            "Fn::If": [
+              "AllResources",
+              {
+                "ComplianceResourceTypes": {
+                  "Ref": "SourceEvents"
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
           "MaximumExecutionFrequency": {
             "Fn::If": [
               "PeriodicTriggered",
-              { "Ref": "SourcePeriodic" },
-              { "Ref": "AWS::NoValue" }
+              {
+                "Ref": "SourcePeriodic"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
             ]
           }
         },
         "ExcludedAccounts": {
           "Fn::If": [
-            "ExludesAccounts",
-            { "Ref": "ExcludedAccounts" },
-            { "Ref": "AWS::NoValue" }
+            "ExludedAccountsPresent",
+            {
+              "Ref": "ExcludedAccounts"
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
           ]
         }
       }
