@@ -467,12 +467,12 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
     parser.add_argument(
         "--lambda-subnets",
         required=False,
-        help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).",
+        help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s). If specified, you must also specify --lambda-security-groups.",
     )
     parser.add_argument(
         "--lambda-security-groups",
         required=False,
-        help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).",
+        help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s). If specified, you must also specify --lambda-subnets.",
     )
     parser.add_argument(
         "--lambda-timeout",
@@ -572,12 +572,12 @@ def get_deployment_organization_parser(ForceArgument=False, Command="deploy-orga
     parser.add_argument(
         "--lambda-subnets",
         required=False,
-        help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).",
+        help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s). If specified, you must also specify --lambda-security-groups.",
     )
     parser.add_argument(
         "--lambda-security-groups",
         required=False,
-        help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).",
+        help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s). If specified, you must also specify --lambda-subnets.",
     )
     parser.add_argument(
         "--lambda-timeout",
@@ -641,12 +641,12 @@ def get_export_parser(ForceArgument=False, Command="export"):
     parser.add_argument(
         "--lambda-subnets",
         required=False,
-        help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s).",
+        help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s). If specified, you must also specify --lambda-security-groups.",
     )
     parser.add_argument(
         "--lambda-security-groups",
         required=False,
-        help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s).",
+        help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s). If specified, you must also specify --lambda-subnets.",
     )
     parser.add_argument(
         "--lambda-timeout",
@@ -3465,6 +3465,10 @@ class rdk:
         self.args = get_deployment_parser(ForceArgument).parse_args(self.args.command_args, self.args)
 
         # Validate inputs #
+        if bool(self.args.lambda_security_groups) != bool(self.args.lambda_subnets):
+            print("You must specify both lambda-security-groups and lambda-subnets, or neither.")
+            sys.exit(1)
+            
         if self.args.stack_name and not self.args.functions_only:
             print("--stack-name can only be specified when using the --functions-only feature.")
             sys.exit(1)
@@ -3510,6 +3514,10 @@ class rdk:
         self.args = get_deployment_organization_parser(ForceArgument).parse_args(self.args.command_args, self.args)
 
         # Validate inputs #
+        if bool(self.args.lambda_security_groups) != bool(self.args.lambda_subnets):
+            print("You must specify both lambda-security-groups and lambda-subnets, or neither.")
+            sys.exit(1)
+
         if self.args.stack_name and not self.args.functions_only:
             print("--stack-name can only be specified when using the --functions-only feature.")
             sys.exit(1)
@@ -3548,6 +3556,10 @@ class rdk:
 
     def __parse_export_args(self, ForceArgument=False):
         self.args = get_export_parser(ForceArgument).parse_args(self.args.command_args, self.args)
+
+        if bool(self.args.lambda_security_groups) != bool(self.args.lambda_subnets):
+            print("You must specify both lambda-security-groups and lambda-subnets, or neither.")
+            sys.exit(1)
 
         # Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
         if self.args.rulename:
