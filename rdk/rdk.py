@@ -285,6 +285,8 @@ def get_rule_parser(is_required, command):
             "python3.9-lib",
             "python3.10",
             "python3.10-lib",
+            "python3.11",
+            "python3.11-lib",
         ],
         metavar="",
     )
@@ -299,7 +301,7 @@ def get_rule_parser(is_required, command):
         required=False,
         help="[optional] Provide custom lambda name",
     )
-    parser.set_defaults(runtime="python3.10-lib")
+    parser.set_defaults(runtime="python3.11-lib")
     parser.add_argument(
         "-r",
         "--resource-types",
@@ -1224,6 +1226,8 @@ class rdk:
                 "python3.9-lib": ".py",
                 "python3.10": ".py",
                 "python3.10-lib": ".py",
+                "python3.11": ".py",
+                "python3.11-lib": ".py",
             }
             if self.args.runtime not in extension_mapping:
                 print("rdk does not support that runtime yet.")
@@ -1267,6 +1271,7 @@ class rdk:
                             "python3.8-lib",
                             "python3.9-lib",
                             "python3.10-lib",
+                            "python3.11-lib",
                         ]:
                             if self.args.resource_types:
                                 applicable_resource_list = ""
@@ -2619,6 +2624,8 @@ class rdk:
                 "python3.9-lib",
                 "python3.10",
                 "python3.10-lib",
+                "python3.11",
+                "python3.11-lib",
             ):
                 print("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
@@ -3806,6 +3813,8 @@ class rdk:
             "python3.9-lib",
             "python3.10",
             "python3.10-lib",
+            "python3.11",
+            "python3.11-lib",
         ]:
             return rule_name + ".lambda_handler"
         elif params["SourceRuntime"] in ["java8"]:
@@ -3817,6 +3826,7 @@ class rdk:
             "python3.8-lib",
             "python3.9-lib",
             "python3.10-lib",
+            "python3.11-lib",
         ]:
             runtime = params["SourceRuntime"].split("-")
             return runtime[0]
@@ -4209,6 +4219,7 @@ class rdk:
                 "python3.8-lib",
                 "python3.9-lib",
                 "python3.10-lib",
+                "python3.11-lib",
             ]:
                 if hasattr(args, "generated_lambda_layer") and args.generated_lambda_layer:
                     lambda_layer_version = self.__get_existing_lambda_layer(
@@ -4335,7 +4346,7 @@ class rdk:
         lambda_client.publish_layer_version(
             LayerName=layer_name,
             Content={"S3Bucket": bucket_name, "S3Key": layer_name},
-            CompatibleRuntimes=["python3.7", "python3.8", "python3.9", "python3.10"],
+            CompatibleRuntimes=["python3.7", "python3.8", "python3.9", "python3.10", "python3.11"],
         )
 
         print(f"[{region}]: Deleting temporary S3 Bucket")

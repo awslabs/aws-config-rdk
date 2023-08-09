@@ -26,6 +26,7 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 include = [
     "README.md",
@@ -49,6 +50,8 @@ include = [
     "rdk/template/runtime/python3.9-lib/*",
     "rdk/template/runtime/python3.10/*",
     "rdk/template/runtime/python3.10-lib/*",
+    "rdk/template/runtime/python3.11/*",
+    "rdk/template/runtime/python3.11-lib/*",
     "rdk/template/runtime/dotnetcore1.0/*",
     "rdk/template/runtime/dotnetcore1.0/bin/*",
     "rdk/template/runtime/dotnetcore1.0/obj/*",

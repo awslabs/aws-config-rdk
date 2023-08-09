@@ -14,12 +14,13 @@ phases:
     commands:
       - rdk create-region-set -o test-region
       - rdk -f test-region.yaml init
-      - rdk create W_MFA_ENABLED_RULE --runtime python3.10 --resource-types AWS::IAM::User
+      - rdk create W_MFA_ENABLED_RULE --runtime python3.11 --resource-types AWS::IAM::User
       - rdk -f test-region.yaml deploy W_MFA_ENABLED_RULE
       - python testing/win_multi_region_execution_test.py
       - rdk -f test-region.yaml undeploy --force W_MFA_ENABLED_RULE
       - python testing/win_partition_test.py
       - rdk init --generate-lambda-layer
+      - rdk create WP3_TestRule_P311_lib --runtime python3.11-lib --resource-types AWS::EC2::SecurityGroup
       - rdk create WP3_TestRule_P310_lib --runtime python3.10-lib --resource-types AWS::EC2::SecurityGroup
       - rdk create WP3_TestRule_P39_lib --runtime python3.9-lib --resource-types AWS::EC2::SecurityGroup
       - rdk create WP3_TestRule_P38_lib --runtime python3.8-lib --resource-types AWS::EC2::SecurityGroup
@@ -32,15 +33,16 @@ phases:
       - rdk -f test-region.yaml undeploy WP3_TestRule_P39_lib --force
       - rdk -f test-region.yaml undeploy WP3_TestRule_P38_lib --force
       - rdk -f test-region.yaml undeploy WP3_TestRule_P37_lib --force
+      - rdk create WP3_TestRule_P311 --runtime python3.11 --resource-types AWS::EC2::SecurityGroup
       - rdk create WP3_TestRule_P310 --runtime python3.10 --resource-types AWS::EC2::SecurityGroup
       - rdk create WP3_TestRule_P39 --runtime python3.9 --resource-types AWS::EC2::SecurityGroup
       - rdk create WP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create WP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
-      - rdk create WP3_TestRule_P3 --runtime python3.10 --resource-types AWS::EC2::SecurityGroup
-      - rdk create WP3_TestRule_EFSFS --runtime python3.10 --resource-types AWS::EFS::FileSystem
-      - rdk create WP3_TestRule_ECSTD --runtime python3.10 --resource-types AWS::ECS::TaskDefinition
-      - rdk create WP3_TestRule_ECSS --runtime python3.10 --resource-types AWS::ECS::Service
-      - rdk modify WP3_TestRule_P3 --runtime python3.10
+      - rdk create WP3_TestRule_P3 --runtime python3.11 --resource-types AWS::EC2::SecurityGroup
+      - rdk create WP3_TestRule_EFSFS --runtime python3.11 --resource-types AWS::EFS::FileSystem
+      - rdk create WP3_TestRule_ECSTD --runtime python3.11 --resource-types AWS::ECS::TaskDefinition
+      - rdk create WP3_TestRule_ECSS --runtime python3.11 --resource-types AWS::ECS::Service
+      - rdk modify WP3_TestRule_P3 --runtime python3.11
       - rdk create WP3_TestRule_P37_Periodic --runtime python3.7 --maximum-frequency One_Hour
       - rdk create WP3_TestRule_P37lib_Periodic --runtime python3.7-lib --maximum-frequency One_Hour
       - rdk create WP3_TestRule_P38_Periodic --runtime python3.8 --maximum-frequency One_Hour
@@ -48,7 +50,8 @@ phases:
       - rdk create WP3_TestRule_P39_Periodic --runtime python3.9 --maximum-frequency One_Hour
       - rdk create WP3_TestRule_P39lib_Periodic --runtime python3.9-lib --maximum-frequency One_Hour
       - rdk create WP3_TestRule_P310_Periodic --runtime python3.10 --maximum-frequency One_Hour
-      - rdk create WP3_TestRule_P310lib_Periodic --runtime python3.10-lib --maximum-frequency One_Hour
+      - rdk create WP3_TestRule_P311lib_Periodic --runtime python3.11-lib --maximum-frequency One_Hour      - rdk create WP3_TestRule_P310_Periodic --runtime python3.10 --maximum-frequency One_Hour
+      - rdk create WP3_TestRule_P311lib_Periodic --runtime python3.11-lib --maximum-frequency One_Hour
       - rdk test-local --all
       - rdk deploy --all
       - rdk undeploy WP3_TestRule_P3 --force
@@ -57,9 +60,11 @@ phases:
       - rdk undeploy WP3_TestRule_P38 --force
       - rdk undeploy WP3_TestRule_P38_Periodic --force
       - rdk undeploy WP3_TestRule_P39 --force
-      - rdk undeploy WP3_TestRule_P39_Periodic --force      
+      - rdk undeploy WP3_TestRule_P39_Periodic --force
       - rdk undeploy WP3_TestRule_P310 --force
       - rdk undeploy WP3_TestRule_P310_Periodic --force
+      - rdk undeploy WP3_TestRule_P311 --force
+      - rdk undeploy WP3_TestRule_P311_Periodic --force
       - rdk logs WP3_TestRule_P3
       - rdk undeploy -a --force
   post_build:
