@@ -64,6 +64,16 @@
         }
       ]
     },
+    "EventTriggered": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            { "Fn::Join": [",", { "Ref": "SourceEvents" }] },
+            "NONE"
+          ]
+        }
+      ]
+    },
     "PeriodicTriggered": {
       "Fn::Not": [
         {
@@ -129,7 +139,7 @@
         },
         "ExcludedAccounts": {
           "Fn::If": [
-            "ExludedAccountsPresent",
+            "ExcludedAccountsPresent",
             {
               "Ref": "ExcludedAccounts"
             },
