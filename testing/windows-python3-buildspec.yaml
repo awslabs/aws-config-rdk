@@ -50,7 +50,8 @@ phases:
       - rdk create WP3_TestRule_P39_Periodic --runtime python3.9 --maximum-frequency One_Hour
       - rdk create WP3_TestRule_P39lib_Periodic --runtime python3.9-lib --maximum-frequency One_Hour
       - rdk create WP3_TestRule_P310_Periodic --runtime python3.10 --maximum-frequency One_Hour
-      - rdk create WP3_TestRule_P311lib_Periodic --runtime python3.11-lib --maximum-frequency One_Hour      - rdk create WP3_TestRule_P310_Periodic --runtime python3.10 --maximum-frequency One_Hour
+      - rdk create WP3_TestRule_P310lib_Periodic --runtime python3.10-lib --maximum-frequency One_Hour      
+      - rdk create WP3_TestRule_P311_Periodic --runtime python3.11 --maximum-frequency One_Hour
       - rdk create WP3_TestRule_P311lib_Periodic --runtime python3.11-lib --maximum-frequency One_Hour
       - rdk test-local --all
       - rdk deploy --all
