@@ -126,7 +126,7 @@ rule and populate it with several files, including a skeleton of your
 Lambda code.
 
 ```bash
-rdk create MyRule --runtime python3.10 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
+rdk create MyRule --runtime python3.11 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
 Running create!
 Local Rule files created.
 ```
@@ -136,6 +136,8 @@ input parameters, so the `--input-parameters` argument would instead
 look something like this:
 
 `'{\"desiredInstanceType\":\"t2.micro\"}'`
+
+As of RDK v0.17.0, you can also specify `--resource-types ALL` to include all resource types.
 
 Note that you can create rules that use EITHER resource-types OR
 maximum-frequency, but not both. We have found that rules that try to be
@@ -220,7 +222,7 @@ will overwrite existing values, any that you do not specify will not be
 changed.
 
 ```bash
-rdk modify MyRule --runtime python3.10 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
+rdk modify MyRule --runtime python3.11 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
 Running modify!
 Modified Rule 'MyRule'.  Use the `deploy` command to push your changes to AWS.
 ```
@@ -394,7 +396,7 @@ by rdk. To disable the supported resource check use the optional flag
 '--skip-supported-resource-check' during the create command.
 
 ```bash
-rdk create MyRule --runtime python3.10 --resource-types AWS::New::ResourceType --skip-supported-resource-check
+rdk create MyRule --runtime python3.11 --resource-types AWS::New::ResourceType --skip-supported-resource-check
 'AWS::New::ResourceType' not found in list of accepted resource types.
 Skip-Supported-Resource-Check Flag set (--skip-supported-resource-check), ignoring missing resource type error.
 Running create!
@@ -413,7 +415,7 @@ performing `rdk create`. This opens up new features like :
 2. Custom lambda function naming as per personal or enterprise standards.
 
 ```bash
-rdk create MyLongerRuleName --runtime python3.10 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
+rdk create MyLongerRuleName --runtime python3.11 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
 Running create!
 Local Rule files created.
 ```
