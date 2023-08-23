@@ -1,7 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "AWS CloudFormation template to create custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template.",
-
   "Parameters": {
     "RuleName": {
       "Description": "Name of the Rule",
@@ -92,41 +91,117 @@
     }
   },
   "Conditions": {
-    "AllResources": {
+    "RemoveEventScope": {
       "Fn::Or": [
-        { "Condition": "EventTriggered" },
+        {
+          "Fn::Not": [
+            {
+              "Condition": "EventTriggered"
+            }
+          ]
+        },
         {
           "Fn::Equals": [
-            { "Fn::Join": [",", { "Ref": "SourceEvents" }] },
+            {
+              "Fn::Join": [
+                ",",
+                {
+                  "Ref": "SourceEvents"
+                }
+              ]
+            },
             "ALL"
           ]
         }
       ]
     },
-    "CreateNewLambdaRole": { "Fn::Equals": [{ "Ref": "LambdaRoleArn" }, ""] },
+    "CreateNewLambdaRole": {
+      "Fn::Equals": [
+        {
+          "Ref": "LambdaRoleArn"
+        },
+        ""
+      ]
+    },
     "UseBoundaryPolicyInRole": {
-      "Fn::Not": [{ "Fn::Equals": [{ "Ref": "BoundaryPolicyArn" }, ""] }]
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "BoundaryPolicyArn"
+            },
+            ""
+          ]
+        }
+      ]
     },
     "EventTriggered": {
       "Fn::Not": [
         {
           "Fn::Equals": [
-            { "Fn::Join": [",", { "Ref": "SourceEvents" }] },
+            {
+              "Fn::Join": [
+                ",",
+                {
+                  "Ref": "SourceEvents"
+                }
+              ]
+            },
             "NONE"
           ]
         }
       ]
     },
     "PeriodicTriggered": {
-      "Fn::Not": [{ "Fn::Equals": [{ "Ref": "SourcePeriodic" }, "NONE"] }]
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "SourcePeriodic"
+            },
+            "NONE"
+          ]
+        }
+      ]
     },
     "UseAdditionalLayers": {
-      "Fn::Not": [{ "Fn::Equals": [{ "Ref": "Layers" }, ""] }]
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "Layers"
+            },
+            ""
+          ]
+        }
+      ]
     },
     "UseVpcConfig": {
       "Fn::And": [
-        { "Fn::Not": [{ "Fn::Equals": [{ "Ref": "SecurityGroupIds" }, ""] }] },
-        { "Fn::Not": [{ "Fn::Equals": [{ "Ref": "SubnetIds" }, ""] }] }
+        {
+          "Fn::Not": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "SecurityGroupIds"
+                },
+                ""
+              ]
+            }
+          ]
+        },
+        {
+          "Fn::Not": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "SubnetIds"
+                },
+                ""
+              ]
+            }
+          ]
+        }
       ]
     }
   },
@@ -134,33 +209,65 @@
     "rdkRuleCodeLambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-        "FunctionName": { "Ref": "RuleLambdaName" },
+        "FunctionName": {
+          "Ref": "RuleLambdaName"
+        },
         "Code": {
-          "S3Bucket": { "Ref": "SourceBucket" },
+          "S3Bucket": {
+            "Ref": "SourceBucket"
+          },
           "S3Key": {
             "Fn::Join": [
               "",
-              [{ "Ref": "RuleName" }, "/", { "Ref": "RuleName" }, ".zip"]
+              [
+                {
+                  "Ref": "RuleName"
+                },
+                "/",
+                {
+                  "Ref": "RuleName"
+                },
+                ".zip"
+              ]
             ]
           }
         },
         "Description": "Create a new AWS lambda function for rule code",
-        "Handler": { "Ref": "SourceHandler" },
+        "Handler": {
+          "Ref": "SourceHandler"
+        },
         "MemorySize": "256",
         "Role": {
           "Fn::If": [
             "CreateNewLambdaRole",
-            { "Fn::GetAtt": ["rdkLambdaRole", "Arn"] },
-            { "Ref": "LambdaRoleArn" }
+            {
+              "Fn::GetAtt": ["rdkLambdaRole", "Arn"]
+            },
+            {
+              "Ref": "LambdaRoleArn"
+            }
           ]
         },
-        "Runtime": { "Ref": "SourceRuntime" },
-        "Timeout": { "Ref": "Timeout" },
+        "Runtime": {
+          "Ref": "SourceRuntime"
+        },
+        "Timeout": {
+          "Ref": "Timeout"
+        },
         "Layers": {
           "Fn::If": [
             "UseAdditionalLayers",
-            { "Fn::Split": [",", { "Ref": "Layers" }] },
-            { "Ref": "AWS::NoValue" }
+            {
+              "Fn::Split": [
+                ",",
+                {
+                  "Ref": "Layers"
+                }
+              ]
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
           ]
         },
         "VpcConfig": {
@@ -168,11 +275,25 @@
             "UseVpcConfig",
             {
               "SecurityGroupIds": {
-                "Fn::Split": [",", { "Ref": "SecurityGroupIds" }]
+                "Fn::Split": [
+                  ",",
+                  {
+                    "Ref": "SecurityGroupIds"
+                  }
+                ]
               },
-              "SubnetIds": { "Fn::Split": [",", { "Ref": "SubnetIds" }] }
+              "SubnetIds": {
+                "Fn::Split": [
+                  ",",
+                  {
+                    "Ref": "SubnetIds"
+                  }
+                ]
+              }
             },
-            { "Ref": "AWS::NoValue" }
+            {
+              "Ref": "AWS::NoValue"
+            }
           ]
         }
       }
@@ -181,7 +302,9 @@
       "Type": "AWS::Lambda::Permission",
       "DependsOn": "rdkRuleCodeLambda",
       "Properties": {
-        "FunctionName": { "Fn::GetAtt": ["rdkRuleCodeLambda", "Arn"] },
+        "FunctionName": {
+          "Fn::GetAtt": ["rdkRuleCodeLambda", "Arn"]
+        },
         "Action": "lambda:InvokeFunction",
         "Principal": "config.amazonaws.com"
       }
@@ -190,18 +313,30 @@
       "Type": "AWS::Config::ConfigRule",
       "DependsOn": ["ConfigPermissionToCallrdkRuleCodeLambda"],
       "Properties": {
-        "ConfigRuleName": { "Ref": "RuleName" },
-        "Description": { "Ref": "Description" },
+        "ConfigRuleName": {
+          "Ref": "RuleName"
+        },
+        "Description": {
+          "Ref": "Description"
+        },
         "Scope": {
           "Fn::If": [
-            "AllResources",
-            { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },
-            { "Ref": "AWS::NoValue" }
+            "RemoveEventScope",
+            {
+              "Ref": "AWS::NoValue"
+            },
+            {
+              "ComplianceResourceTypes": {
+                "Ref": "SourceEvents"
+              }
+            }
           ]
         },
         "Source": {
           "Owner": "CUSTOM_LAMBDA",
-          "SourceIdentifier": { "Fn::GetAtt": ["rdkRuleCodeLambda", "Arn"] },
+          "SourceIdentifier": {
+            "Fn::GetAtt": ["rdkRuleCodeLambda", "Arn"]
+          },
           "SourceDetails": [
             {
               "Fn::If": [
@@ -210,7 +345,9 @@
                   "EventSource": "aws.config",
                   "MessageType": "ConfigurationItemChangeNotification"
                 },
-                { "Ref": "AWS::NoValue" }
+                {
+                  "Ref": "AWS::NoValue"
+                }
               ]
             },
             {
@@ -220,7 +357,9 @@
                   "EventSource": "aws.config",
                   "MessageType": "OversizedConfigurationItemChangeNotification"
                 },
-                { "Ref": "AWS::NoValue" }
+                {
+                  "Ref": "AWS::NoValue"
+                }
               ]
             },
             {
@@ -229,14 +368,20 @@
                 {
                   "EventSource": "aws.config",
                   "MessageType": "ScheduledNotification",
-                  "MaximumExecutionFrequency": { "Ref": "SourcePeriodic" }
+                  "MaximumExecutionFrequency": {
+                    "Ref": "SourcePeriodic"
+                  }
                 },
-                { "Ref": "AWS::NoValue" }
+                {
+                  "Ref": "AWS::NoValue"
+                }
               ]
             }
           ]
         },
-        "InputParameters": { "Ref": "SourceInputParameters" }
+        "InputParameters": {
+          "Ref": "SourceInputParameters"
+        }
       }
     },
     "rdkLambdaRole": {
@@ -247,8 +392,12 @@
         "PermissionsBoundary": {
           "Fn::If": [
             "UseBoundaryPolicyInRole",
-            { "Ref": "BoundaryPolicyArn" },
-            { "Ref": "AWS::NoValue" }
+            {
+              "Ref": "BoundaryPolicyArn"
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
           ]
         },
         "AssumeRolePolicyDocument": {
@@ -257,7 +406,9 @@
             {
               "Sid": "AllowLambdaAssumeRole",
               "Effect": "Allow",
-              "Principal": { "Service": "lambda.amazonaws.com" },
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
               "Action": "sts:AssumeRole"
             }
           ]
@@ -302,16 +453,19 @@
           }
         ],
         "ManagedPolicyArns": [
-          { "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess" }
+          {
+            "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"
+          }
         ]
       }
     }
   },
-
   "Outputs": {
     "RuleCodeLambda": {
       "Description": "ARN for the Rule Code lambda",
-      "Value": { "Fn::GetAtt": ["rdkRuleCodeLambda", "Arn"] }
+      "Value": {
+        "Fn::GetAtt": ["rdkRuleCodeLambda", "Arn"]
+      }
     }
   }
 }

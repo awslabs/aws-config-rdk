@@ -39,12 +39,25 @@
     }
   },
   "Conditions": {
-    "AllResources": {
+    "RemoveEventScope": {
       "Fn::Or": [
-        { "Condition": "EventTriggered" },
+        {
+          "Fn::Not": [
+            {
+              "Condition": "EventTriggered"
+            }
+          ]
+        },
         {
           "Fn::Equals": [
-            { "Fn::Join": [",", { "Ref": "SourceEvents" }] },
+            {
+              "Fn::Join": [
+                ",",
+                {
+                  "Ref": "SourceEvents"
+                }
+              ]
+            },
             "ALL"
           ]
         }
@@ -92,9 +105,15 @@
         },
         "Scope": {
           "Fn::If": [
-            "AllResources",
-            { "ComplianceResourceTypes": { "Ref": "SourceEvents" } },
-            { "Ref": "AWS::NoValue" }
+            "RemoveEventScope",
+            {
+              "Ref": "AWS::NoValue"
+            },
+            {
+              "ComplianceResourceTypes": {
+                "Ref": "SourceEvents"
+              }
+            }
           ]
         },
         "MaximumExecutionFrequency": {

@@ -44,10 +44,14 @@
     }
   },
   "Conditions": {
-    "AllResources": {
+    "RemoveEventScope": {
       "Fn::Or": [
         {
-          "Condition": "EventTriggered"
+          "Fn::Not": [
+            {
+              "Condition": "EventTriggered"
+            }
+          ]
         },
         {
           "Fn::Equals": [
@@ -68,7 +72,14 @@
       "Fn::Not": [
         {
           "Fn::Equals": [
-            { "Fn::Join": [",", { "Ref": "SourceEvents" }] },
+            {
+              "Fn::Join": [
+                ",",
+                {
+                  "Ref": "SourceEvents"
+                }
+              ]
+            },
             "NONE"
           ]
         }
@@ -90,7 +101,14 @@
       "Fn::Not": [
         {
           "Fn::Equals": [
-            { "Fn::Join": [",", { "Ref": "ExcludedAccounts" }] },
+            {
+              "Fn::Join": [
+                ",",
+                {
+                  "Ref": "ExcludedAccounts"
+                }
+              ]
+            },
             ""
           ]
         }
@@ -116,12 +134,12 @@
           },
           "ResourceTypesScope": {
             "Fn::If": [
-              "AllResources",
-              {
-                "Ref": "SourceEvents"
-              },
+              "RemoveEventScope",
               {
                 "Ref": "AWS::NoValue"
+              },
+              {
+                "Ref": "SourceEvents"
               }
             ]
           },

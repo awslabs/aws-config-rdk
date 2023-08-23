@@ -39,10 +39,14 @@
     }
   },
   "Conditions": {
-    "AllResources": {
+    "RemoveEventScope": {
       "Fn::Or": [
         {
-          "Condition": "EventTriggered"
+          "Fn::Not": [
+            {
+              "Condition": "EventTriggered"
+            }
+          ]
         },
         {
           "Fn::Equals": [
@@ -101,14 +105,14 @@
         },
         "Scope": {
           "Fn::If": [
-            "AllResources",
+            "RemoveEventScope",
+            {
+              "Ref": "AWS::NoValue"
+            },
             {
               "ComplianceResourceTypes": {
                 "Ref": "SourceEvents"
               }
-            },
-            {
-              "Ref": "AWS::NoValue"
             }
           ]
         },
