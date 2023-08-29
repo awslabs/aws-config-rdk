@@ -57,24 +57,8 @@ example_ci_dir = "example_ci"
 test_ci_filename = "test_ci.json"
 event_template_filename = "test_event_template.json"
 
-RDKLIB_LAYER_VERSION = {
-    "ap-southeast-1": "28",
-    "ap-south-1": "5",
-    "us-east-2": "5",
-    "us-east-1": "5",
-    "us-west-1": "4",
-    "us-west-2": "4",
-    "ap-northeast-2": "5",
-    "ap-southeast-2": "5",
-    "ap-northeast-1": "5",
-    "ca-central-1": "5",
-    "eu-central-1": "5",
-    "eu-west-1": "5",
-    "eu-west-2": "4",
-    "eu-west-3": "5",
-    "eu-north-1": "5",
-    "sa-east-1": "5",
-}
+rdklib_versions_filepath = os.path.join(os.path.dirname(__file__), "rdklib_versions.yaml")
+RDKLIB_LAYER_VERSION = yaml.safe_load(open(rdklib_versions_filepath).read()).get("rdklib_layer_versions")
 
 RDKLIB_LAYER_SAR_ID = "arn:aws:serverlessrepo:ap-southeast-1:711761543063:applications/rdklib"
 
