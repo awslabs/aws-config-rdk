@@ -7,7 +7,7 @@
 #    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 [tool.poetry]
 name = "rdk"
-version = "0.17.1"
+version = "0.17.2"
 description = "Rule Development Kit CLI for AWS Config"
 authors = [
     "AWS RDK Maintainers <rdk-maintainers@amazon.com>",
@@ -113,7 +113,7 @@ boto3 = "^1.26.139"
 pyyaml = "^6.0"
 
 [tool.poetry.group.dev.dependencies]
-rdklib = "^0.3.0"
+rdklib = "^0.3"
 black = "^22.12.0"
 pydocstyle = "^6.3.0"
 isort = {extras = ["toml"], version = "^5.11.4"}
