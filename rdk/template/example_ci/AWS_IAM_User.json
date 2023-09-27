@@ -1,7 +1,7 @@
 {
-    "awsAccountId": "112233445566",
+    "accountId": "112233445566",
     "configurationItemCaptureTime": "2016-11-06T17:56:56.560Z",
-	"configurationItemVersion": "1.3",
+    "configurationItemVersion": "1.3",
     "configurationItemStatus": "OK",
     "configurationStateId": "1478455016560",
     "configurationItemMD5Hash": "0a2aae6878d94cd28a9ec808a10e8402",
