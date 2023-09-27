@@ -113,7 +113,7 @@ boto3 = "^1.26.139"
 pyyaml = "^6.0"
 
 [tool.poetry.group.dev.dependencies]
-rdklib = "^0.3.0"
+rdklib = "^0.3"
 black = "^22.12.0"
 pydocstyle = "^6.3.0"
 isort = {extras = ["toml"], version = "^5.11.4"}
