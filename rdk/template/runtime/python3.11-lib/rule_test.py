@@ -19,8 +19,8 @@ RESOURCE_TYPE = "AWS::IAM::Role"
 # Main Code #
 #############
 
-MODULE = __import__("check_security_hub_aggregator")
-RULE = MODULE.check_security_hub_aggregator()
+MODULE = __import__('<%RuleName%>')
+RULE = MODULE.<%RuleName%>()
 
 CLIENT_FACTORY = MagicMock()
 
