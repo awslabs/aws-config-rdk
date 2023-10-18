@@ -3291,8 +3291,12 @@ class rdk:
         elif self.args.access_key_id and self.args.secret_access_key:
             session_args["aws_access_key_id"] = self.args.access_key_id
             session_args["aws_secret_access_key"] = self.args.secret_access_key
-
-        return Session(**session_args)
+        try:
+            return Session(**session_args)
+        except Exception:
+            raise Exception(
+                "Unable to establish session to AWS. Make sure your CLI has access to valid AWS credentials."
+            )
 
     def __get_caller_identity_details(self, my_session):
         my_sts = my_session.client("sts")
