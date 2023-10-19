@@ -16,6 +16,7 @@ import base64
 import fileinput
 import fnmatch
 import json
+import logging
 import os
 import re
 import shutil
@@ -3296,7 +3297,13 @@ class rdk:
 
     def __get_caller_identity_details(self, my_session):
         my_sts = my_session.client("sts")
-        response = my_sts.get_caller_identity()
+        try:
+            response = my_sts.get_caller_identity()
+        except botocore.exceptions.ClientError:
+            logging.error(
+                "Unable to establish session to AWS. Make sure your CLI has access to valid AWS credentials and permissions to sts:GetCallerIdentity."
+            )
+            sys.exit(1)
         arn_split = response["Arn"].split(":")
 
         return {
