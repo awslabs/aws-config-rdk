@@ -1,6 +1,7 @@
 supported_resources:
   - ALL # Special string to support all resource types
   - AWS::ACM::Certificate
+  - AWS::APS::RuleGroupsNamespace
   - AWS::AccessAnalyzer::Analyzer
   - AWS::AmazonMQ::Broker
   - AWS::Amplify::App
@@ -21,6 +22,7 @@ supported_resources:
   - AWS::AppRunner::VpcConnector
   - AWS::AppStream::Application
   - AWS::AppStream::DirectoryConfig
+  - AWS::AppStream::Stack
   - AWS::AppSync::GraphQLApi
   - AWS::Athena::DataCatalog
   - AWS::Athena::PreparedStatement
@@ -38,6 +40,7 @@ supported_resources:
   - AWS::Backup::ReportPlan
   - AWS::Batch::ComputeEnvironment
   - AWS::Batch::JobQueue
+  - AWS::Batch::SchedulingPolicy
   - AWS::Budgets::BudgetsAction
   - AWS::Cassandra::Keyspace
   - AWS::Cloud9::EnvironmentEC2
@@ -49,9 +52,11 @@ supported_resources:
   - AWS::CloudWatch::MetricStream
   - AWS::CodeArtifact::Repository
   - AWS::CodeBuild::Project
+  - AWS::CodeBuild::ReportGroup
   - AWS::CodeDeploy::Application
   - AWS::CodeDeploy::DeploymentConfig
   - AWS::CodeDeploy::DeploymentGroup
+  - AWS::CodeGuruProfiler::ProfilingGroup
   - AWS::CodeGuruReviewer::RepositoryAssociation
   - AWS::CodePipeline::Pipeline
   - AWS::Config::ConfigurationRecorder
@@ -183,13 +188,16 @@ supported_resources:
   - AWS::ImageBuilder::DistributionConfiguration
   - AWS::ImageBuilder::ImagePipeline
   - AWS::ImageBuilder::InfrastructureConfiguration
+  - AWS::InspectorV2::Filter
   - AWS::IoT::AccountAuditConfiguration
   - AWS::IoT::Authorizer
   - AWS::IoT::CustomMetric
   - AWS::IoT::Dimension
   - AWS::IoT::FleetMetric
+  - AWS::IoT::JobTemplate
   - AWS::IoT::MitigationAction
   - AWS::IoT::Policy
+  - AWS::IoT::ProvisioningTemplate
   - AWS::IoT::RoleAlias
   - AWS::IoT::ScheduledAudit
   - AWS::IoT::SecurityProfile
@@ -205,9 +213,12 @@ supported_resources:
   - AWS::IoTSiteWise::Gateway
   - AWS::IoTSiteWise::Portal
   - AWS::IoTSiteWise::Project
+  - AWS::IoTTwinMaker::ComponentType
   - AWS::IoTTwinMaker::Entity
   - AWS::IoTTwinMaker::Scene
   - AWS::IoTTwinMaker::Workspace
+  - AWS::IoTWireless::FuotaTask
+  - AWS::IoTWireless::MulticastGroup
   - AWS::IoTWireless::ServiceProfile
   - AWS::KMS::Alias
   - AWS::KMS::Key
@@ -225,9 +236,11 @@ supported_resources:
   - AWS::Lightsail::StaticIp
   - AWS::LookoutMetrics::Alert
   - AWS::LookoutVision::Project
+  - AWS::MSK::BatchScramSecret
   - AWS::MSK::Cluster
   - AWS::MSK::Configuration
   - AWS::MediaConnect::FlowEntitlement
+  - AWS::MediaConnect::FlowSource
   - AWS::MediaConnect::FlowVpcInterface
   - AWS::MediaPackage::PackagingConfiguration
   - AWS::MediaPackage::PackagingGroup
@@ -244,6 +257,7 @@ supported_resources:
   - AWS::OpenSearch::Domain
   - AWS::Panorama::Package
   - AWS::Personalize::Dataset
+  - AWS::Personalize::DatasetGroup
   - AWS::Personalize::Schema
   - AWS::Personalize::Solution
   - AWS::Pinpoint::App
@@ -288,6 +302,8 @@ supported_resources:
   - AWS::Route53Resolver::FirewallDomainList
   - AWS::Route53Resolver::FirewallRuleGroupAssociation
   - AWS::Route53Resolver::ResolverEndpoint
+  - AWS::Route53Resolver::ResolverQueryLoggingConfig
+  - AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation
   - AWS::Route53Resolver::ResolverRule
   - AWS::Route53Resolver::ResolverRuleAssociation
   - AWS::S3::AccountPublicAccessBlock
@@ -309,6 +325,7 @@ supported_resources:
   - AWS::SageMaker::CodeRepository
   - AWS::SageMaker::Domain
   - AWS::SageMaker::EndpointConfig
+  - AWS::SageMaker::FeatureGroup
   - AWS::SageMaker::Image
   - AWS::SageMaker::Model
   - AWS::SageMaker::NotebookInstance
@@ -319,6 +336,7 @@ supported_resources:
   - AWS::ServiceCatalog::CloudFormationProvisionedProduct
   - AWS::ServiceCatalog::Portfolio
   - AWS::ServiceDiscovery::HttpNamespace
+  - AWS::ServiceDiscovery::Instance
   - AWS::ServiceDiscovery::PublicDnsNamespace
   - AWS::ServiceDiscovery::Service
   - AWS::Shield::Protection
@@ -327,6 +345,7 @@ supported_resources:
   - AWS::StepFunctions::Activity
   - AWS::StepFunctions::StateMachine
   - AWS::Transfer::Agreement
+  - AWS::Transfer::Certificate
   - AWS::Transfer::Connector
   - AWS::Transfer::Workflow
   - AWS::WAF::RateBasedRule
