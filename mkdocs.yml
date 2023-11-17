@@ -3,7 +3,7 @@ theme:
   name: material
   palette:
     scheme: default
-    primary: orange
+    primary: navy
 plugins:
   - search
   # TODO: Enable this if/when docstrings are expanded in the core rdk module.

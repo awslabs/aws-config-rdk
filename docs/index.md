@@ -164,7 +164,7 @@ rdk sample-ci <Resource Type>
 
 to output a formatted JSON document.
 
-For a deeper dive on how to create RDK rules visit [Creating Rules](./creating-and-editing-rules/creating-rules.md).
+For a deeper dive on how to create RDK rules visit [Creating Rules](./rule-management/creating-rules.md).
 
 ### Write and Run Unit Tests
 

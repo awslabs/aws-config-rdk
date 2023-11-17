@@ -56,13 +56,13 @@ Run `rdk create IAM_ROLE --runtime python3.11 --resource-types AWS::IAM::Role`. 
 
 When you use `--resource-types or -r` options, you are implicitly setting your rule’s trigger type to configuration changes, so when you deploy this rule, you will see Oversized configuration changes and Configuration changes under Detective evaluation trigger type in your rule’s detail page on AWS Config console:
 
-![configuration change triggered rule](../../images/config_change_triggered.jpeg)
+![configuration change triggered rule](../images/config_change_triggered.jpeg)
 
 ### Creating a periodically triggered rule to assess IAM roles’ compliance
 
 Run `rdk create IAM_ROLE --runtime python3.11 --maximum-frequency Six_Hours`. Using the `-m, or --maximum-frequency` option, implicitly sets your rule’s trigger type to periodic, so when you deploy this rule, you will see Periodic: 6 hours under Detective evaluation trigger type in your rule’s detail page on AWS Config console:
 
-![periodically triggered rule](../../images/config_periodic.jpeg)
+![periodically triggered rule](../images/config_periodic.jpeg)
 
 Note that _Scope of Changes_ is empty because this is a periodically triggered role.
 
@@ -76,4 +76,4 @@ Run `rdk create IAM_ROLE --runtime python3.11 --maximum-frequency Six_Hours --re
 
 This rule is triggered every six hours, and every time there is a change in _AWS::IAM::Role_ or _AWS::IAM::Policy_ resource types. When you deploy this rule you will see _Oversized configuration changes, Periodic: 6 hours_ and _Configuration changes_ under _Detective evaluation trigger type_ in your rule’s detail page on AWS Config console, you should also see two different resource types under _Resource types_:
 
-![Hybrid rule with input parameters](../../images/config_hybrid.jpeg)
+![Hybrid rule with input parameters](../images/config_hybrid.jpeg)

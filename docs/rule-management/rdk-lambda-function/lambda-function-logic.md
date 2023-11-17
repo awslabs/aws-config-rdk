@@ -34,7 +34,7 @@ Here are the highlights of what the lambda_handler function does:
 
 ### Validating compliance results, and reporting back to AWS Config
 
-When you create your AWS Config rule files using `rdk create` command, your Lambda function file has an empty evaluate_compliance function which you need to populate with your compliance evaluation logic and return the compliance result (see the [Writing an evaluate_compliance function](Writing%20an%20evaluate_compliance%20function.md) for guidance on updating this function). Compliance results is expected to be a string, a dictionary or a list of dictionaries containing the following keys:
+When you create your AWS Config rule files using `rdk create` command, your Lambda function file has an empty evaluate_compliance function which you need to populate with your compliance evaluation logic and return the compliance result (see the [Writing an evaluate_compliance function](writing-an-evaluate_compliance-function.md) for guidance on updating this function). Compliance results is expected to be a string, a dictionary or a list of dictionaries containing the following keys:
 
 - `ComplianceResourceType`
 - `ComplianceResourceId`
