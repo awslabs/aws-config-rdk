@@ -95,3 +95,158 @@ rdk init --generate-lambda-layer
 ```bash
 rdk init --generate-lambda-layer --custom-layer-name <LAYER_NAME>
 ```
+
+## Create Rules
+
+In your working directory, use the `create` command to start creating a
+new custom rule. You must specify the runtime for the lambda function
+that will back the Rule, and you can also specify a resource type (or
+comma-separated list of types) that the Rule will evaluate or a maximum
+frequency for a periodic rule. This will add a new directory for the
+rule and populate it with several files, including a skeleton of your
+Lambda code.
+
+```bash
+rdk create MyRule --runtime python3.11 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
+Running create!
+Local Rule files created.
+```
+
+On Windows it is necessary to escape the double-quotes when specifying
+input parameters, so the `--input-parameters` argument would instead
+look something like this:
+
+`'{\"desiredInstanceType\":\"t2.micro\"}'`
+
+As of RDK v0.17.0, you can also specify `--resource-types ALL` to include all resource types.
+
+Note that you can create rules that use EITHER resource-types OR
+maximum-frequency, but not both. We have found that rules that try to be
+both event-triggered as well as periodic wind up being very complicated
+and so we do not recommend it as a best practice.
+
+Once you have created the rule, edit the python file in your rule
+directory (in the above example it would be `MyRule/MyRule.py`, but may
+be deeper into the rule directory tree depending on your chosen Lambda
+runtime) to add whatever logic your Rule requires in the
+`evaluate_compliance` function. You will have access to the CI that was
+sent by Config, as well as any parameters configured for the Config
+Rule. Your function should return either a simple compliance status (one
+of `COMPLIANT`, `NON_COMPLIANT`, or `NOT_APPLICABLE`), or if you're
+using the python or node runtimes you can return a JSON object with
+multiple evaluation responses that the RDK will send back to AWS Config.
+
+An example would look like:
+
+```python
+for sg in response['SecurityGroups']:
+    evaluations.append(
+    {
+        'ComplianceResourceType': 'AWS::EC2::SecurityGroup',
+        'ComplianceResourceId': sg['GroupId'],
+        'ComplianceType': 'COMPLIANT',
+        'Annotation': 'This is an important note.',
+        'OrderingTimestamp': str(datetime.datetime.now())
+    })
+return evaluations
+```
+
+This is necessary for periodic rules that are not triggered by any CI
+change (which means the CI that is passed in will be null), and also for
+attaching annotations to your evaluation results.
+
+If you want to see what the JSON structure of a CI looks like for
+creating your logic, you can use
+
+```bash
+rdk sample-ci <Resource Type>
+```
+
+to output a formatted JSON document.
+
+For a deeper dive on how to create RDK rules visit [Creating Rules](./creating-and-editing-rules/creating-rules.md).
+
+### Write and Run Unit Tests
+
+If you are writing Config Rules using either of the Python runtimes
+there will be a `<rule name>_test.py` file deployed along with your
+Lambda function skeleton. This can be used to write unit tests according
+to the standard Python unittest framework (documented
+[here](https://docs.python.org/3/library/unittest.html)), which can be
+run using the `test-local` rdk command:
+
+```bash
+rdk test-local MyTestRule
+Running local test!
+Testing MyTestRule
+Looking for tests in /Users/mborch/Code/rdk-dev/MyTestRule
+
+---------------------------------------------------------------------
+
+Ran 0 tests in 0.000s
+
+OK
+<unittest.runner.TextTestResult run=0 errors=0 failures=0>
+```
+
+The test file includes setup for the MagicMock library that can be used
+to stub boto3 API calls if your rule logic will involve making API calls
+to gather additional information about your AWS environment. For some
+tips on how to do this, check out this blog post:
+[Mock Is Magic](https://sgillies.net/2017/10/19/mock-is-magic.html)
+
+For a deeper dive on how to run unit tests visit [Writing Unit Test](./writing-test-units.md).
+
+## Running the tests
+
+The `testing` directory contains scripts and buildspec files that I use
+to run basic functionality tests across a variety of CLI environments
+(currently Ubuntu Linux running Python 3.7/3.8/3.9/3.10, and Windows Server
+running Python 3.10). If there is interest I can release a CloudFormation
+template that could be used to build the test environment, let me know
+if this is something you want!
+
+## Support & Feedback
+
+This project is maintained by AWS Solution Architects and Consultants.
+It is not part of an AWS service and support is provided best-effort by
+the maintainers. To post feedback, submit feature ideas, or report bugs,
+please use the [Issues
+section](https://github.com/awslabs/aws-config-rdk/issues) of this repo.
+
+## Contributing
+
+email us at <rdk-maintainers@amazon.com> if you have any questions. We
+are happy to help and discuss.
+
+## Contacts
+
+- **Benjamin Morris** - [bmorrissirromb](https://github.com/bmorrissirromb) - _current maintainer_
+- **Julio Delgado Jr** - [tekdj7](https://github.com/tekdj7) - _current maintainer_
+- **Carlo DePaolis** - [depaolism](https://github.com/depaolism) _current maintainer_
+- **Nima Fotouhi** - [nimaft](https://github.com/nimaft) - _current maintainer_
+
+## Past Contributors
+
+- **Michael Borchert** - _Original Python version_
+- **Jonathan Rault** - _Original Design, testing, feedback_
+- **Greg Kim and Chris Gutierrez** - _Initial work and CI definitions_
+- **Henry Huang** - _Original CFN templates and other code_
+- **Santosh Kumar** - _maintainer_
+- **Jose Obando** - _maintainer_
+- **Jarrett Andrulis** - [jarrettandrulis](https://github.com/jarrettandrulis) - _maintainer_
+- **Sandeep Batchu** - [batchus](https://github.com/batchus) - _maintainer_
+- **Mark Beacom** - [mbeacom](https://github.com/mbeacom) - _maintainer_
+- **Ricky Chau** - [rickychau2780](https://github.com/rickychau2780) - _maintainer_
+
+## License
+
+This project is licensed under the Apache 2.0 License
+
+## Acknowledgments
+
+- the boto3 team makes all of this magic possible.
+
+## Link
+
+- to view example of rules built with the RDK: [https://github.com/awslabs/aws-config-rules/tree/master/python](https://github.com/awslabs/aws-config-rules/tree/master/python)
