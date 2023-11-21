@@ -211,8 +211,7 @@ if this is something you want!
 This project is maintained by AWS Solution Architects and Consultants.
 It is not part of an AWS service and support is provided best-effort by
 the maintainers. To post feedback, submit feature ideas, or report bugs,
-please use the [Issues
-section](https://github.com/awslabs/aws-config-rdk/issues) of this repo.
+please use the [Issues section](https://github.com/awslabs/aws-config-rdk/issues) of this repo.
 
 ## Contributing
 

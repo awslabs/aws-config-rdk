@@ -430,10 +430,10 @@ The above example would create files with config rule name as
 New as of version 0.3.11, it is possible to add RuleSet tags to rules
 that can be used to deploy and test groups of rules together. Rules can
 belong to multiple RuleSets, and RuleSet membership is stored only in
-the parameters.json metadata. The [deploy]{.title-ref},
-[create-rule-template]{.title-ref}, and [test-local]{.title-ref}
+the parameters.json metadata. The [deploy](docs/commands/deploy.md),
+[create-rule-template](docs/commands/create-rule-template.md), and [test-local](docs/commands/test-local.md)
 commands are RuleSet-aware such that a RuleSet can be passed in as the
-target instead of [--all]{.title-ref} or a specific named Rule.
+target instead of `--all` or a specific named Rule.
 
 A comma-delimited list of RuleSets can be added to a Rule when you
 create it (using the `--rulesets` flag), as part of a `modify` command,
