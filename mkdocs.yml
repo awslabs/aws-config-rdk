@@ -3,7 +3,7 @@ theme:
   name: material
   palette:
     scheme: default
-    primary: orange
+    primary: navy
 plugins:
   - search
   # TODO: Enable this if/when docstrings are expanded in the core rdk module.
@@ -15,3 +15,35 @@ markdown_extensions:
   - markdown_include.include:
       base_path: .
 docs_dir: docs
+nav:
+  - 'index.md'
+  - 'Rule Management':
+    - 'Creating Rules': 'rule-management/creating-rules.md'
+    - 'Deploying Rules': 'rule-management/deploy-rules.md'
+    - 'Modifying Rules': 'rule-management/modifying-rules.md'
+  - 'RDK Lambda Function':
+    - 'Lambda Function Logic': 'rule-management/rdk-lambda-function/lambda-function-logic.md'
+    -  'Writing an evaluate_compliance function': 'rule-management/rdk-lambda-function/writing-an-evaluate_compliance-function.md'
+  - 'Non-Compliant Resource Remediation': 'remediation.md'
+  - 'Advanced Features':
+    - 'advanced-features/cross-Account-deployments.md'
+    - 'advanced-features/custom-lambda-name.md'
+    - 'advanced-features/disable-resource-check.md'
+    - 'advanced-features/generate-lambda-layer.md'
+    - 'advanced-features/managed-rules.md'
+    - 'advanced-features/multi-region-deployment.md'
+    - 'advanced-features/rulesets.md'
+  - 'Commands':
+    - 'commands/clean.md'
+    - 'commands/create-rule-template.md'
+    - 'commands/create.md'
+    - 'commands/deploy.md'
+    - 'commands/export.md'
+    - 'commands/init.md'
+    - 'commands/logs.md'
+    - 'commands/modify.md'
+    - 'commands/rulesets.md'
+    - 'commands/sample-ci.md'
+    - 'commands/test-local.md'
+    - 'commands/undeploy.md'
+  - 'Legacy RDK Documentation': 'legacy-docs.md'

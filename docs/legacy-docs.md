@@ -150,7 +150,7 @@ there will be a `<rule name>_test.py` file deployed along with your
 Lambda function skeleton. This can be used to write unit tests according
 to the standard Python unittest framework (documented here:
 <https://docs.python.org/3/library/unittest.html>), which can be run
-using the [test-local]{.title-ref} rdk command:
+using the [test-local](./commands/test-local.md) rdk command:
 
     rdk test-local MyTestRule
     Running local test!
