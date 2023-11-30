@@ -2216,8 +2216,12 @@ class rdk:
                 combined_input_parameters.update(optional_parameters_json)
 
             if self.args.excluded_accounts or "ExcludedAccounts" in rule_params:
+                if "ExcludedAccounts" in rule_params and bool(rule_params.get("ExcludedAccounts")):
+                    excluded_via_rule_params = rule_params.get("ExcludedAccounts").split(",")
+                else:
+                    excluded_via_rule_params = []
                 combined_excluded_accounts_set = set(
-                    rule_params.get("ExcludedAccounts", "").split(",") + self.args.excluded_accounts
+                    excluded_via_rule_params + self.args.excluded_accounts
                 )
                 combined_excluded_accounts_str = ",".join(combined_excluded_accounts_set)
             else:
