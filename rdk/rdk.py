@@ -2217,7 +2217,7 @@ class rdk:
 
             if self.args.excluded_accounts or "ExcludedAccounts" in rule_params:
                 combined_excluded_accounts_set = set(
-                    rule_params.get("ExcludedAccounts", []).split(",") + self.args.excluded_accounts
+                    rule_params.get("ExcludedAccounts", "").split(",") + self.args.excluded_accounts
                 )
                 combined_excluded_accounts_str = ",".join(combined_excluded_accounts_set)
             else:
