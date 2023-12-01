@@ -1,0 +1,141 @@
+#    Copyright 2023 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
+#
+#        http://aws.amazon.com/apache2.0/
+#
+#    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+[tool.poetry]
+name = "rdk"
+version = "0.17.4"
+description = "Rule Development Kit CLI for AWS Config"
+authors = [
+    "AWS RDK Maintainers <rdk-maintainers@amazon.com>",
+]
+repository = "https://github.com/awslabs/aws-config-rdk"
+homepage = "https://github.com/awslabs/aws-config-rdk"
+readme = "README.md"
+packages = [{include = "rdk"}]
+keywords = ["amazon", "aws", "awslabs", "rdk", "config", "rules", "compliance"]
+documentation = "https://aws-config-rdk.readthedocs.io"
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+include = [
+    "README.md",
+    "NOTICE.txt",
+    "LICENSE",
+    "rdk/template/*",
+    "rdk/template/terraform/*",
+    "rdk/template/terraform/0.11/*",
+    "rdk/template/terraform/0.12/*",
+    "rdk/template/example_ci/*",
+    "rdk/template/runtime/*",
+    "rdk/template/runtime/java8/*",
+    "rdk/template/runtime/java8/jars/*",
+    "rdk/template/runtime/java8/src/main/java/com/rdk/*",
+    "rdk/template/runtime/nodejs4.3/*",
+    "rdk/template/runtime/python3.7/*",
+    "rdk/template/runtime/python3.7-lib/*",
+    "rdk/template/runtime/python3.8/*",
+    "rdk/template/runtime/python3.8-lib/*",
+    "rdk/template/runtime/python3.9/*",
+    "rdk/template/runtime/python3.9-lib/*",
+    "rdk/template/runtime/python3.10/*",
+    "rdk/template/runtime/python3.10-lib/*",
+    "rdk/template/runtime/python3.11/*",
+    "rdk/template/runtime/python3.11-lib/*",
+    "rdk/template/runtime/dotnetcore1.0/*",
+    "rdk/template/runtime/dotnetcore1.0/bin/*",
+    "rdk/template/runtime/dotnetcore1.0/obj/*",
+    "rdk/template/runtime/dotnetcore1.0/obj/Debug/*",
+    "rdk/template/runtime/dotnetcore1.0/obj/Release/netcoreapp1.0/*",
+    "rdk/template/runtime/dotnetcore1.0/obj/Release/netcoreapp2.0/*",
+    "rdk/template/runtime/dotnetcore2.0/*",
+    "rdk/template/runtime/dotnetcore2.0/bin/*",
+    "rdk/template/runtime/dotnetcore2.0/obj/*",
+    "rdk/template/runtime/dotnetcore2.0/obj/Debug/*",
+    "rdk/template/runtime/dotnetcore2.0/obj/Release/netcoreapp1.0/*",
+    "rdk/template/runtime/dotnetcore2.0/obj/Release/netcoreapp2.0/*",
+]
+license = "Apache-2.0"
+
+[tool.poetry.scripts]
+rdk = "rdk.cli:main"
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+
+# Styling and linting Configurations
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.poe.tasks]
+isort = "isort --profile=black ."
+black = "black ."
+check-black = {cmd = "black . --check --diff", help = "Check code for black styling"}
+check-isort = {cmd = "isort --check --profile=black .", help = "Check code for import styling"}
+check-docstrings = "pydocstyle -e ."
+check-ruff = "ruff check rdk"
+check = ["check-isort", "check-black"]
+lint = ["check-docstrings", "check-ruff"]
+fix = ["isort", "black"]
+# test = "pytest --cov=rdk --cov-report=xml --cov-report=term"
+ruff = "ruff check --fix rdk"
+safety = "safety check"
+bandit = "bandit -r rdk"
+security = ["safety", "bandit"]
+update-doc-deps = {cmd = "poetry export --only=docs -f requirements.txt > docs/requirements.txt", help = "Generate an updated requirements.txt for docs" }
+serve-docs = {cmd = "mkdocs serve"}
+# requires poethepoet outside of poetry.
+install = "poetry install"
+build = "poetry build"
+
+[tool.poetry.dependencies]
+python = "^3.7.2"
+boto3 = "^1.26.139"
+pyyaml = "^6.0"
+
+[tool.poetry.group.dev.dependencies]
+rdklib = "^0.3"
+black = "^22.12.0"
+pydocstyle = "^6.3.0"
+isort = {extras = ["toml"], version = "^5.11.4"}
+mypy = "^1.3.0"
+debugpy = "^1.6.7"
+ruff = "^0.0.269"
+
+[tool.poetry.group.security.dependencies]
+bandit = "^1.7.5"
+safety = "^2.3.5"
+
+[tool.poetry.group.types.dependencies]
+types-pyyaml = "^6.0.12.10"
+boto3-stubs = {extras = ["cloudformation", "config", "iam", "s3", "sts"], version = "^1.26.139"}
+
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "^1.4.3"
+mkdocs-material = "^9.1.14"
+mkdocstrings-python = "^1.0.0"
+markdown-include = "^0.8.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

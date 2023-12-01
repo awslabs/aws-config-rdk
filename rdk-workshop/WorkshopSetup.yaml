@@ -292,6 +292,7 @@ Resources:
             Principal:
               Service:
                 - "lambda.amazonaws.com"
+                - "ssm.amazonaws.com"
             Action: "sts:AssumeRole"
       Policies:
         -
@@ -312,6 +313,9 @@ Resources:
                 Action:
                   - "iam:AddUserToGroup"
                   - "iam:ListUsers"
+                  - "s3:GetBucketVersioning"
+                  - "s3:ListBucketVersions"
+                  - "s3:PutBucketVersioning"
                 Resource: "*"
       RoleName: WorkshopRemediationRole
 

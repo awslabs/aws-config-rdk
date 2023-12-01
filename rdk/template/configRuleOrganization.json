@@ -1,7 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "AWS CloudFormation template to create custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template.",
-
   "Parameters": {
     "RuleName": {
       "Description": "Name of the Rule",
@@ -66,9 +65,9 @@
       "Type": "String",
       "Default": "{}"
     },
-    "SourceHandler":{
-        "Description": "Lambda Function Handler",
-        "Type": "String"
+    "SourceHandler": {
+      "Description": "Lambda Function Handler",
+      "Type": "String"
     },
     "Layers": {
       "Description": "Comma-separated list of Lambda layers to be included with Lambda Function deployment",
@@ -85,22 +84,146 @@
       "Type": "String",
       "Default": ""
     },
-    "Timeout":{
+    "Timeout": {
       "Description": "Lambda Function timeout",
       "Type": "String",
       "Default": 60
+    },
+    "ExcludedAccounts": {
+      "Description": "Comma-separated list of account IDs where the Org Config rule should not be deployed to",
+      "Type": "CommaDelimitedList",
+      "Default": ""
     }
   },
   "Conditions": {
-    "CreateNewLambdaRole" : { "Fn::Equals" : [{ "Ref": "LambdaRoleArn" }, ""]},
-    "UseBoundaryPolicyInRole" : {"Fn::Not":[{ "Fn::Equals" : [{ "Ref": "BoundaryPolicyArn" }, ""]}]},
-    "EventTriggered" : {"Fn::Not": [{ "Fn::Equals" : [{"Fn::Join": [",", { "Ref": "SourceEvents" }]}, "NONE"]}]},
-    "PeriodicTriggered" : { "Fn::Not": [{"Fn::Equals" : [{ "Ref": "SourcePeriodic" }, "NONE"]}]},
-    "UseAdditionalLayers": {"Fn::Not": [{"Fn::Equals": [{"Ref": "Layers"}, ""]}]},
+    "RemoveEventScope": {
+      "Fn::Or": [
+        {
+          "Fn::Not": [
+            {
+              "Condition": "EventTriggered"
+            }
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Fn::Join": [
+                ",",
+                {
+                  "Ref": "SourceEvents"
+                }
+              ]
+            },
+            "ALL"
+          ]
+        }
+      ]
+    },
+    "CreateNewLambdaRole": {
+      "Fn::Equals": [
+        {
+          "Ref": "LambdaRoleArn"
+        },
+        ""
+      ]
+    },
+    "UseBoundaryPolicyInRole": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "BoundaryPolicyArn"
+            },
+            ""
+          ]
+        }
+      ]
+    },
+    "EventTriggered": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Fn::Join": [
+                ",",
+                {
+                  "Ref": "SourceEvents"
+                }
+              ]
+            },
+            "NONE"
+          ]
+        }
+      ]
+    },
+    "PeriodicTriggered": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "SourcePeriodic"
+            },
+            "NONE"
+          ]
+        }
+      ]
+    },
+    "UseAdditionalLayers": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "Layers"
+            },
+            ""
+          ]
+        }
+      ]
+    },
     "UseVpcConfig": {
       "Fn::And": [
-        {"Fn::Not": [{"Fn::Equals": [{"Ref": "SecurityGroupIds"}, ""]}]},
-        {"Fn::Not": [{"Fn::Equals": [{"Ref": "SubnetIds"}, ""]}]}
+        {
+          "Fn::Not": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "SecurityGroupIds"
+                },
+                ""
+              ]
+            }
+          ]
+        },
+        {
+          "Fn::Not": [
+            {
+              "Fn::Equals": [
+                {
+                  "Ref": "SubnetIds"
+                },
+                ""
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "ExcludedAccountsPresent": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Fn::Join": [
+                ",",
+                {
+                  "Ref": "ExcludedAccounts"
+                }
+              ]
+            },
+            ""
+          ]
+        }
       ]
     }
   },
@@ -108,70 +231,166 @@
     "rdkRuleCodeLambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-        "FunctionName": { "Ref": "RuleLambdaName" },
-        "Code": {
-          "S3Bucket": { "Ref": "SourceBucket" },
-          "S3Key": { "Fn::Join" : [ "", [ { "Ref": "RuleName" }, "/", { "Ref": "RuleName" }, ".zip"]]}
+        "FunctionName": {
+          "Ref": "RuleLambdaName"
         },
-        "Description": "Create a new AWS lambda function for rule code",
-        "Handler": { "Ref": "SourceHandler"},
-        "MemorySize": "256",
-        "Role": {
-          "Fn::If": [ "CreateNewLambdaRole",
-              { "Fn::GetAtt": [ "rdkLambdaRole", "Arn" ]},
-              { "Ref": "LambdaRoleArn" }
-            ]
+        "Code": {
+          "S3Bucket": {
+            "Ref": "SourceBucket"
           },
-        "Runtime": { "Ref": "SourceRuntime"},
-        "Timeout": { "Ref": "Timeout"},
-        "Layers":
-          {"Fn::If":
-            [ "UseAdditionalLayers",
-              { "Fn::Split": [",", {"Ref": "Layers"}]},
-              { "Ref": "AWS::NoValue"}
-            ]
-          },
-        "VpcConfig":
-          {"Fn::If":
-            [ "UseVpcConfig",
-              {
-                "SecurityGroupIds": {"Fn::Split": [",", {"Ref": "SecurityGroupIds"}]},
-                "SubnetIds": {"Fn::Split": [",", {"Ref": "SubnetIds"}]}
-              },
-              { "Ref": "AWS::NoValue"}
+          "S3Key": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "RuleName"
+                },
+                "/",
+                {
+                  "Ref": "RuleName"
+                },
+                ".zip"
+              ]
             ]
           }
+        },
+        "Description": "Create a new AWS lambda function for rule code",
+        "Handler": {
+          "Ref": "SourceHandler"
+        },
+        "MemorySize": "256",
+        "Role": {
+          "Fn::If": [
+            "CreateNewLambdaRole",
+            {
+              "Fn::GetAtt": ["rdkLambdaRole", "Arn"]
+            },
+            {
+              "Ref": "LambdaRoleArn"
+            }
+          ]
+        },
+        "Runtime": {
+          "Ref": "SourceRuntime"
+        },
+        "Timeout": {
+          "Ref": "Timeout"
+        },
+        "Layers": {
+          "Fn::If": [
+            "UseAdditionalLayers",
+            {
+              "Fn::Split": [
+                ",",
+                {
+                  "Ref": "Layers"
+                }
+              ]
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        },
+        "VpcConfig": {
+          "Fn::If": [
+            "UseVpcConfig",
+            {
+              "SecurityGroupIds": {
+                "Fn::Split": [
+                  ",",
+                  {
+                    "Ref": "SecurityGroupIds"
+                  }
+                ]
+              },
+              "SubnetIds": {
+                "Fn::Split": [
+                  ",",
+                  {
+                    "Ref": "SubnetIds"
+                  }
+                ]
+              }
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
+        }
       }
     },
     "ConfigPermissionToCallrdkRuleCodeLambda": {
       "Type": "AWS::Lambda::Permission",
       "DependsOn": "rdkRuleCodeLambda",
-      "Properties":{
-        "FunctionName": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] } ,
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": ["rdkRuleCodeLambda", "Arn"]
+        },
         "Action": "lambda:InvokeFunction",
         "Principal": "config.amazonaws.com"
       }
     },
     "rdkConfigRule": {
       "Type": "AWS::Config::OrganizationConfigRule",
-      "DependsOn": [
-        "ConfigPermissionToCallrdkRuleCodeLambda"
-      ],
+      "DependsOn": ["ConfigPermissionToCallrdkRuleCodeLambda"],
       "Properties": {
-        "OrganizationConfigRuleName": { "Ref": "RuleName" },
+        "OrganizationConfigRuleName": {
+          "Ref": "RuleName"
+        },
         "OrganizationCustomRuleMetadata": {
-          "Description": { "Ref": "Description" },
-          "InputParameters": { "Ref": "SourceInputParameters" },
-          "LambdaFunctionArn": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] },
-          "ResourceTypesScope": { "Ref": "SourceEvents" },
-          "OrganizationConfigRuleTriggerTypes": {"Fn::If": [
-            "PeriodicTriggered",
-            [ "ScheduledNotification" ],
-            [ "ConfigurationItemChangeNotification", "OversizedConfigurationItemChangeNotification" ] ]},
-          "MaximumExecutionFrequency": {"Fn::If": [
-            "PeriodicTriggered",
-            { "Ref": "SourcePeriodic" },
-            { "Ref": "AWS::NoValue"}]}
+          "Description": {
+            "Ref": "Description"
+          },
+          "InputParameters": {
+            "Ref": "SourceInputParameters"
+          },
+          "LambdaFunctionArn": {
+            "Fn::GetAtt": ["rdkRuleCodeLambda", "Arn"]
+          },
+          "ResourceTypesScope": {
+            "Fn::If": [
+              "RemoveEventScope",
+              {
+                "Ref": "AWS::NoValue"
+              },
+              {
+                "Ref": "SourceEvents"
+              }
+            ]
+          },
+          "OrganizationConfigRuleTriggerTypes": {
+            "Fn::If": [
+              "PeriodicTriggered",
+              ["ScheduledNotification"],
+              [
+                "ConfigurationItemChangeNotification",
+                "OversizedConfigurationItemChangeNotification"
+              ]
+            ]
+          },
+          "MaximumExecutionFrequency": {
+            "Fn::If": [
+              "PeriodicTriggered",
+              {
+                "Ref": "SourcePeriodic"
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+        },
+        "ExcludedAccounts": {
+          "Fn::If": [
+            "ExcludedAccountsPresent",
+            {
+              "Ref": "ExcludedAccounts"
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
+          ]
         }
       }
     },
@@ -180,84 +399,83 @@
       "Type": "AWS::IAM::Role",
       "Properties": {
         "Path": "/rdk/",
-        "PermissionsBoundary": {"Fn::If": [ "UseBoundaryPolicyInRole",
-            { "Ref": "BoundaryPolicyArn" },
-            { "Ref": "AWS::NoValue" }
+        "PermissionsBoundary": {
+          "Fn::If": [
+            "UseBoundaryPolicyInRole",
+            {
+              "Ref": "BoundaryPolicyArn"
+            },
+            {
+              "Ref": "AWS::NoValue"
+            }
           ]
         },
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [ {
-            "Sid": "AllowLambdaAssumeRole",
-            "Effect": "Allow",
-            "Principal": { "Service": "lambda.amazonaws.com" },
-            "Action": "sts:AssumeRole"
-          } ]
+          "Statement": [
+            {
+              "Sid": "AllowLambdaAssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
         },
-        "Policies": [ {
-          "PolicyName": "ConfigRulePolicy",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [
-              {
-                "Sid": "1",
-                "Action": [
-                  "s3:GetObject"
-                ],
-                "Effect": "Allow",
-                "Resource": { "Fn::Sub": "arn:${AWS::Partition}:s3:::${SourceBucket}/${SourcePath}" }
-              },
-              {
-                "Sid": "2",
-                "Action": [
-                  "logs:CreateLogGroup",
-                  "logs:CreateLogStream",
-                  "logs:PutLogEvents",
-                  "logs:DescribeLogStreams"
-                ],
-                "Effect": "Allow",
-                "Resource": "*"
-              },
-              {
-                "Sid": "3",
-                "Action": [
-                  "config:PutEvaluations"
-                ],
-                "Effect": "Allow",
-                "Resource": "*"
-              },
-              {
-                "Sid": "4",
-                "Action": [
-                  "iam:List*",
-                  "iam:Describe*",
-                  "iam:Get*"
-                ],
-                "Effect": "Allow",
-                "Resource": "*"
-              },
-              {
-                "Sid": "5",
-                "Action": [
-                  "sts:AssumeRole"
-                ],
-                "Effect": "Allow",
-                "Resource": "*"
-              }
-            ]
+        "Policies": [
+          {
+            "PolicyName": "ConfigRulePolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "2",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents",
+                    "logs:DescribeLogStreams"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                },
+                {
+                  "Sid": "3",
+                  "Action": ["config:PutEvaluations"],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                },
+                {
+                  "Sid": "4",
+                  "Action": ["iam:List*", "iam:Get*"],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                },
+                {
+                  "Sid": "5",
+                  "Action": ["sts:AssumeRole"],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                }
+              ]
+            }
           }
-        } ],
+        ],
         "ManagedPolicyArns": [
-          { "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess" }
+          {
+            "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess"
+          }
         ]
       }
     }
   },
-
   "Outputs": {
     "RuleCodeLambda": {
       "Description": "ARN for the Rule Code lambda",
-      "Value": { "Fn::GetAtt": [ "rdkRuleCodeLambda", "Arn" ] }
+      "Value": {
+        "Fn::GetAtt": ["rdkRuleCodeLambda", "Arn"]
+      }
     }
   }
 }

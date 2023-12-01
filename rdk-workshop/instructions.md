@@ -77,21 +77,27 @@ Tips: To enable AWS Config at scale, it is recommended to use AWS CloudFormation
 Note: It might take up to 2 hours to get the information about the CIS benchmark into Security Hub, we will see the result later.
 
 ## Task 3: Launch a Managed Config Rules
-3. Deploy the Managed Config Rule "s3-bucket-versioning-enabled" with remediation
+3. Deploy the Managed Config Rule "s3-bucket-versioning-enabled"
   * Navigate to the Config Service.
   * On the left panel, click on "Rules"
   * Click on "Add rule"
   * Type "versioning" into the "Filter by rule.." box.
   * Select "s3-bucket-versioning-enabled"
-  * In the configuration of the rule, scroll down to "Choose remediation action" 
-  * Select "AWS-ConfigureS3BucketVersioning" in the remediation action drop-down
-  * Select "No" for Auto remediation
   * Choose "BucketName" in the Resource ID parameter drop-down
+  * For "AutomationAssumeRole" input the ARN of the WorkshopRemediationRole created from the RDKWorkshopSetup Cloudformation stack
   * Leave the other options at the defaults.
   * Click "Save"
 
-## Task 4: Remediate a Noncompliant resource
-4. Visualize the results for the rule "s3-bucket-versioning-enabled"
+## Task 4: Add Remediation Action
+4. Edit the rule for remediation
+  * Select the previously created "s3-bucket-versioning-enabled" rule 
+  * Edit the remediation action
+  * Select "AWS-ConfigureS3BucketVersioning" in the remediation action drop-down
+  * Select "No" for Auto remediation
+  * Click "Save changes"
+
+## Task 5: Remediate a Noncompliant resource
+5. Visualize the results for the rule "s3-bucket-versioning-enabled"
   * Navigate to the Config Service.
   * On the left panel, click on "Rules"
   * Search for "s3-bucket-versioning-enabled" in the list of rule (scroll down if necessary).
@@ -99,15 +105,15 @@ Note: It might take up to 2 hours to get the information about the CIS benchmark
   * Refresh the page until there is no banner ["No results available" or "Evaluating"] on the top (meaning that the rule has been executed)
   * Search for the evaluation result on a bucket named "my-bucket-to-remediate-*accountid*-*regionname*"
 
-5. Remediate the non-compliant bucket "my-bucket-to-remediate-*accountid*-*regionname*"
+6. Remediate the non-compliant bucket "my-bucket-to-remediate-*accountid*-*regionname*"
   * Check the box next to the line showing **Noncompliant**
   * Click on "Remediate"
   * Refresh (with double arrow button) until completion. Note 1: the "Action executed successfully" and showing **Compliant** is not at the same time (it takes up to ~5 min), keep refreshing. Note 2: on the console, the filter of the result show the "noncompliant" by default, you will need to switch the compliance status filter to see the "compliant".
 
 ## (Optional) Going further
-6. Discover all the available [Managed Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html).
+7. Discover all the available [Managed Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html).
 
-7. Navigate to [AWS System Manager Automation Documents](https://eu-west-1.console.aws.amazon.com/systems-manager/documents?region=eu-west-1) to discover all existing remediations actions.
+8. Navigate to [AWS System Manager Automation Documents](https://us-east-1.console.aws.amazon.com/systems-manager/documents?region=us-east-1) to discover all existing remediation actions.
 
 
 # Lab 2: Writing Your First Config Rule
@@ -252,7 +258,7 @@ rdk modify MFA_ENABLED_RULE --maximum-frequency One_Hour
 
 2. In your text editor, open up the MFA_ENABLED_RULE.py file.  If you do not yet have a working version of this Rule from the last lab, go ahead and copy it from the solutions section at the end of this lab guide.
 
-3. Remember that in a Periodic invocation of the Rule the configuration_item passed in to your evaluate_compliance function will be empty so we'll need to make an API call to retrieve all of the IAM users in the account and evaluate them all using the same logic as we used in the previous exercise.
+3. Remember that in a Periodic invocation of the Rule the configuration_item passed in to your evaluate_compliance function will be empty, so we'll need to make an API call to retrieve all the IAM users in the account and evaluate them all using the same logic as we used in the previous exercise.
 
 4. To make that a little easier, let's refactor what we've got to make a trigger-independent `evaluate_user(username)` function out of your existing compliance evaluation logic, which we will conditionally call if the configuration_item is present.  This will preserve our existing functionality, and should look something like the following pseudo-code:
 
@@ -290,14 +296,14 @@ rdk modify MFA_ENABLED_RULE --maximum-frequency One_Hour
 
 # Lab 4 (on your own time): Remediation
 
-In this lab, you will use CloudWatch Events and a Lambda Function to remediate non-compliant resources.
+In this lab, you will use EventBridge and a Lambda Function to remediate non-compliant resources.
 
 ## Lab Overview
 
 ### Objectives
 After completing this lab, you will be able to:
 
-- Configure CloudWatch Events to trigger a Lambda Function when the compliance state of a Config Rule changes
+- Configure Amazon EventBridge to trigger a Lambda Function when the compliance state of a Config Rule changes
 - Create a Lambda Function to remediate compliance issues
 
 
@@ -312,7 +318,7 @@ After completing this lab, you will be able to:
 
 3. Navigate to the Lambda service.  Click on "Create Function" and choose "Author From Scratch."  For the Name enter "MFA_ENABLED_REMEDIATION", and for Runtime choose python3.7.  For the Role drop-down select "Choose an existing role", and in the "Existing role" drop-down select the "WorkshopRemediationRole" that was created by the lab setup CloudFormation template.  Click on "Create Function" to complete the Function creation.
 
-4. Navigate to the CloudWatch service.  Click on "Rules" in the left-hand navigation.
+4. Navigate to the EventBridge service.  Click on "Rules" in the left-hand navigation.
 
 5. Click on "Create rule".  For Event Source choose "Event Pattern".  For Service Name choose "Config", and for Event Type choose "Config Rules Compliance Change".  Leave most of the filters to the "Any ..." settings, but change "Any rule name" to "Specific rule name(s)", and type "MFA_ENABLED_RULE" in the text box.
 
@@ -322,7 +328,7 @@ After completing this lab, you will be able to:
 
 8. Go back to your MFA_ENABLED_REMEDIATION Lambda Function.  It's time to update it to secure your environment!
 
-9. The CloudWatch Event Rule will send an Event to your Lambda function every time the MFA_ENABLED_RULE changes compliance status for any IAM user.  The event that Lambda receives will look something like this:
+9. The EventBridge Rule will send an Event to your Lambda function every time the MFA_ENABLED_RULE changes compliance status for any IAM user.  The event that Lambda receives will look something like this:
 
 ~~~~~
 {  
@@ -382,7 +388,7 @@ After completing this lab, you will be able to:
 
 12. Some other hints:
   * Make sure you add `import boto3` to the top of your python code.
-  * The CloudWatch Event will contain the unique ID of the IAM User, not the Username.  You will need to call IAM ListUsers and loop through the returned list.
+  * The EventBridge will contain the unique ID of the IAM User, not the Username.  You will need to call IAM ListUsers and loop through the returned list.
   * If you are using an active AWS account, consider simply logging messages to show that the function is working using the print() statement, rather than making changes to your account.
 
 13. For a basic solution to the exercise, scroll to the end of this lab guide.

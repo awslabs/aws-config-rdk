@@ -1,0 +1,78 @@
+name: 'Validation'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ## TODO: Enable this once the repo is totally formatted to standard.
+  # lint-style:
+  #   name: Linting and Styling
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Source
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+
+  #     - name: Setup Dependencies
+  #       uses: './.github/actions/dep-setup'
+  #       with:
+  #         python-version: '3.10'
+
+  #     - name: Run Styling Enforcement
+  #       shell: bash
+  #       run: poetry poe check
+
+  #     # TODO: As soon as the repo is in a state to enable this, we'll do so.
+  #     - name: Run Style Linting Enforcement
+  #       shell: bash
+  #       run: poetry poe lint
+
+  ## TODO: Enable unit tests via GH Actions when unit tests are fixed and migrated to pytest.
+  # unit-tests:
+  #   name: Run Unit Tests
+  #   strategy:
+  #     matrix:
+  #       version: ['3.7', '3.8', '3.9', '3.10', '3.11']
+  #       os: [ubuntu-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - name: Checkout Source
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+
+  #     - name: Setup Dependencies
+  #       uses: './.github/actions/dep-setup'
+  #       with:
+  #         python-version: '${{ matrix.version }}'
+
+  #     - name: Run Tests
+  #       shell: bash
+  #       run: poetry poe test
+
+  #     - name: Codecov
+  #       uses: codecov/codecov-action@v3
+
+  security:
+    name: Run Security Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Dependencies
+        uses: './.github/actions/dep-setup'
+        with:
+          python-version: '3.10'
+
+      - name: Run Security Checks
+        shell: bash
+        run: poetry poe safety

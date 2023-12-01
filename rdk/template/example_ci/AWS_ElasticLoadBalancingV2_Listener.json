@@ -1,0 +1,43 @@
+{
+  "version": "1.3",
+  "accountId": "111111111111",
+  "configurationItemCaptureTime": "2023-07-21T17:06:43.815Z",
+  "configurationItemStatus": "ResourceDiscovered",
+  "configurationStateId": "1689959212345",
+  "configurationItemMD5Hash": "",
+  "arn": "arn:aws:elasticloadbalancing:us-east-2:111111111111:listener/app/test/abcd95d05fc9fc53/abcd983295de2c72",
+  "resourceType": "AWS::ElasticLoadBalancingV2::Listener",
+  "resourceId": "arn:aws:elasticloadbalancing:us-east-2:111111111111:listener/app/test/abcd95d05fc9fc53/abcd983295de2c72",
+  "awsRegion": "us-east-2",
+  "availabilityZone": "Regional",
+  "tags": {},
+  "relatedEvents": [],
+  "relationships": [],
+  "configuration": {
+    "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-2:111111111111:loadbalancer/app/test/abcd95d05fc9fc53",
+    "DefaultActions": [
+      {
+        "Type": "forward",
+        "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:111111111111:targetgroup/test/abcd9b2e38491ce1",
+        "ForwardConfig": {
+          "TargetGroups": [
+            {
+              "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:111111111111:targetgroup/test/abcd9b2e38491ce1",
+              "Weight": 1
+            }
+          ],
+          "TargetGroupStickinessConfig": {
+            "Enabled": false
+          }
+        }
+      }
+    ],
+    "Port": 80,
+    "Certificates": [],
+    "Protocol": "HTTP",
+    "ListenerArn": "arn:aws:elasticloadbalancing:us-east-2:111111111111:listener/app/test/abcd95d05fc9fc53/abcd983295de2c72",
+    "AlpnPolicy": []
+  },
+  "supplementaryConfiguration": {},
+  "resourceTransitionStatus": "None"
+}

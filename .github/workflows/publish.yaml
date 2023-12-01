@@ -1,0 +1,50 @@
+name: 'Publish Release'
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Dependencies
+        uses: './.github/actions/dep-setup'
+        with:
+          python-version: '3.10'
+
+      - name: Run Safety Check
+        run: poetry poe safety
+
+      - name: Get Python Module Version
+        run: |
+          MODULE_VERSION=$(poetry version --short)
+          echo "MODULE_VERSION=$MODULE_VERSION" >> $GITHUB_ENV
+
+      - name: Verify Versions Match
+        run: |
+          TAG_VERSION=$(git describe HEAD --tags --abbrev=0)
+          echo "Git Tag Version: $TAG_VERSION"
+          echo "Python Module Version: $MODULE_VERSION"
+          if [[ "$TAG_VERSION" != "$MODULE_VERSION" ]]; then exit 1; fi
+
+      - name: Publish to PyPi
+        run: poetry publish --build
+        env:
+          POETRY_PYPI_TOKEN_PYPI: ${{ secrets.POETRY_PYPI_TOKEN_PYPI }}
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          discussion_category_name: announcements
+          generate_release_notes: true
+          files: |
+            dist/rdk-${{env.MODULE_VERSION}}-py3-none-any.whl
+            dist/rdk-${{env.MODULE_VERSION}}.tar.gz

@@ -11,12 +11,6 @@ data "aws_iam_policy" "read_only_access" {
 data "aws_iam_policy_document" "config_iam_policy" {
 
     statement{
-      actions=["s3:GetObject"]
-      resources = [format("arn:%s:s3:::%s/%s",data.aws_partition.current.partition,var.source_bucket,local.rule_name_source)]
-      effect = "Allow"
-      sid= "1"
-    }
-    statement{
       actions=[
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
@@ -36,7 +30,6 @@ data "aws_iam_policy_document" "config_iam_policy" {
     statement{
       actions=[
                 "iam:List*",
-                "iam:Describe*",
                 "iam:Get*"
             ]
       resources = ["*"]

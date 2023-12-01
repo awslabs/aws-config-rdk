@@ -1,0 +1,63 @@
+name: Dependency Setup
+description: 'Action to setup the runtime environment for CI jobs.'
+
+inputs:
+  python-version:
+    description: 'The Python version to be used during setup'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '${{ inputs.python-version }}'
+
+    - name: Cache Poetry
+      id: cache-poetry
+      uses: actions/cache@v3
+      with:
+        path: ${{github.workspace}}/.poetry
+        key: poetry-self-${{ hashFiles('.github/workflows/*.yml') }}
+        restore-keys: poetry-self-
+
+    - name: Install Poetry
+      if: steps.cache-poetry.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        export POETRY_HOME=${{github.workspace}}/.poetry
+        curl -sSL https://raw.githubusercontent.com/python-poetry/install.python-poetry.org/main/install-poetry.py -O
+        python install-poetry.py --preview
+        rm install-poetry.py
+
+    - name: Add Poetry to $PATH
+      shell: bash
+      run: echo "${{github.workspace}}/.poetry/bin" >> $GITHUB_PATH
+
+    - name: Add poethepoet plugin
+      shell: bash
+      run: poetry self add 'poethepoet[poetry_plugin]'
+
+    - name: Poetry Version
+      shell: bash
+      run: poetry --version
+
+    - name: Check pyproject.toml validity
+      shell: bash
+      run: poetry check --no-interaction
+
+    - name: Cache Dependencies
+      id: cache-deps
+      uses: actions/cache@v3
+      with:
+        path: ${{github.workspace}}/.venv
+        key: poetry-deps-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: poetry-deps-
+
+    - name: Install Deps
+      if: steps.cache-deps.cache-hit != 'true'
+      shell: bash
+      run: |
+        poetry config virtualenvs.in-project true
+        poetry install --no-interaction
