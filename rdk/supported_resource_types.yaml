@@ -1,32 +1,241 @@
 supported_resources:
   - ALL # Special string to support all resource types
-  - AWS::ACM::Certificate
-  - AWS::APS::RuleGroupsNamespace
-  - AWS::AccessAnalyzer::Analyzer
-  - AWS::AmazonMQ::Broker
-  - AWS::Amplify::App
-  - AWS::Amplify::Branch
-  - AWS::ApiGateway::RestApi
-  - AWS::ApiGateway::Stage
-  - AWS::ApiGatewayV2::Api
-  - AWS::ApiGatewayV2::Stage
-  - AWS::AppConfig::Application
-  - AWS::AppConfig::ConfigurationProfile
-  - AWS::AppConfig::DeploymentStrategy
-  - AWS::AppConfig::Environment
+  - AWS::AppStream::DirectoryConfig
+  - AWS::AppStream::Application
+  - AWS::AppStream::Stack
+  - AWS::AppStream::Fleet
   - AWS::AppFlow::Flow
   - AWS::AppIntegrations::EventIntegration
-  - AWS::AppMesh::Route
-  - AWS::AppMesh::VirtualNode
-  - AWS::AppMesh::VirtualService
-  - AWS::AppRunner::VpcConnector
-  - AWS::AppStream::Application
-  - AWS::AppStream::DirectoryConfig
-  - AWS::AppStream::Stack
-  - AWS::AppSync::GraphQLApi
+  - AWS::ApiGateway::Stage
+  - AWS::ApiGateway::RestApi
+  - AWS::ApiGatewayV2::Stage
+  - AWS::ApiGatewayV2::Api
+  - AWS::Athena::WorkGroup
   - AWS::Athena::DataCatalog
   - AWS::Athena::PreparedStatement
-  - AWS::Athena::WorkGroup
+  - AWS::CloudFront::Distribution
+  - AWS::CloudFront::StreamingDistribution
+  - AWS::CloudWatch::Alarm
+  - AWS::CloudWatch::MetricStream
+  - AWS::Logs::Destination
+  - AWS::RUM::AppMonitor
+  - AWS::Evidently::Project
+  - AWS::Evidently::Launch
+  - AWS::CodeGuruReviewer::RepositoryAssociation
+  - AWS::CodeGuruProfiler::ProfilingGroup
+  - AWS::Cognito::UserPool
+  - AWS::Cognito::UserPoolClient
+  - AWS::Cognito::UserPoolGroup
+  - AWS::Connect::PhoneNumber
+  - AWS::Connect::QuickConnect
+  - AWS::Connect::Instance
+  - AWS::CustomerProfiles::Domain
+  - AWS::CustomerProfiles::ObjectType
+  - AWS::Detective::Graph
+  - AWS::DynamoDB::Table
+  - AWS::EC2::Host
+  - AWS::EC2::EIP
+  - AWS::EC2::Instance
+  - AWS::EC2::NetworkInterface
+  - AWS::EC2::SecurityGroup
+  - AWS::EC2::NatGateway
+  - AWS::EC2::EgressOnlyInternetGateway
+  - AWS::EC2::EC2Fleet
+  - AWS::EC2::SpotFleet
+  - AWS::EC2::PrefixList
+  - AWS::EC2::FlowLog
+  - AWS::EC2::TransitGateway
+  - AWS::EC2::TransitGatewayAttachment
+  - AWS::EC2::TransitGatewayRouteTable
+  - AWS::EC2::VPCEndpoint
+  - AWS::EC2::VPCEndpointService
+  - AWS::EC2::VPCPeeringConnection
+  - AWS::EC2::RegisteredHAInstance
+  - AWS::EC2::SubnetRouteTableAssociation
+  - AWS::EC2::LaunchTemplate
+  - AWS::EC2::NetworkInsightsAccessScopeAnalysis
+  - AWS::EC2::TrafficMirrorTarget
+  - AWS::EC2::TrafficMirrorSession
+  - AWS::EC2::DHCPOptions
+  - AWS::EC2::IPAM
+  - AWS::EC2::NetworkInsightsPath
+  - AWS::EC2::TrafficMirrorFilter
+  - AWS::EC2::CapacityReservation
+  - AWS::EC2::ClientVpnEndpoint
+  - AWS::EC2::CustomerGateway
+  - AWS::EC2::InternetGateway
+  - AWS::EC2::NetworkAcl
+  - AWS::EC2::RouteTable
+  - AWS::EC2::Subnet
+  - AWS::EC2::VPC
+  - AWS::EC2::VPNConnection
+  - AWS::EC2::VPNGateway
+  - AWS::EC2::IPAMScope
+  - AWS::EC2::CarrierGateway
+  - AWS::EC2::TransitGatewayConnect
+  - AWS::EC2::IPAMPool
+  - AWS::EC2::TransitGatewayMulticastDomain
+  - AWS::EC2::NetworkInsightsAccessScope
+  - AWS::EC2::NetworkInsightsAnalysis
+  - AWS::EC2::Volume
+  - AWS::ImageBuilder::ImagePipeline
+  - AWS::ImageBuilder::DistributionConfiguration
+  - AWS::ImageBuilder::ContainerRecipe
+  - AWS::ImageBuilder::InfrastructureConfiguration
+  - AWS::ImageBuilder::ImageRecipe
+  - AWS::ECR::Repository
+  - AWS::ECR::RegistryPolicy
+  - AWS::ECR::PullThroughCacheRule
+  - AWS::ECR::PublicRepository
+  - AWS::ECS::Cluster
+  - AWS::ECS::TaskDefinition
+  - AWS::ECS::Service*
+  - AWS::ECS::TaskSet
+  - AWS::ECS::CapacityProvider
+  - AWS::EFS::FileSystem
+  - AWS::EFS::AccessPoint
+  - AWS::EKS::Cluster
+  - AWS::EKS::FargateProfile
+  - AWS::EKS::IdentityProviderConfig
+  - AWS::EKS::Addon
+  - AWS::EMR::SecurityConfiguration
+  - AWS::Events::EventBus
+  - AWS::Events::ApiDestination
+  - AWS::Events::Archive
+  - AWS::Events::Endpoint
+  - AWS::Events::Connection
+  - AWS::Events::Rule
+  - AWS::EventSchemas::RegistryPolicy
+  - AWS::EventSchemas::Discoverer
+  - AWS::EventSchemas::Schema
+  - AWS::Forecast::Dataset
+  - AWS::Forecast::DatasetGroup
+  - AWS::FraudDetector::Label
+  - AWS::FraudDetector::EntityType
+  - AWS::FraudDetector::Variable
+  - AWS::FraudDetector::Outcome
+  - AWS::GuardDuty::Detector
+  - AWS::GuardDuty::ThreatIntelSet
+  - AWS::GuardDuty::IPSet
+  - AWS::GuardDuty::Filter
+  - AWS::InspectorV2::Filter
+  - AWS::IVS::Channel
+  - AWS::IVS::RecordingConfiguration
+  - AWS::IVS::PlaybackKeyPair
+  - AWS::Cassandra::Keyspace
+  - AWS::Elasticsearch::Domain
+  - AWS::OpenSearch::Domain
+  - AWS::Personalize::Dataset
+  - AWS::Personalize::Schema
+  - AWS::Personalize::Solution
+  - AWS::Personalize::DatasetGroup
+  - AWS::Pinpoint::ApplicationSettings
+  - AWS::Pinpoint::Segment
+  - AWS::Pinpoint::App
+  - AWS::Pinpoint::Campaign
+  - AWS::Pinpoint::InAppTemplate
+  - AWS::Pinpoint::EmailChannel
+  - AWS::Pinpoint::EmailTemplate
+  - AWS::Pinpoint::EventStream
+  - AWS::QLDB::Ledger
+  - AWS::Kendra::Index
+  - AWS::Kinesis::Stream
+  - AWS::Kinesis::StreamConsumer
+  - AWS::KinesisAnalyticsV2::Application
+  - AWS::KinesisFirehose::DeliveryStream
+  - AWS::KinesisVideo::SignalingChannel
+  - AWS::KinesisVideo::Stream
+  - AWS::Lex::BotAlias
+  - AWS::Lex::Bot
+  - AWS::Lightsail::Disk
+  - AWS::Lightsail::Certificate
+  - AWS::Lightsail::Bucket
+  - AWS::Lightsail::StaticIp
+  - AWS::LookoutMetrics::Alert
+  - AWS::LookoutVision::Project
+  - AWS::Grafana::Workspace
+  - AWS::APS::RuleGroupsNamespace
+  - AWS::AmazonMQ::Broker
+  - AWS::MSK::Cluster
+  - AWS::MSK::Configuration
+  - AWS::MSK::BatchScramSecret
+  - AWS::KafkaConnect::Connector
+  - AWS::Redshift::Cluster
+  - AWS::Redshift::ClusterParameterGroup
+  - AWS::Redshift::ClusterSecurityGroup
+  - AWS::Redshift::ScheduledAction
+  - AWS::Redshift::ClusterSnapshot
+  - AWS::Redshift::ClusterSubnetGroup
+  - AWS::Redshift::EventSubscription
+  - AWS::Redshift::EndpointAccess
+  - AWS::RDS::DBInstance
+  - AWS::RDS::DBSecurityGroup
+  - AWS::RDS::DBSnapshot
+  - AWS::RDS::DBSubnetGroup
+  - AWS::RDS::EventSubscription
+  - AWS::RDS::DBCluster
+  - AWS::RDS::DBClusterSnapshot
+  - AWS::RDS::GlobalCluster
+  - AWS::RDS::OptionGroup
+  - AWS::Route53::HostedZone
+  - AWS::Route53::HealthCheck
+  - AWS::Route53Resolver::ResolverEndpoint
+  - AWS::Route53Resolver::ResolverRule
+  - AWS::Route53Resolver::ResolverRuleAssociation
+  - AWS::Route53Resolver::FirewallDomainList
+  - AWS::Route53Resolver::FirewallRuleGroupAssociation
+  - AWS::Route53Resolver::ResolverQueryLoggingConfig
+  - AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation
+  - AWS::Route53Resolver::FirewallRuleGroup
+  - AWS::Route53RecoveryReadiness::Cell
+  - AWS::Route53RecoveryReadiness::ReadinessCheck
+  - AWS::Route53RecoveryReadiness::RecoveryGroup
+  - AWS::Route53RecoveryControl::Cluster
+  - AWS::Route53RecoveryControl::ControlPanel
+  - AWS::Route53RecoveryControl::RoutingControl
+  - AWS::Route53RecoveryControl::SafetyRule
+  - AWS::Route53RecoveryReadiness::ResourceSet
+  - AWS::SageMaker::CodeRepository
+  - AWS::SageMaker::Domain
+  - AWS::SageMaker::AppImageConfig
+  - AWS::SageMaker::Image
+  - AWS::SageMaker::Model
+  - AWS::SageMaker::NotebookInstance
+  - AWS::SageMaker::NotebookInstanceLifecycleConfig
+  - AWS::SageMaker::EndpointConfig
+  - AWS::SageMaker::Workteam
+  - AWS::SageMaker::FeatureGroup
+  - AWS::SES::ConfigurationSet
+  - AWS::SES::ContactList
+  - AWS::SES::Template
+  - AWS::SES::ReceiptFilter
+  - AWS::SES::ReceiptRuleSet
+  - AWS::SNS::Topic
+  - AWS::SQS::Queue
+  - AWS::S3::Bucket*
+  - AWS::S3::AccountPublicAccessBlock
+  - AWS::S3::MultiRegionAccessPoint
+  - AWS::S3::StorageLens
+  - AWS::S3::AccessPoint
+  - AWS::WorkSpaces::ConnectionAlias
+  - AWS::WorkSpaces::Workspace
+  - AWS::Amplify::App
+  - AWS::Amplify::Branch
+  - AWS::AppConfig::Application
+  - AWS::AppConfig::Environment
+  - AWS::AppConfig::ConfigurationProfile
+  - AWS::AppConfig::DeploymentStrategy
+  - AWS::AppConfig::HostedConfigurationVersion
+  - AWS::AppRunner::VpcConnector
+  - AWS::AppRunner::Service
+  - AWS::AppMesh::VirtualNode
+  - AWS::AppMesh::VirtualService
+  - AWS::AppMesh::VirtualGateway
+  - AWS::AppMesh::VirtualRouter
+  - AWS::AppMesh::Route
+  - AWS::AppMesh::GatewayRoute
+  - AWS::AppMesh::Mesh
+  - AWS::AppSync::GraphQLApi
   - AWS::AuditManager::Assessment
   - AWS::AutoScaling::AutoScalingGroup
   - AWS::AutoScaling::LaunchConfiguration
@@ -38,329 +247,167 @@ supported_resources:
   - AWS::Backup::BackupVault
   - AWS::Backup::RecoveryPoint
   - AWS::Backup::ReportPlan
-  - AWS::Batch::ComputeEnvironment
   - AWS::Batch::JobQueue
+  - AWS::Batch::ComputeEnvironment
   - AWS::Batch::SchedulingPolicy
   - AWS::Budgets::BudgetsAction
-  - AWS::Cassandra::Keyspace
-  - AWS::Cloud9::EnvironmentEC2
+  - AWS::ACM::Certificate
   - AWS::CloudFormation::Stack
-  - AWS::CloudFront::Distribution
-  - AWS::CloudFront::StreamingDistribution
   - AWS::CloudTrail::Trail
-  - AWS::CloudWatch::Alarm
-  - AWS::CloudWatch::MetricStream
+  - AWS::Cloud9::EnvironmentEC2
+  - AWS::ServiceDiscovery::Service
+  - AWS::ServiceDiscovery::PublicDnsNamespace
+  - AWS::ServiceDiscovery::HttpNamespace
+  - AWS::ServiceDiscovery::Instance
   - AWS::CodeArtifact::Repository
   - AWS::CodeBuild::Project
   - AWS::CodeBuild::ReportGroup
   - AWS::CodeDeploy::Application
   - AWS::CodeDeploy::DeploymentConfig
   - AWS::CodeDeploy::DeploymentGroup
-  - AWS::CodeGuruProfiler::ProfilingGroup
-  - AWS::CodeGuruReviewer::RepositoryAssociation
   - AWS::CodePipeline::Pipeline
-  - AWS::Config::ConfigurationRecorder
-  - AWS::Config::ConformancePackCompliance
   - AWS::Config::ResourceCompliance
-  - AWS::Connect::PhoneNumber
-  - AWS::CustomerProfiles::Domain
-  - AWS::DMS::Certificate
+  - AWS::Config::ConformancePackCompliance
+  - AWS::Config::ConfigurationRecorder
   - AWS::DMS::EventSubscription
-  - AWS::DMS::ReplicationInstance
   - AWS::DMS::ReplicationSubnetGroup
+  - AWS::DMS::ReplicationInstance
   - AWS::DMS::ReplicationTask
-  - AWS::DataSync::LocationEFS
+  - AWS::DMS::Certificate
+  - AWS::DMS::Endpoint
+  - AWS::DataSync::LocationSMB
   - AWS::DataSync::LocationFSxLustre
   - AWS::DataSync::LocationFSxWindows
-  - AWS::DataSync::LocationHDFS
-  - AWS::DataSync::LocationNFS
-  - AWS::DataSync::LocationObjectStorage
   - AWS::DataSync::LocationS3
-  - AWS::DataSync::LocationSMB
+  - AWS::DataSync::LocationEFS
+  - AWS::DataSync::LocationNFS
+  - AWS::DataSync::LocationHDFS
+  - AWS::DataSync::LocationObjectStorage
   - AWS::DataSync::Task
-  - AWS::Detective::Graph
+  - AWS::DeviceFarm::TestGridProject
   - AWS::DeviceFarm::InstanceProfile
   - AWS::DeviceFarm::Project
-  - AWS::DeviceFarm::TestGridProject
-  - AWS::DynamoDB::Table
-  - AWS::EC2::CustomerGateway
-  - AWS::EC2::DHCPOptions
-  - AWS::EC2::EC2Fleet
-  - AWS::EC2::EIP
-  - AWS::EC2::EgressOnlyInternetGateway
-  - AWS::EC2::FlowLog
-  - AWS::EC2::Host
-  - AWS::EC2::IPAM
-  - AWS::EC2::IPAMScope
-  - AWS::EC2::Instance
-  - AWS::EC2::InternetGateway
-  - AWS::EC2::LaunchTemplate
-  - AWS::EC2::NatGateway
-  - AWS::EC2::NetworkAcl
-  - AWS::EC2::NetworkInsightsAccessScopeAnalysis
-  - AWS::EC2::NetworkInsightsPath
-  - AWS::EC2::NetworkInterface
-  - AWS::EC2::PrefixList
-  - AWS::EC2::RegisteredHAInstance
-  - AWS::EC2::RouteTable
-  - AWS::EC2::SecurityGroup
-  - AWS::EC2::SpotFleet
-  - AWS::EC2::Subnet
-  - AWS::EC2::SubnetRouteTableAssociation
-  - AWS::EC2::TrafficMirrorFilter
-  - AWS::EC2::TrafficMirrorSession
-  - AWS::EC2::TrafficMirrorTarget
-  - AWS::EC2::TransitGateway
-  - AWS::EC2::TransitGatewayAttachment
-  - AWS::EC2::TransitGatewayRouteTable
-  - AWS::EC2::VPC
-  - AWS::EC2::VPCEndpoint
-  - AWS::EC2::VPCEndpointService
-  - AWS::EC2::VPCPeeringConnection
-  - AWS::EC2::VPNConnection
-  - AWS::EC2::VPNGateway
-  - AWS::EC2::Volume
-  - AWS::ECR::PublicRepository
-  - AWS::ECR::PullThroughCacheRule
-  - AWS::ECR::RegistryPolicy
-  - AWS::ECR::Repository
-  - AWS::ECS::Cluster
-  - AWS::ECS::Service
-  - AWS::ECS::TaskDefinition
-  - AWS::ECS::TaskSet
-  - AWS::EFS::AccessPoint
-  - AWS::EFS::FileSystem
-  - AWS::EKS::Addon
-  - AWS::EKS::Cluster
-  - AWS::EKS::FargateProfile
-  - AWS::EKS::IdentityProviderConfig
-  - AWS::EMR::SecurityConfiguration
   - AWS::ElasticBeanstalk::Application
   - AWS::ElasticBeanstalk::ApplicationVersion
   - AWS::ElasticBeanstalk::Environment
-  - AWS::ElasticLoadBalancing::LoadBalancer
-  - AWS::ElasticLoadBalancingV2::Listener
-  - AWS::ElasticLoadBalancingV2::LoadBalancer
-  - AWS::ElasticSearch::Domain
-  - AWS::EventSchemas::Discoverer
-  - AWS::EventSchemas::Registry
-  - AWS::EventSchemas::RegistryPolicy
-  - AWS::EventSchemas::Schema
-  - AWS::Events::ApiDestination
-  - AWS::Events::Archive
-  - AWS::Events::Connection
-  - AWS::Events::Endpoint
-  - AWS::Events::EventBus
-  - AWS::Events::Rule
-  - AWS::Evidently::Launch
-  - AWS::Evidently::Project
   - AWS::FIS::ExperimentTemplate
-  - AWS::Forecast::Dataset
-  - AWS::Forecast::DatasetGroup
-  - AWS::FraudDetector::EntityType
-  - AWS::FraudDetector::Label
-  - AWS::FraudDetector::Outcome
-  - AWS::FraudDetector::Variable
-  - AWS::GlobalAccelerator::Accelerator
-  - AWS::GlobalAccelerator::EndpointGroup
   - AWS::GlobalAccelerator::Listener
-  - AWS::Glue::Classifier
+  - AWS::GlobalAccelerator::EndpointGroup
+  - AWS::GlobalAccelerator::Accelerator
   - AWS::Glue::Job
+  - AWS::Glue::Classifier
   - AWS::Glue::MLTransform
-  - AWS::GreengrassV2::ComponentVersion
   - AWS::GroundStation::Config
   - AWS::GroundStation::MissionProfile
-  - AWS::GuardDuty::Detector
-  - AWS::GuardDuty::Filter
-  - AWS::GuardDuty::IPSet
-  - AWS::GuardDuty::ThreatIntelSet
+  - AWS::GroundStation::DataflowEndpointGroup
   - AWS::HealthLake::FHIRDatastore
+  - AWS::IAM::User
   - AWS::IAM::Group
-  - AWS::IAM::Policy
   - AWS::IAM::Role
+  - AWS::IAM::Policy
   - AWS::IAM::SAMLProvider
   - AWS::IAM::ServerCertificate
-  - AWS::IAM::User
-  - AWS::IVS::Channel
-  - AWS::IVS::PlaybackKeyPair
-  - AWS::IVS::RecordingConfiguration
-  - AWS::ImageBuilder::ContainerRecipe
-  - AWS::ImageBuilder::DistributionConfiguration
-  - AWS::ImageBuilder::ImagePipeline
-  - AWS::ImageBuilder::InfrastructureConfiguration
-  - AWS::InspectorV2::Filter
-  - AWS::IoT::AccountAuditConfiguration
+  - AWS::IAM::InstanceProfile
+  - AWS::AccessAnalyzer::Analyzer
   - AWS::IoT::Authorizer
-  - AWS::IoT::CustomMetric
-  - AWS::IoT::Dimension
-  - AWS::IoT::FleetMetric
-  - AWS::IoT::JobTemplate
-  - AWS::IoT::MitigationAction
-  - AWS::IoT::Policy
-  - AWS::IoT::ProvisioningTemplate
-  - AWS::IoT::RoleAlias
-  - AWS::IoT::ScheduledAudit
   - AWS::IoT::SecurityProfile
-  - AWS::IoTAnalytics::Channel
-  - AWS::IoTAnalytics::Dataset
-  - AWS::IoTAnalytics::Datastore
-  - AWS::IoTAnalytics::Pipeline
-  - AWS::IoTEvents::AlarmModel
-  - AWS::IoTEvents::DetectorModel
-  - AWS::IoTEvents::Input
-  - AWS::IoTSiteWise::AssetModel
-  - AWS::IoTSiteWise::Dashboard
+  - AWS::IoT::RoleAlias
+  - AWS::IoT::Dimension
+  - AWS::IoT::Policy
+  - AWS::IoT::MitigationAction
+  - AWS::IoT::ScheduledAudit
+  - AWS::IoT::AccountAuditConfiguration
   - AWS::IoTSiteWise::Gateway
-  - AWS::IoTSiteWise::Portal
-  - AWS::IoTSiteWise::Project
-  - AWS::IoTTwinMaker::ComponentType
+  - AWS::IoT::CustomMetric
+  - AWS::IoT::JobTemplate
+  - AWS::IoT::ProvisioningTemplate
+  - AWS::IoT::CACertificate
+  - AWS::IoTWireless::ServiceProfile
+  - AWS::IoTWireless::MulticastGroup
+  - AWS::IoTWireless::FuotaTask
+  - AWS::IoT::FleetMetric
+  - AWS::IoTAnalytics::Datastore
+  - AWS::IoTAnalytics::Dataset
+  - AWS::IoTAnalytics::Pipeline
+  - AWS::IoTAnalytics::Channel
+  - AWS::IoTEvents::Input
+  - AWS::IoTEvents::DetectorModel
+  - AWS::IoTEvents::AlarmModel
+  - AWS::IoTTwinMaker::Workspace
   - AWS::IoTTwinMaker::Entity
   - AWS::IoTTwinMaker::Scene
-  - AWS::IoTTwinMaker::Workspace
-  - AWS::IoTWireless::FuotaTask
-  - AWS::IoTWireless::MulticastGroup
-  - AWS::IoTWireless::ServiceProfile
-  - AWS::KMS::Alias
+  - AWS::IoTTwinMaker::SyncJob
+  - AWS::IoTSiteWise::Dashboard
+  - AWS::IoTSiteWise::Project
+  - AWS::IoTSiteWise::Portal
+  - AWS::IoTSiteWise::AssetModel
+  - AWS::GreengrassV2::ComponentVersion
   - AWS::KMS::Key
-  - AWS::Kinesis::Stream
-  - AWS::Kinesis::StreamConsumer
-  - AWS::KinesisAnalyticsV2::Application
-  - AWS::KinesisFirehose::DeliveryStream
-  - AWS::KinesisVideo::SignalingChannel
+  - AWS::KMS::Alias
   - AWS::Lambda::Function
-  - AWS::Lex::Bot
-  - AWS::Lex::BotAlias
-  - AWS::Lightsail::Bucket
-  - AWS::Lightsail::Certificate
-  - AWS::Lightsail::Disk
-  - AWS::Lightsail::StaticIp
-  - AWS::LookoutMetrics::Alert
-  - AWS::LookoutVision::Project
-  - AWS::MSK::BatchScramSecret
-  - AWS::MSK::Cluster
-  - AWS::MSK::Configuration
-  - AWS::MediaConnect::FlowEntitlement
-  - AWS::MediaConnect::FlowSource
-  - AWS::MediaConnect::FlowVpcInterface
-  - AWS::MediaPackage::PackagingConfiguration
-  - AWS::MediaPackage::PackagingGroup
-  - AWS::MediaTailor::PlaybackConfiguration
+  - AWS::Lambda::Alias
+  - AWS::Lambda::CodeSigningConfig
+  - AWS::M2::Environment
   - AWS::NetworkFirewall::Firewall
   - AWS::NetworkFirewall::FirewallPolicy
   - AWS::NetworkFirewall::RuleGroup
   - AWS::NetworkFirewall::TLSInspectionConfiguration
-  - AWS::NetworkManager::Device
-  - AWS::NetworkManager::GlobalNetwork
-  - AWS::NetworkManager::Link
-  - AWS::NetworkManager::Site
   - AWS::NetworkManager::TransitGatewayRegistration
-  - AWS::OpenSearch::Domain
+  - AWS::NetworkManager::Site
+  - AWS::NetworkManager::Device
+  - AWS::NetworkManager::Link
+  - AWS::NetworkManager::GlobalNetwork
+  - AWS::NetworkManager::CustomerGatewayAssociation
+  - AWS::NetworkManager::LinkAssociation
+  - AWS::NetworkManager::ConnectPeer
   - AWS::Panorama::Package
-  - AWS::Personalize::Dataset
-  - AWS::Personalize::DatasetGroup
-  - AWS::Personalize::Schema
-  - AWS::Personalize::Solution
-  - AWS::Pinpoint::App
-  - AWS::Pinpoint::ApplicationSettings
-  - AWS::Pinpoint::Campaign
-  - AWS::Pinpoint::EmailTemplate
-  - AWS::Pinpoint::EventStream
-  - AWS::Pinpoint::InAppTemplate
-  - AWS::Pinpoint::Segment
-  - AWS::QLDB::Ledger
-  - AWS::RDS::DBCluster
-  - AWS::RDS::DBClusterSnapshot
-  - AWS::RDS::DBInstance
-  - AWS::RDS::DBSecurityGroup
-  - AWS::RDS::DBSnapshot
-  - AWS::RDS::DBSubnetGroup
-  - AWS::RDS::EventSubscription
-  - AWS::RDS::GlobalCluster
-  - AWS::RUM::AppMonitor
-  - AWS::Redshift::Cluster
-  - AWS::Redshift::ClusterParameterGroup
-  - AWS::Redshift::ClusterSecurityGroup
-  - AWS::Redshift::ClusterSnapshot
-  - AWS::Redshift::ClusterSubnetGroup
-  - AWS::Redshift::EventSubscription
-  - AWS::Redshift::ScheduledAction
-  - AWS::ResilienceHub::App
+  - AWS::ACMPCA::CertificateAuthority
+  - AWS::ACMPCA::CertificateAuthorityActivation
   - AWS::ResilienceHub::ResiliencyPolicy
-  - AWS::RoboMaker::RobotApplication
+  - AWS::ResilienceHub::App
+  - AWS::ResourceExplorer2::Index
   - AWS::RoboMaker::RobotApplicationVersion
+  - AWS::RoboMaker::RobotApplication
   - AWS::RoboMaker::SimulationApplication
-  - AWS::Route53::HealthCheck
-  - AWS::Route53::HostedZone
-  - AWS::Route53RecoveryControl::Cluster
-  - AWS::Route53RecoveryControl::ControlPanel
-  - AWS::Route53RecoveryControl::RoutingControl
-  - AWS::Route53RecoveryControl::SafetyRule
-  - AWS::Route53RecoveryReadiness::Cell
-  - AWS::Route53RecoveryReadiness::ReadinessCheck
-  - AWS::Route53RecoveryReadiness::RecoveryGroup
-  - AWS::Route53RecoveryReadiness::ResourceSet
-  - AWS::Route53Resolver::FirewallDomainList
-  - AWS::Route53Resolver::FirewallRuleGroupAssociation
-  - AWS::Route53Resolver::ResolverEndpoint
-  - AWS::Route53Resolver::ResolverQueryLoggingConfig
-  - AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation
-  - AWS::Route53Resolver::ResolverRule
-  - AWS::Route53Resolver::ResolverRuleAssociation
-  - AWS::S3::AccountPublicAccessBlock
-  - AWS::S3::Bucket
-  - AWS::S3::MultiRegionAccessPoint
-  - AWS::S3::StorageLens
-  - AWS::SES::ConfigurationSet
-  - AWS::SES::ContactList
-  - AWS::SES::ReceiptFilter
-  - AWS::SES::ReceiptRuleSet
-  - AWS::SES::Template
-  - AWS::SNS::Topic
-  - AWS::SQS::Queue
-  - AWS::SSM::AssociationCompliance
-  - AWS::SSM::FileData
-  - AWS::SSM::ManagedInstanceInventory
-  - AWS::SSM::PatchCompliance
-  - AWS::SageMaker::AppImageConfig
-  - AWS::SageMaker::CodeRepository
-  - AWS::SageMaker::Domain
-  - AWS::SageMaker::EndpointConfig
-  - AWS::SageMaker::FeatureGroup
-  - AWS::SageMaker::Image
-  - AWS::SageMaker::Model
-  - AWS::SageMaker::NotebookInstance
-  - AWS::SageMaker::NotebookInstanceLifecycleConfig
-  - AWS::SageMaker::Workteam
+  - AWS::Signer::SigningProfile
   - AWS::SecretsManager::Secret
   - AWS::ServiceCatalog::CloudFormationProduct
   - AWS::ServiceCatalog::CloudFormationProvisionedProduct
   - AWS::ServiceCatalog::Portfolio
-  - AWS::ServiceDiscovery::HttpNamespace
-  - AWS::ServiceDiscovery::Instance
-  - AWS::ServiceDiscovery::PublicDnsNamespace
-  - AWS::ServiceDiscovery::Service
   - AWS::Shield::Protection
   - AWS::ShieldRegional::Protection
-  - AWS::Signer::SigningProfile
   - AWS::StepFunctions::Activity
   - AWS::StepFunctions::StateMachine
+  - AWS::SSM::ManagedInstanceInventory
+  - AWS::SSM::PatchCompliance
+  - AWS::SSM::AssociationCompliance
+  - AWS::SSM::FileData
+  - AWS::SSM::Document
   - AWS::Transfer::Agreement
-  - AWS::Transfer::Certificate
   - AWS::Transfer::Connector
   - AWS::Transfer::Workflow
+  - AWS::Transfer::Certificate
   - AWS::WAF::RateBasedRule
   - AWS::WAF::Rule
-  - AWS::WAF::RuleGroup
   - AWS::WAF::WebACL
+  - AWS::WAF::RuleGroup
   - AWS::WAFRegional::RateBasedRule
   - AWS::WAFRegional::Rule
-  - AWS::WAFRegional::RuleGroup
   - AWS::WAFRegional::WebACL
-  - AWS::WAFv2::IPSet
-  - AWS::WAFv2::ManagedRuleSet
-  - AWS::WAFv2::RegexPatternSet
-  - AWS::WAFv2::RuleGroup
+  - AWS::WAFRegional::RuleGroup
   - AWS::WAFv2::WebACL
-  - AWS::WorkSpaces::ConnectionAlias
-  - AWS::WorkSpaces::Workspace
+  - AWS::WAFv2::RuleGroup
+  - AWS::WAFv2::ManagedRuleSet
+  - AWS::WAFv2::IPSet
+  - AWS::WAFv2::RegexPatternSet
   - AWS::XRay::EncryptionConfig
+  - AWS::ElasticLoadBalancingV2::LoadBalancer
+  - AWS::ElasticLoadBalancingV2::Listener
+  - AWS::ElasticLoadBalancing::LoadBalancer
+  - AWS::ElasticLoadBalancingV2::LoadBalancer
+  - AWS::MediaConnect::FlowEntitlement
+  - AWS::MediaConnect::FlowVpcInterface
+  - AWS::MediaConnect::FlowSource
+  - AWS::MediaPackage::PackagingGroup
+  - AWS::MediaPackage::PackagingConfiguration
+  - AWS::MediaTailor::PlaybackConfiguration
