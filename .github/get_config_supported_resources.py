@@ -63,8 +63,8 @@ for service in services:
 
 driver.quit()
 
-# Return the output list
-yaml_output = {"supported_resources": all_resources}
+# Return the output list, sorted
+yaml_output = {"supported_resources": sorted(all_resources)}
 yaml_output_string = yaml.dump(yaml_output)
 with open("supported_resource_types.yaml", "w") as f:
     f.write(yaml_output_string)
