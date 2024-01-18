@@ -16,6 +16,7 @@ import base64
 import fileinput
 import fnmatch
 import json
+import logging
 import os
 import re
 import shutil
@@ -2215,8 +2216,12 @@ class rdk:
                 combined_input_parameters.update(optional_parameters_json)
 
             if self.args.excluded_accounts or "ExcludedAccounts" in rule_params:
+                if "ExcludedAccounts" in rule_params and bool(rule_params.get("ExcludedAccounts")):
+                    excluded_via_rule_params = rule_params.get("ExcludedAccounts").split(",")
+                else:
+                    excluded_via_rule_params = []
                 combined_excluded_accounts_set = set(
-                    rule_params.get("ExcludedAccounts", []).split(",") + self.args.excluded_accounts
+                    excluded_via_rule_params + self.args.excluded_accounts
                 )
                 combined_excluded_accounts_str = ",".join(combined_excluded_accounts_set)
             else:
@@ -3296,7 +3301,13 @@ class rdk:
 
     def __get_caller_identity_details(self, my_session):
         my_sts = my_session.client("sts")
-        response = my_sts.get_caller_identity()
+        try:
+            response = my_sts.get_caller_identity()
+        except botocore.exceptions.ClientError:
+            logging.error(
+                "Unable to establish session to AWS. Make sure your CLI has access to valid AWS credentials and permissions to sts:GetCallerIdentity."
+            )
+            sys.exit(1)
         arn_split = response["Arn"].split(":")
 
         return {

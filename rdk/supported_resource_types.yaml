@@ -1,6 +1,9 @@
 supported_resources:
-  - ALL # Special string to support all resource types
+  - ALL
   - AWS::ACM::Certificate
+  - AWS::ACMPCA::CertificateAuthority
+  - AWS::ACMPCA::CertificateAuthorityActivation
+  - AWS::APS::RuleGroupsNamespace
   - AWS::AccessAnalyzer::Analyzer
   - AWS::AmazonMQ::Broker
   - AWS::Amplify::App
@@ -13,14 +16,22 @@ supported_resources:
   - AWS::AppConfig::ConfigurationProfile
   - AWS::AppConfig::DeploymentStrategy
   - AWS::AppConfig::Environment
+  - AWS::AppConfig::HostedConfigurationVersion
   - AWS::AppFlow::Flow
   - AWS::AppIntegrations::EventIntegration
+  - AWS::AppMesh::GatewayRoute
+  - AWS::AppMesh::Mesh
   - AWS::AppMesh::Route
+  - AWS::AppMesh::VirtualGateway
   - AWS::AppMesh::VirtualNode
+  - AWS::AppMesh::VirtualRouter
   - AWS::AppMesh::VirtualService
+  - AWS::AppRunner::Service
   - AWS::AppRunner::VpcConnector
   - AWS::AppStream::Application
   - AWS::AppStream::DirectoryConfig
+  - AWS::AppStream::Fleet
+  - AWS::AppStream::Stack
   - AWS::AppSync::GraphQLApi
   - AWS::Athena::DataCatalog
   - AWS::Athena::PreparedStatement
@@ -38,6 +49,7 @@ supported_resources:
   - AWS::Backup::ReportPlan
   - AWS::Batch::ComputeEnvironment
   - AWS::Batch::JobQueue
+  - AWS::Batch::SchedulingPolicy
   - AWS::Budgets::BudgetsAction
   - AWS::Cassandra::Keyspace
   - AWS::Cloud9::EnvironmentEC2
@@ -49,17 +61,26 @@ supported_resources:
   - AWS::CloudWatch::MetricStream
   - AWS::CodeArtifact::Repository
   - AWS::CodeBuild::Project
+  - AWS::CodeBuild::ReportGroup
   - AWS::CodeDeploy::Application
   - AWS::CodeDeploy::DeploymentConfig
   - AWS::CodeDeploy::DeploymentGroup
+  - AWS::CodeGuruProfiler::ProfilingGroup
   - AWS::CodeGuruReviewer::RepositoryAssociation
   - AWS::CodePipeline::Pipeline
+  - AWS::Cognito::UserPool
+  - AWS::Cognito::UserPoolClient
+  - AWS::Cognito::UserPoolGroup
   - AWS::Config::ConfigurationRecorder
   - AWS::Config::ConformancePackCompliance
   - AWS::Config::ResourceCompliance
+  - AWS::Connect::Instance
   - AWS::Connect::PhoneNumber
+  - AWS::Connect::QuickConnect
   - AWS::CustomerProfiles::Domain
+  - AWS::CustomerProfiles::ObjectType
   - AWS::DMS::Certificate
+  - AWS::DMS::Endpoint
   - AWS::DMS::EventSubscription
   - AWS::DMS::ReplicationInstance
   - AWS::DMS::ReplicationSubnetGroup
@@ -78,6 +99,9 @@ supported_resources:
   - AWS::DeviceFarm::Project
   - AWS::DeviceFarm::TestGridProject
   - AWS::DynamoDB::Table
+  - AWS::EC2::CapacityReservation
+  - AWS::EC2::CarrierGateway
+  - AWS::EC2::ClientVpnEndpoint
   - AWS::EC2::CustomerGateway
   - AWS::EC2::DHCPOptions
   - AWS::EC2::EC2Fleet
@@ -86,13 +110,16 @@ supported_resources:
   - AWS::EC2::FlowLog
   - AWS::EC2::Host
   - AWS::EC2::IPAM
+  - AWS::EC2::IPAMPool
   - AWS::EC2::IPAMScope
   - AWS::EC2::Instance
   - AWS::EC2::InternetGateway
   - AWS::EC2::LaunchTemplate
   - AWS::EC2::NatGateway
   - AWS::EC2::NetworkAcl
+  - AWS::EC2::NetworkInsightsAccessScope
   - AWS::EC2::NetworkInsightsAccessScopeAnalysis
+  - AWS::EC2::NetworkInsightsAnalysis
   - AWS::EC2::NetworkInsightsPath
   - AWS::EC2::NetworkInterface
   - AWS::EC2::PrefixList
@@ -107,6 +134,8 @@ supported_resources:
   - AWS::EC2::TrafficMirrorTarget
   - AWS::EC2::TransitGateway
   - AWS::EC2::TransitGatewayAttachment
+  - AWS::EC2::TransitGatewayConnect
+  - AWS::EC2::TransitGatewayMulticastDomain
   - AWS::EC2::TransitGatewayRouteTable
   - AWS::EC2::VPC
   - AWS::EC2::VPCEndpoint
@@ -119,6 +148,7 @@ supported_resources:
   - AWS::ECR::PullThroughCacheRule
   - AWS::ECR::RegistryPolicy
   - AWS::ECR::Repository
+  - AWS::ECS::CapacityProvider
   - AWS::ECS::Cluster
   - AWS::ECS::Service
   - AWS::ECS::TaskDefinition
@@ -136,7 +166,7 @@ supported_resources:
   - AWS::ElasticLoadBalancing::LoadBalancer
   - AWS::ElasticLoadBalancingV2::Listener
   - AWS::ElasticLoadBalancingV2::LoadBalancer
-  - AWS::ElasticSearch::Domain
+  - AWS::Elasticsearch::Domain
   - AWS::EventSchemas::Discoverer
   - AWS::EventSchemas::Registry
   - AWS::EventSchemas::RegistryPolicy
@@ -162,8 +192,10 @@ supported_resources:
   - AWS::Glue::Classifier
   - AWS::Glue::Job
   - AWS::Glue::MLTransform
+  - AWS::Grafana::Workspace
   - AWS::GreengrassV2::ComponentVersion
   - AWS::GroundStation::Config
+  - AWS::GroundStation::DataflowEndpointGroup
   - AWS::GroundStation::MissionProfile
   - AWS::GuardDuty::Detector
   - AWS::GuardDuty::Filter
@@ -171,6 +203,7 @@ supported_resources:
   - AWS::GuardDuty::ThreatIntelSet
   - AWS::HealthLake::FHIRDatastore
   - AWS::IAM::Group
+  - AWS::IAM::InstanceProfile
   - AWS::IAM::Policy
   - AWS::IAM::Role
   - AWS::IAM::SAMLProvider
@@ -182,14 +215,19 @@ supported_resources:
   - AWS::ImageBuilder::ContainerRecipe
   - AWS::ImageBuilder::DistributionConfiguration
   - AWS::ImageBuilder::ImagePipeline
+  - AWS::ImageBuilder::ImageRecipe
   - AWS::ImageBuilder::InfrastructureConfiguration
+  - AWS::InspectorV2::Filter
   - AWS::IoT::AccountAuditConfiguration
   - AWS::IoT::Authorizer
+  - AWS::IoT::CACertificate
   - AWS::IoT::CustomMetric
   - AWS::IoT::Dimension
   - AWS::IoT::FleetMetric
+  - AWS::IoT::JobTemplate
   - AWS::IoT::MitigationAction
   - AWS::IoT::Policy
+  - AWS::IoT::ProvisioningTemplate
   - AWS::IoT::RoleAlias
   - AWS::IoT::ScheduledAudit
   - AWS::IoT::SecurityProfile
@@ -205,17 +243,26 @@ supported_resources:
   - AWS::IoTSiteWise::Gateway
   - AWS::IoTSiteWise::Portal
   - AWS::IoTSiteWise::Project
+  - AWS::IoTTwinMaker::ComponentType
   - AWS::IoTTwinMaker::Entity
   - AWS::IoTTwinMaker::Scene
+  - AWS::IoTTwinMaker::SyncJob
   - AWS::IoTTwinMaker::Workspace
+  - AWS::IoTWireless::FuotaTask
+  - AWS::IoTWireless::MulticastGroup
   - AWS::IoTWireless::ServiceProfile
   - AWS::KMS::Alias
   - AWS::KMS::Key
+  - AWS::KafkaConnect::Connector
+  - AWS::Kendra::Index
   - AWS::Kinesis::Stream
   - AWS::Kinesis::StreamConsumer
   - AWS::KinesisAnalyticsV2::Application
   - AWS::KinesisFirehose::DeliveryStream
   - AWS::KinesisVideo::SignalingChannel
+  - AWS::KinesisVideo::Stream
+  - AWS::Lambda::Alias
+  - AWS::Lambda::CodeSigningConfig
   - AWS::Lambda::Function
   - AWS::Lex::Bot
   - AWS::Lex::BotAlias
@@ -223,11 +270,15 @@ supported_resources:
   - AWS::Lightsail::Certificate
   - AWS::Lightsail::Disk
   - AWS::Lightsail::StaticIp
+  - AWS::Logs::Destination
   - AWS::LookoutMetrics::Alert
   - AWS::LookoutVision::Project
+  - AWS::M2::Environment
+  - AWS::MSK::BatchScramSecret
   - AWS::MSK::Cluster
   - AWS::MSK::Configuration
   - AWS::MediaConnect::FlowEntitlement
+  - AWS::MediaConnect::FlowSource
   - AWS::MediaConnect::FlowVpcInterface
   - AWS::MediaPackage::PackagingConfiguration
   - AWS::MediaPackage::PackagingGroup
@@ -236,19 +287,24 @@ supported_resources:
   - AWS::NetworkFirewall::FirewallPolicy
   - AWS::NetworkFirewall::RuleGroup
   - AWS::NetworkFirewall::TLSInspectionConfiguration
+  - AWS::NetworkManager::ConnectPeer
+  - AWS::NetworkManager::CustomerGatewayAssociation
   - AWS::NetworkManager::Device
   - AWS::NetworkManager::GlobalNetwork
   - AWS::NetworkManager::Link
+  - AWS::NetworkManager::LinkAssociation
   - AWS::NetworkManager::Site
   - AWS::NetworkManager::TransitGatewayRegistration
   - AWS::OpenSearch::Domain
   - AWS::Panorama::Package
   - AWS::Personalize::Dataset
+  - AWS::Personalize::DatasetGroup
   - AWS::Personalize::Schema
   - AWS::Personalize::Solution
   - AWS::Pinpoint::App
   - AWS::Pinpoint::ApplicationSettings
   - AWS::Pinpoint::Campaign
+  - AWS::Pinpoint::EmailChannel
   - AWS::Pinpoint::EmailTemplate
   - AWS::Pinpoint::EventStream
   - AWS::Pinpoint::InAppTemplate
@@ -262,16 +318,19 @@ supported_resources:
   - AWS::RDS::DBSubnetGroup
   - AWS::RDS::EventSubscription
   - AWS::RDS::GlobalCluster
+  - AWS::RDS::OptionGroup
   - AWS::RUM::AppMonitor
   - AWS::Redshift::Cluster
   - AWS::Redshift::ClusterParameterGroup
   - AWS::Redshift::ClusterSecurityGroup
   - AWS::Redshift::ClusterSnapshot
   - AWS::Redshift::ClusterSubnetGroup
+  - AWS::Redshift::EndpointAccess
   - AWS::Redshift::EventSubscription
   - AWS::Redshift::ScheduledAction
   - AWS::ResilienceHub::App
   - AWS::ResilienceHub::ResiliencyPolicy
+  - AWS::ResourceExplorer2::Index
   - AWS::RoboMaker::RobotApplication
   - AWS::RoboMaker::RobotApplicationVersion
   - AWS::RoboMaker::SimulationApplication
@@ -286,10 +345,14 @@ supported_resources:
   - AWS::Route53RecoveryReadiness::RecoveryGroup
   - AWS::Route53RecoveryReadiness::ResourceSet
   - AWS::Route53Resolver::FirewallDomainList
+  - AWS::Route53Resolver::FirewallRuleGroup
   - AWS::Route53Resolver::FirewallRuleGroupAssociation
   - AWS::Route53Resolver::ResolverEndpoint
+  - AWS::Route53Resolver::ResolverQueryLoggingConfig
+  - AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation
   - AWS::Route53Resolver::ResolverRule
   - AWS::Route53Resolver::ResolverRuleAssociation
+  - AWS::S3::AccessPoint
   - AWS::S3::AccountPublicAccessBlock
   - AWS::S3::Bucket
   - AWS::S3::MultiRegionAccessPoint
@@ -302,6 +365,7 @@ supported_resources:
   - AWS::SNS::Topic
   - AWS::SQS::Queue
   - AWS::SSM::AssociationCompliance
+  - AWS::SSM::Document
   - AWS::SSM::FileData
   - AWS::SSM::ManagedInstanceInventory
   - AWS::SSM::PatchCompliance
@@ -309,6 +373,7 @@ supported_resources:
   - AWS::SageMaker::CodeRepository
   - AWS::SageMaker::Domain
   - AWS::SageMaker::EndpointConfig
+  - AWS::SageMaker::FeatureGroup
   - AWS::SageMaker::Image
   - AWS::SageMaker::Model
   - AWS::SageMaker::NotebookInstance
@@ -319,6 +384,7 @@ supported_resources:
   - AWS::ServiceCatalog::CloudFormationProvisionedProduct
   - AWS::ServiceCatalog::Portfolio
   - AWS::ServiceDiscovery::HttpNamespace
+  - AWS::ServiceDiscovery::Instance
   - AWS::ServiceDiscovery::PublicDnsNamespace
   - AWS::ServiceDiscovery::Service
   - AWS::Shield::Protection
@@ -327,6 +393,7 @@ supported_resources:
   - AWS::StepFunctions::Activity
   - AWS::StepFunctions::StateMachine
   - AWS::Transfer::Agreement
+  - AWS::Transfer::Certificate
   - AWS::Transfer::Connector
   - AWS::Transfer::Workflow
   - AWS::WAF::RateBasedRule
