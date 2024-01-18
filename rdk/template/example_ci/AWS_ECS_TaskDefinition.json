@@ -1,0 +1,77 @@
+{
+  "version": "1.3",
+  "accountId": "111111111111",
+  "configurationItemCaptureTime": "2024-01-18T21:47:11.981Z",
+  "configurationItemStatus": "ResourceDiscovered",
+  "configurationStateId": "1705614431981",
+  "configurationItemMD5Hash": "",
+  "arn": "arn:aws:ecs:us-west-2:111111111111:task-definition/testtaskdef:1",
+  "resourceType": "AWS::ECS::TaskDefinition",
+  "resourceId": "testtaskdef",
+  "resourceName": "testtaskdef:1",
+  "awsRegion": "us-west-2",
+  "availabilityZone": "Regional",
+  "tags": {},
+  "relatedEvents": [],
+  "relationships": [],
+  "configuration": {
+    "ContainerDefinitions": [
+      {
+        "Name": "test",
+        "Image": "arn:aws:imagebuilder:us-west-2:aws:image/amazon-linux-2023-x86-2023/2023.10.12",
+        "Cpu": 0,
+        "Links": [],
+        "PortMappings": [
+          {
+            "ContainerPort": 80,
+            "HostPort": 80,
+            "Protocol": "tcp",
+            "Name": "test-80-tcp",
+            "AppProtocol": "http"
+          }
+        ],
+        "Essential": true,
+        "EntryPoint": [],
+        "Command": [],
+        "Environment": [],
+        "EnvironmentFiles": [],
+        "MountPoints": [],
+        "VolumesFrom": [],
+        "Secrets": [],
+        "DependsOn": [],
+        "DnsServers": [],
+        "DnsSearchDomains": [],
+        "ExtraHosts": [],
+        "DockerSecurityOptions": [],
+        "DockerLabels": {},
+        "Ulimits": [],
+        "LogConfiguration": {
+          "LogDriver": "awslogs",
+          "Options": {
+            "awslogs-group": "/ecs/testtaskdef",
+            "awslogs-region": "us-west-2",
+            "awslogs-create-group": "true",
+            "awslogs-stream-prefix": "ecs"
+          },
+          "SecretOptions": []
+        },
+        "SystemControls": [],
+        "ResourceRequirements": [],
+        "CredentialSpecs": []
+      }
+    ],
+    "Cpu": "1024",
+    "ExecutionRoleArn": "arn:aws:iam::111111111111:role/ecsTaskExecutionRole",
+    "Family": "testtaskdef",
+    "InferenceAccelerators": [],
+    "Memory": "3072",
+    "NetworkMode": "awsvpc",
+    "PlacementConstraints": [],
+    "RequiresCompatibilities": ["EC2", "FARGATE"],
+    "Status": "ACTIVE",
+    "Tags": [],
+    "TaskDefinitionArn": "arn:aws:ecs:us-west-2:111111111111:task-definition/testtaskdef:1",
+    "Volumes": []
+  },
+  "supplementaryConfiguration": {}
+}
