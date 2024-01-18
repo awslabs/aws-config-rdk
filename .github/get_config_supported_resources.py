@@ -20,8 +20,14 @@ This is a simple web scraper to list the resource types supported by AWS Config.
 It will write its output to supported_resource_types.yaml -- this should be moved to the rdk subfolder after validating.
 """
 
-# Start with ALL, which is a keyword string used by RDK
-all_resources = ["ALL # Special string to support all resource types"]
+all_resources = ["ALL"]  # Special string to support all resource types"]
+
+undocumented_but_supported = [
+    "AWS::EventSchemas::Registry",
+    "AWS::IoTTwinMaker::ComponentType",
+]
+
+all_resources += undocumented_but_supported
 
 url = "https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html"
 # Start the browser
@@ -57,14 +63,16 @@ for service in services:
     # Assert that it matches "AWS::*"
     for resource in resources:
         if re.match(r"AWS::.*", resource.text):
+            # Remove any asterisks
+            resource_type = resource.text.replace("*", "")
             # Add it to the output list
-            all_resources.append(resource.text)
-            logging.info(resource.text)
+            all_resources.append(resource_type)
+            logging.info(resource_type)
 
 driver.quit()
 
 # Return the output list, sorted
-yaml_output = {"supported_resources": sorted(all_resources)}
+yaml_output = {"supported_resources": sorted(list(set((all_resources))))}
 yaml_output_string = yaml.dump(yaml_output)
 with open("supported_resource_types.yaml", "w") as f:
     f.write(yaml_output_string)
