@@ -3513,7 +3513,7 @@ class rdk:
             if layer_count > 5:
                 print("You may only specify 5 Lambda Layers.")
                 sys.exit(1)
-            if self.args.rdklib_layer_arn or self.args.generated_lambda_layer and layer_count > 4:
+            if (self.args.rdklib_layer_arn or self.args.generated_lambda_layer) and layer_count > 4:
                 print("Because you have selected a 'lib' runtime You may only specify 4 additional Lambda Layers.")
                 sys.exit(1)
 
