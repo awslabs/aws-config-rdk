@@ -14,7 +14,7 @@ phases:
     commands:
       - rdk create-region-set -o test-region
       - rdk -f test-region.yaml init
-      - rdk create MFA_ENABLED_RULE --runtime python3.11 --resource-types AWS::IAM::User
+      - rdk create MFA_ENABLED_RULE --runtime python3.12 --resource-types AWS::IAM::User
       - rdk -f test-region.yaml deploy MFA_ENABLED_RULE
       - sleep 30
       - python3 testing/multi_region_execution_test.py
@@ -22,28 +22,34 @@ phases:
       - rdk -f test-region.yaml undeploy --force MFA_ENABLED_RULE
       - python3 testing/partition_test.py
       - rdk init --generate-lambda-layer
+      - rdk create LP3_TestRule_P312_lib --runtime python3.12-lib --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P311_lib --runtime python3.11-lib --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P310_lib --runtime python3.10-lib --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P39_lib --runtime python3.9-lib --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P38_lib --runtime python3.8-lib --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37_lib --runtime python3.7-lib --resource-types AWS::EC2::SecurityGroup
+      - rdk -f test-region.yaml deploy LP3_TestRule_P312_lib --generated-lambda-layer
+      - rdk -f test-region.yaml deploy LP3_TestRule_P311_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P310_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P39_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P38_lib --generated-lambda-layer
       - rdk -f test-region.yaml deploy LP3_TestRule_P37_lib --generated-lambda-layer
+      - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P312_lib
+      - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P311_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P310_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P39_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P38_lib
       - yes | rdk -f test-region.yaml undeploy LP3_TestRule_P37_lib
+      - rdk create LP3_TestRule_P312 --runtime python3.12 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P311 --runtime python3.11 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P310 --runtime python3.10 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P39 --runtime python3.9 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P38 --runtime python3.8 --resource-types AWS::EC2::SecurityGroup
       - rdk create LP3_TestRule_P37 --runtime python3.7 --resource-types AWS::EC2::SecurityGroup
-      - rdk create LP3_TestRule_P3 --runtime python3.11 --resource-types AWS::EC2::SecurityGroup
-      - rdk create LP3_TestRule_EFSFS --runtime python3.11 --resource-types AWS::EFS::FileSystem
-      - rdk create LP3_TestRule_ECSTD --runtime python3.11 --resource-types AWS::ECS::TaskDefinition
-      - rdk create LP3_TestRule_ECSS --runtime python3.11 --resource-types AWS::ECS::Service
+      - rdk create LP3_TestRule_P3 --runtime python3.12 --resource-types AWS::EC2::SecurityGroup
+      - rdk create LP3_TestRule_EFSFS --runtime python3.12 --resource-types AWS::EFS::FileSystem
+      - rdk create LP3_TestRule_ECSTD --runtime python3.12 --resource-types AWS::ECS::TaskDefinition
+      - rdk create LP3_TestRule_ECSS --runtime python3.12 --resource-types AWS::ECS::Service
       - rdk modify LP3_TestRule_P3 --input-parameters '{"TestParameter":"TestValue"}'
       - rdk create LP3_TestRule_P37_Periodic --runtime python3.7 --maximum-frequency One_Hour
       - rdk create LP3_TestRule_P37lib_Periodic --runtime python3.7-lib --maximum-frequency One_Hour
@@ -55,7 +61,8 @@ phases:
       - rdk create LP3_TestRule_P310lib_Periodic --runtime python3.10-lib --maximum-frequency One_Hour
       - rdk create LP3_TestRule_P311_Periodic --runtime python3.11 --maximum-frequency One_Hour
       - rdk create LP3_TestRule_P311lib_Periodic --runtime python3.11-lib --maximum-frequency One_Hour
-      - rdk test-local --all
+      - rdk create LP3_TestRule_P312_Periodic --runtime python3.12 --maximum-frequency One_Hour
+      - rdk create LP3_TestRule_P312lib_Periodic --runtime python3.12-lib --maximum-frequency One_Hour      - rdk test-local --all
       - rdk deploy --all
       - yes | rdk undeploy LP3_TestRule_P3
       - yes | rdk undeploy LP3_TestRule_P37
@@ -68,7 +75,8 @@ phases:
       - yes | rdk undeploy LP3_TestRule_P310_Periodic
       - yes | rdk undeploy LP3_TestRule_P311
       - yes | rdk undeploy LP3_TestRule_P311_Periodic
-      - sleep 30
+      - yes | rdk undeploy LP3_TestRule_P312
+      - yes | rdk undeploy LP3_TestRule_P312_Periodic      - sleep 30
       - rdk logs LP3_TestRule_P3
       - yes | rdk undeploy -a
   post_build:

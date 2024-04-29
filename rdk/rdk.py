@@ -273,6 +273,8 @@ def get_rule_parser(is_required, command):
             "python3.10-lib",
             "python3.11",
             "python3.11-lib",
+            "python3.12",
+            "python3.12-lib",
         ],
         metavar="",
     )
@@ -287,7 +289,7 @@ def get_rule_parser(is_required, command):
         required=False,
         help="[optional] Provide custom lambda name",
     )
-    parser.set_defaults(runtime="python3.11-lib")
+    parser.set_defaults(runtime="python3.12-lib")
     parser.add_argument(
         "-r",
         "--resource-types",
@@ -1228,6 +1230,8 @@ class rdk:
                 "python3.10-lib": ".py",
                 "python3.11": ".py",
                 "python3.11-lib": ".py",
+                "python3.12": ".py",
+                "python3.12-lib": ".py",
             }
             if self.args.runtime not in extension_mapping:
                 print("rdk does not support that runtime yet.")
@@ -1272,6 +1276,7 @@ class rdk:
                             "python3.9-lib",
                             "python3.10-lib",
                             "python3.11-lib",
+                            "python3.12-lib",
                         ]:
                             if self.args.resource_types:
                                 applicable_resource_list = ""
@@ -2220,9 +2225,7 @@ class rdk:
                     excluded_via_rule_params = rule_params.get("ExcludedAccounts").split(",")
                 else:
                     excluded_via_rule_params = []
-                combined_excluded_accounts_set = set(
-                    excluded_via_rule_params + self.args.excluded_accounts
-                )
+                combined_excluded_accounts_set = set(excluded_via_rule_params + self.args.excluded_accounts)
                 combined_excluded_accounts_str = ",".join(combined_excluded_accounts_set)
             else:
                 combined_excluded_accounts_str = ""
@@ -2645,6 +2648,8 @@ class rdk:
                 "python3.10-lib",
                 "python3.11",
                 "python3.11-lib",
+                "python3.12",
+                "python3.12-lib",
             ):
                 print("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
@@ -2847,9 +2852,9 @@ class rdk:
         # First add the common elements - description, parameters, and resource section header
         template = {}
         template["AWSTemplateFormatVersion"] = "2010-09-09"
-        template[
-            "Description"
-        ] = "AWS CloudFormation template to create custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template."
+        template["Description"] = (
+            "AWS CloudFormation template to create custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template."
+        )
 
         optional_parameter_group = {"Label": {"default": "Optional"}, "Parameters": []}
 
@@ -3870,6 +3875,8 @@ class rdk:
             "python3.10-lib",
             "python3.11",
             "python3.11-lib",
+            "python3.12",
+            "python3.12-lib",
         ]:
             return rule_name + ".lambda_handler"
         elif params["SourceRuntime"] in ["java8"]:
@@ -3882,6 +3889,7 @@ class rdk:
             "python3.9-lib",
             "python3.10-lib",
             "python3.11-lib",
+            "python3.12-lib",
         ]:
             runtime = params["SourceRuntime"].split("-")
             return runtime[0]
@@ -4100,9 +4108,9 @@ class rdk:
         # First add the common elements - description, parameters, and resource section header
         template = {}
         template["AWSTemplateFormatVersion"] = "2010-09-09"
-        template[
-            "Description"
-        ] = "AWS CloudFormation template to create Lambda functions for backing custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template."
+        template["Description"] = (
+            "AWS CloudFormation template to create Lambda functions for backing custom AWS Config rules. You will be billed for the AWS resources used if you create a stack from this template."
+        )
 
         parameters = {}
         parameters["SourceBucket"] = {}
@@ -4275,6 +4283,7 @@ class rdk:
                 "python3.9-lib",
                 "python3.10-lib",
                 "python3.11-lib",
+                "python3.12-lib",
             ]:
                 if hasattr(args, "generated_lambda_layer") and args.generated_lambda_layer:
                     lambda_layer_version = self.__get_existing_lambda_layer(
@@ -4401,7 +4410,14 @@ class rdk:
         lambda_client.publish_layer_version(
             LayerName=layer_name,
             Content={"S3Bucket": bucket_name, "S3Key": layer_name},
-            CompatibleRuntimes=["python3.7", "python3.8", "python3.9", "python3.10", "python3.11"],
+            CompatibleRuntimes=[
+                "python3.7",
+                "python3.8",
+                "python3.9",
+                "python3.10",
+                "python3.11",
+                "python3.12",
+            ],
         )
 
         print(f"[{region}]: Deleting temporary S3 Bucket")
