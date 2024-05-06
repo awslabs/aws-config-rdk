@@ -307,7 +307,7 @@ def clean_up_old_evaluations(latest_evaluations, event):
         if not newer_founded:
             cleaned_evaluations.append(build_evaluation(old_resource_id, "NOT_APPLICABLE", event))
 
-    return cleaned_evaluations + latest_evaluations
+    return latest_evaluations
 
 
 def lambda_handler(event, context):
