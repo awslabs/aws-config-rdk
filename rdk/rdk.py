@@ -1766,7 +1766,7 @@ class rdk:
                     },
                     {
                         "ParameterKey": "EvaluationMode",
-                        "ParameterValue": rule_params["EvaluationMode"],
+                        "ParameterValue": rule_params.get("EvaluationMode", "DETECTIVE"),
                     },
                 ]
                 my_cfn = my_session.client("cloudformation")
@@ -2028,7 +2028,7 @@ class rdk:
                 },
                 {
                     "ParameterKey": "EvaluationMode",
-                    "ParameterValue": rule_params["EvaluationMode"],
+                    "ParameterValue": rule_params.get("EvaluationMode", "DETECTIVE"),
                 },
             ]
             layers = self.__get_lambda_layers(my_session, self.args, rule_params)
