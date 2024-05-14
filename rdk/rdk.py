@@ -237,14 +237,14 @@ def get_modify_parser():
 
 
 def get_rule_parser(is_required, command):
-    usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--tags <tags JSON>] [--rulesets <RuleSet tags>]"
+    # usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--tags <tags JSON>] [--rulesets <RuleSet tags>]"
 
-    if is_required:
-        usage_string = "[ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--runtime <runtime>] [--rulesets <RuleSet tags>]"
+    # if is_required:
+    #     usage_string = "[ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--runtime <runtime>] [--rulesets <RuleSet tags>]"
 
     parser = argparse.ArgumentParser(
         prog="rdk " + command,
-        usage="rdk " + command + " <rulename> " + usage_string,
+        # usage="rdk " + command + " <rulename> " + usage_string, # Commented out to avoid double-documentation; will use auto-generated output
         description="Rules are stored in their own directory along with their metadata.  This command is used to "
         + command
         + " the Rule and metadata.",
@@ -381,6 +381,12 @@ def get_rule_parser(is_required, command):
         "--excluded-accounts",
         required=False,
         help="[optional] Comma-separated list of AWS accounts to exclude from the rule. Will only be used for organizational rules.",
+    )
+    parser.add_argument(
+        "--evaluation-mode",
+        required=False,
+        default="DETECTIVE",
+        help="[optional] The evaluation mode to deploy the rule into, either DETECTIVE (default), PROACTIVE, or BOTH. DETECTIVE rules are typical Config rules, whereas PROACTIVE rules are used to evaluate resources in CFTs prior to deployment.",
     )
 
     return parser
@@ -1387,8 +1393,8 @@ class rdk:
             self.args.source_identifier = old_params["SourceIdentifier"]
 
         # TODO - is this appropriate?
-        if not self.args.source_identifier and "EvaluationMode" in old_params:
-            self.args.source_identifier = old_params["EvaluationMode"]
+        if not self.args.evaluation_mode and "EvaluationMode" in old_params:
+            self.args.evaluation_mode = old_params["EvaluationMode"]
 
         if not self.args.tags and tags:
             self.args.tags = tags
@@ -1758,6 +1764,10 @@ class rdk:
                         "ParameterKey": "SourceIdentifier",
                         "ParameterValue": rule_params["SourceIdentifier"],
                     },
+                    {
+                        "ParameterKey": "EvaluationMode",
+                        "ParameterValue": rule_params["EvaluationMode"],
+                    },
                 ]
                 my_cfn = my_session.client("cloudformation")
                 if "Remediation" in rule_params:
@@ -1768,7 +1778,7 @@ class rdk:
                         "configManagedRuleWithRemediation.yaml",
                     )
                     template_body = open(cfn_body, "r").read()
-                    yaml_body = yaml.loads(template_body)
+                    yaml_body = yaml.safe_load(template_body)
                     remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
                     yaml_body["Resources"]["Remediation"] = remediation
 
@@ -1988,10 +1998,10 @@ class rdk:
                     "ParameterKey": "SourceBucket",
                     "ParameterValue": code_bucket_name,
                 },
-                {
-                    "ParameterKey": "SourcePath",
-                    "ParameterValue": s3_dst,
-                },
+                # {
+                #     "ParameterKey": "SourcePath",
+                #     "ParameterValue": s3_dst,
+                # },
                 {
                     "ParameterKey": "SourceRuntime",
                     "ParameterValue": self.__get_runtime_string(rule_params),
@@ -2015,6 +2025,10 @@ class rdk:
                 {
                     "ParameterKey": "Timeout",
                     "ParameterValue": str(self.args.lambda_timeout),
+                },
+                {
+                    "ParameterKey": "EvaluationMode",
+                    "ParameterValue": rule_params["EvaluationMode"],
                 },
             ]
             layers = self.__get_lambda_layers(my_session, self.args, rule_params)
@@ -2043,7 +2057,7 @@ class rdk:
             # create json of CFN template
             cfn_body = os.path.join(path.dirname(__file__), "template", "configRule.yaml")
             template_body = open(cfn_body, "r").read()
-            yaml_body = yaml.loads(template_body)
+            yaml_body = yaml.safe_load(template_body)
 
             remediation = ""
             if "Remediation" in rule_params:
@@ -2385,10 +2399,10 @@ class rdk:
                     "ParameterKey": "SourceBucket",
                     "ParameterValue": code_bucket_name,
                 },
-                {
-                    "ParameterKey": "SourcePath",
-                    "ParameterValue": s3_dst,
-                },
+                # {
+                #     "ParameterKey": "SourcePath",
+                #     "ParameterValue": s3_dst,
+                # },
                 {
                     "ParameterKey": "SourceRuntime",
                     "ParameterValue": self.__get_runtime_string(rule_params),
@@ -2444,7 +2458,7 @@ class rdk:
             # create json of CFN template
             cfn_body = os.path.join(path.dirname(__file__), "template", "configRuleOrganization.yaml")
             template_body = open(cfn_body, "r").read()
-            yaml_body = yaml.loads(template_body)
+            yaml_body = yaml.safe_load(template_body)
 
             # debugging
             # print(json.dumps(json_body, indent=2))
@@ -2697,7 +2711,7 @@ class rdk:
                 print("\t\tTesting CI " + my_ci["resourceType"])
 
                 # Generate test event from templates
-                test_event = yaml.load(
+                test_event = yaml.safe_load(
                     open(
                         os.path.join(path.dirname(__file__), "template", event_template_filename),
                         "r",
@@ -3739,6 +3753,7 @@ class rdk:
             "RuleName": self.args.rulename,
             "Description": description,
             "SourceRuntime": self.args.runtime,
+            "EvaluationMode": self.args.evaluation_mode,
             # 'CodeBucket': code_bucket_prefix + account_id,
             "CodeKey": self.args.rulename + my_session.region_name + ".zip",
             "InputParameters": json.dumps(my_input_params),

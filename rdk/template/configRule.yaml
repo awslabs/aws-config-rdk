@@ -80,6 +80,10 @@ Parameters:
     Description: The evaluation mode to use, either DETECTIVE, PROACTIVE, or BOTH.
     Type: String
     Default: DETECTIVE
+    AllowedValues:
+      - DETECTIVE
+      - PROACTIVE
+      - BOTH
 Conditions:
   RemoveEventScope:
     Fn::Or:
@@ -128,7 +132,7 @@ Conditions:
               - ""
   UseBothEvaluationModes:
     Fn::Equals:
-      - !Ref EvaluationMode
+      - Ref: EvaluationMode
       - "BOTH"
 Resources:
   rdkRuleCodeLambda:
@@ -190,11 +194,6 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: config.amazonaws.com
   rdkConfigRule:
-    Metadata:
-      cfn-lint:
-        config:
-          ignore_checks:
-            - E3002 # cfn-lint is not familiar with newer property names like EvaluationModeConfiguration
     Type: AWS::Config::ConfigRule
     DependsOn:
       - ConfigPermissionToCallrdkRuleCodeLambda
@@ -209,15 +208,15 @@ Resources:
           - Ref: AWS::NoValue
           - ComplianceResourceTypes:
               Ref: SourceEvents
-      EvaluationModeConfiguration:
-        - Fn::If:
-            - UseBothEvaluationModes
-            - 
-              - Mode: DETECTIVE
-              - Mode: PROACTIVE
-            - 
-              - Mode:
-                  Ref: EvaluationMode
+      EvaluationModes:
+        Fn::If:
+          - UseBothEvaluationModes
+          - 
+            - Mode: DETECTIVE
+            - Mode: PROACTIVE
+          - 
+            - Mode:
+                Ref: EvaluationMode
       Source:
         Owner: CUSTOM_LAMBDA
         SourceIdentifier:
