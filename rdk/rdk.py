@@ -1,4 +1,4 @@
-#    Copyright 2017-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#    Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License").
 #
@@ -56,7 +56,7 @@ code_bucket_prefix = "config-rule-code-bucket-"
 parameter_file_name = "parameters.json"
 example_ci_dir = "example_ci"
 test_ci_filename = "test_ci.json"
-event_template_filename = "test_event_template.json"
+event_template_filename = "test_event_template.yaml"
 
 rdklib_versions_filepath = os.path.join(os.path.dirname(__file__), "rdklib_versions.yaml")
 RDKLIB_LAYER_VERSION = yaml.safe_load(open(rdklib_versions_filepath).read()).get("rdklib_layer_versions")
@@ -1386,6 +1386,10 @@ class rdk:
         if not self.args.source_identifier and "SourceIdentifier" in old_params:
             self.args.source_identifier = old_params["SourceIdentifier"]
 
+        # TODO - is this appropriate?
+        if not self.args.source_identifier and "EvaluationMode" in old_params:
+            self.args.source_identifier = old_params["EvaluationMode"]
+
         if not self.args.tags and tags:
             self.args.tags = tags
 
@@ -1761,12 +1765,12 @@ class rdk:
                     cfn_body = os.path.join(
                         path.dirname(__file__),
                         "template",
-                        "configManagedRuleWithRemediation.json",
+                        "configManagedRuleWithRemediation.yaml",
                     )
                     template_body = open(cfn_body, "r").read()
-                    json_body = json.loads(template_body)
+                    yaml_body = yaml.loads(template_body)
                     remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
-                    json_body["Resources"]["Remediation"] = remediation
+                    yaml_body["Resources"]["Remediation"] = remediation
 
                     if "SSMAutomation" in rule_params:
                         # Reference the SSM Automation Role Created, if IAM is created
@@ -1775,13 +1779,13 @@ class rdk:
                             rule_params["SSMAutomation"],
                             self.__get_alphanumeric_rule_name(rule_name),
                         )
-                        json_body["Resources"][
+                        yaml_body["Resources"][
                             self.__get_alphanumeric_rule_name(rule_name + "RemediationAction")
                         ] = ssm_automation
                         if "IAM" in rule_params["SSMAutomation"]:
                             print(f"[{my_session.region_name}]: Lets Build IAM Role and Policy")
                             # TODO Check For IAM Settings
-                            json_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
+                            yaml_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
                                 "StaticValue"
                             ]["Values"] = [
                                 {
@@ -1799,8 +1803,8 @@ class rdk:
                                 rule_params["SSMAutomation"],
                                 self.__get_alphanumeric_rule_name(rule_name),
                             )
-                            json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Role")] = ssm_iam_role
-                            json_body["Resources"][
+                            yaml_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Role")] = ssm_iam_role
+                            yaml_body["Resources"][
                                 self.__get_alphanumeric_rule_name(rule_name + "Policy")
                             ] = ssm_iam_policy
 
@@ -1810,8 +1814,8 @@ class rdk:
                                 self.__get_alphanumeric_rule_name(rule_name + "RemediationAction"),
                             ]
                             # Builds SSM Document Before Config RUle
-                            json_body["Resources"]["Remediation"]["DependsOn"] = resource_depends_on
-                            json_body["Resources"]["Remediation"]["Properties"]["TargetId"] = {
+                            yaml_body["Resources"]["Remediation"]["DependsOn"] = resource_depends_on
+                            yaml_body["Resources"]["Remediation"]["Properties"]["TargetId"] = {
                                 "Ref": self.__get_alphanumeric_rule_name(rule_name + "RemediationAction")
                             }
 
@@ -1823,7 +1827,7 @@ class rdk:
                         try:
                             cfn_args = {
                                 "StackName": my_stack_name,
-                                "TemplateBody": json.dumps(json_body, indent=2),
+                                "TemplateBody": json.dumps(yaml_body, indent=2),
                                 "Parameters": my_params,
                                 "Capabilities": [
                                     "CAPABILITY_IAM",
@@ -1854,7 +1858,7 @@ class rdk:
                         if "Remediation" in rule_params:
                             cfn_args = {
                                 "StackName": my_stack_name,
-                                "TemplateBody": json.dumps(json_body, indent=2),
+                                "TemplateBody": json.dumps(yaml_body, indent=2),
                                 "Parameters": my_params,
                                 "Capabilities": [
                                     "CAPABILITY_IAM",
@@ -1880,7 +1884,7 @@ class rdk:
 
                 else:
                     # deploy config rule
-                    cfn_body = os.path.join(path.dirname(__file__), "template", "configManagedRule.json")
+                    cfn_body = os.path.join(path.dirname(__file__), "template", "configManagedRule.yaml")
 
                     try:
                         my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
@@ -2037,14 +2041,14 @@ class rdk:
                 )
 
             # create json of CFN template
-            cfn_body = os.path.join(path.dirname(__file__), "template", "configRule.json")
+            cfn_body = os.path.join(path.dirname(__file__), "template", "configRule.yaml")
             template_body = open(cfn_body, "r").read()
-            json_body = json.loads(template_body)
+            yaml_body = yaml.loads(template_body)
 
             remediation = ""
             if "Remediation" in rule_params:
                 remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
-                json_body["Resources"]["Remediation"] = remediation
+                yaml_body["Resources"]["Remediation"] = remediation
 
                 if "SSMAutomation" in rule_params:
                     ##AWS needs to build the SSM before the Config Rule
@@ -2062,13 +2066,13 @@ class rdk:
                 print(f"[{my_session.region_name}]: Building SSM Automation Section")
 
                 ssm_automation = self.__create_automation_cloudformation_block(rule_params["SSMAutomation"], rule_name)
-                json_body["Resources"][
+                yaml_body["Resources"][
                     self.__get_alphanumeric_rule_name(rule_name + "RemediationAction")
                 ] = ssm_automation
                 if "IAM" in rule_params["SSMAutomation"]:
                     print("Lets Build IAM Role and Policy")
                     # TODO Check For IAM Settings
-                    json_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
+                    yaml_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
                         "StaticValue"
                     ]["Values"] = [
                         {
@@ -2083,8 +2087,8 @@ class rdk:
                         ssm_iam_role,
                         ssm_iam_policy,
                     ) = self.__create_automation_iam_cloudformation_block(rule_params["SSMAutomation"], rule_name)
-                    json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Role")] = ssm_iam_role
-                    json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Policy")] = ssm_iam_policy
+                    yaml_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Role")] = ssm_iam_role
+                    yaml_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Policy")] = ssm_iam_policy
 
             # debugging
             # print(json.dumps(json_body, indent=2))
@@ -2099,7 +2103,7 @@ class rdk:
                 try:
                     cfn_args = {
                         "StackName": my_stack_name,
-                        "TemplateBody": json.dumps(json_body, indent=2),
+                        "TemplateBody": json.dumps(yaml_body, indent=2),
                         "Parameters": my_params,
                         "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
                     }
@@ -2139,7 +2143,7 @@ class rdk:
                 print(f"[{my_session.region_name}]: Creating CloudFormation Stack for " + rule_name)
                 cfn_args = {
                     "StackName": my_stack_name,
-                    "TemplateBody": json.dumps(json_body, indent=2),
+                    "TemplateBody": json.dumps(yaml_body, indent=2),
                     "Parameters": my_params,
                     "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
                 }
@@ -2274,7 +2278,7 @@ class rdk:
                 cfn_body = os.path.join(
                     path.dirname(__file__),
                     "template",
-                    "configManagedRuleOrganization.json",
+                    "configManagedRuleOrganization.yaml",
                 )
 
                 try:
@@ -2438,9 +2442,9 @@ class rdk:
                 )
 
             # create json of CFN template
-            cfn_body = os.path.join(path.dirname(__file__), "template", "configRuleOrganization.json")
+            cfn_body = os.path.join(path.dirname(__file__), "template", "configRuleOrganization.yaml")
             template_body = open(cfn_body, "r").read()
-            json_body = json.loads(template_body)
+            yaml_body = yaml.loads(template_body)
 
             # debugging
             # print(json.dumps(json_body, indent=2))
@@ -2455,7 +2459,7 @@ class rdk:
                 try:
                     cfn_args = {
                         "StackName": my_stack_name,
-                        "TemplateBody": json.dumps(json_body),
+                        "TemplateBody": json.dumps(yaml_body),
                         "Parameters": my_params,
                         "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
                     }
@@ -2495,7 +2499,7 @@ class rdk:
                 print("Creating CloudFormation Stack for " + rule_name)
                 cfn_args = {
                     "StackName": my_stack_name,
-                    "TemplateBody": json.dumps(json_body),
+                    "TemplateBody": json.dumps(yaml_body),
                     "Parameters": my_params,
                     "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
                 }
@@ -2693,7 +2697,7 @@ class rdk:
                 print("\t\tTesting CI " + my_ci["resourceType"])
 
                 # Generate test event from templates
-                test_event = json.load(
+                test_event = yaml.load(
                     open(
                         os.path.join(path.dirname(__file__), "template", event_template_filename),
                         "r",
@@ -3339,7 +3343,7 @@ class rdk:
                 if os.path.isdir(obj_path) and not obj_name == "rdk":
                     for file_name in os.listdir(obj_path):
                         if obj_name not in rule_names:
-                            if os.path.exists(os.path.join(obj_path, "parameters.json")):
+                            if os.path.exists(os.path.join(obj_path, parameter_file_name)):
                                 rule_names.append(obj_name)
                             else:
                                 if file_name.split(".")[0] == obj_name:
