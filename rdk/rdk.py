@@ -1221,7 +1221,7 @@ class rdk:
 
         if not self.args.source_identifier:
             if not self.args.runtime:
-                print("Runtime is required for 'create' command.")
+                print("Runtime is required for 'create' command (unless deploying a managed rule).")
                 return 1
 
             extension_mapping = {
@@ -2208,6 +2208,13 @@ class rdk:
         # If we're deploying both the functions and the Config rules, run the following process:
         for rule_name in rule_names:
             rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
+
+            if "EvaluationMode" in rule_params:
+                if rule_params["EvaluationMode"] in ["PROACTIVE", "BOTH"]:
+                    print(
+                        "Proactive evaluation mode is not supported for Organization rules. Please update your rule parameters."
+                    )
+                    sys.exit(1)
 
             # create CFN Parameters common for Managed and Custom
             source_events = "NONE"
@@ -3467,6 +3474,12 @@ class rdk:
             if len(self.args.rulename) > 128:
                 print("Rule names must be 128 characters or fewer.")
                 sys.exit(1)
+
+        if self.args.evaluation_mode in ["PROACTIVE", "BOTH"] and self.args.resource_types is None:
+            print(
+                "You are attempting to create a proactive rule without a configuration-change trigger. This is not supported. Please revise your request."
+            )
+            exit(1)
 
         resource_type_error = ""
         if self.args.resource_types:
