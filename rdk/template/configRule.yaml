@@ -40,7 +40,7 @@ Parameters:
   SourceEvents:
     Description: Event Type
     Type: CommaDelimitedList
-    Default: NONE
+    Default: NONE # TODO - Replace NONE with an empty string to avoid weirdness with truthiness
   SourceRuntime:
     Description: Runtime Language
     Type: String
@@ -51,7 +51,7 @@ Parameters:
     Type: String
     MinLength: "1"
     MaxLength: "255"
-    Default: NONE
+    Default: NONE # TODO - Replace NONE with an empty string to avoid weirdness with truthiness
   SourceInputParameters:
     Description: Input Parameters
     Type: String
