@@ -679,7 +679,11 @@ def get_export_parser(ForceArgument=False, Command="export"):
         "--version",
         required=True,
         help="Terraform version",
-        choices=["0.11", "0.12"],
+        choices=[
+            "0.11",
+            "0.12",
+            "1.x",
+        ],
     )
     parser.add_argument("-f", "--format", required=True, help="Export Format", choices=["terraform"])
     parser.add_argument(
@@ -1708,13 +1712,8 @@ class rdk:
             rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
 
             # create CFN Parameters common for Managed and Custom
-            source_events = "NONE"
-            if "SourceEvents" in rule_params:
-                source_events = rule_params["SourceEvents"]
-
-            source_periodic = "NONE"
-            if "SourcePeriodic" in rule_params:
-                source_periodic = rule_params["SourcePeriodic"]
+            source_events = rule_params.get("SourceEvents", "NONE")
+            source_periodic = rule_params.get("SourcePeriodic", "NONE")
 
             combined_input_parameters = {}
             if "InputParameters" in rule_params:
@@ -2217,18 +2216,13 @@ class rdk:
                     sys.exit(1)
 
             # create CFN Parameters common for Managed and Custom
-            source_events = "NONE"
             if "Remediation" in rule_params:
                 print(
                     f"WARNING: Organization Rules with Remediation is not supported at the moment. {rule_name} will be deployed without auto-remediation."
                 )
 
-            if "SourceEvents" in rule_params:
-                source_events = rule_params["SourceEvents"]
-
-            source_periodic = "NONE"
-            if "SourcePeriodic" in rule_params:
-                source_periodic = rule_params["SourcePeriodic"]
+            source_events = rule_params.get("SourceEvents", "NONE")
+            source_periodic = rule_params.get("SourcePeriodic", "NONE")
 
             combined_input_parameters = {}
             if "InputParameters" in rule_params:
@@ -2564,7 +2558,7 @@ class rdk:
             if "SourceEvents" in rule_params:
                 source_events = [rule_params["SourceEvents"]]
 
-            source_periodic = "NONE"
+            source_periodic = ""
             if "SourcePeriodic" in rule_params:
                 source_periodic = rule_params["SourcePeriodic"]
 
@@ -2604,7 +2598,7 @@ class rdk:
             if self.args.lambda_subnets:
                 subnet_ids = self.args.lambda_subnets.split(",")
 
-            lambda_role_arn = "NONE"
+            lambda_role_arn = ""
             if self.args.lambda_role_arn:
                 print("Existing IAM Role provided: " + self.args.lambda_role_arn)
                 lambda_role_arn = self.args.lambda_role_arn
