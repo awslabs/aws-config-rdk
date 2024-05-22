@@ -3479,7 +3479,7 @@ class rdk:
             print(
                 "You are attempting to create a proactive rule without a configuration-change trigger. This is not supported. Please revise your request."
             )
-            exit(1)
+            sys.exit(1)
 
         resource_type_error = ""
         if self.args.resource_types:
