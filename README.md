@@ -517,26 +517,36 @@ To use this generated lambda layer, add the flag
 `rdk -f regions.yaml deploy LP3_TestRule_P39_lib --generated-lambda-layer`
 
 If you created layer with a custom name (by running
-`rdk init --custom-lambda-layer`, add a similar `custom-lambda-layer`
+`rdk init --custom-lambda-layer`), add a similar `custom-lambda-layer`
 flag when running deploy.
+
+### Proactive Rules
+
+As of version `1.0.0`, RDK now supports proactive rule creation. Proactive evaluation mode only applies to CloudFormation template deployment, and does not apply to already-deployed resources. Proactive rules are therefore only evaluated as "configuration changes", not periodic rules.
+
+You can create a proactive rule using `rdk create`'s flag `--evaluation-mode` and specifying an argument as outlined by `rdk create`'s help text. This will set the evaluation mode in the `parameters.json`.
+
+For more detail on proactive rules, see [this blog post](https://aws.amazon.com/blogs/mt/how-to-use-aws-config-proactive-rules-and-aws-cloudformation-hooks-to-prevent-creation-of-non-complaint-cloud-resources/). Note that the presence of a proactive rule does NOT automatically block misconfigured resources. You need to configure [CloudFormation Hooks](https://docs.aws.amazon.com/cloudformation-cli/latest/hooks-userguide/what-is-cloudformation-hooks.html) in order to use the Config rule to assess (and potentially block) the CFT deployment.
+
+Note that proactive rules are **NOT** supported for Organization Rules, as of May 2024. This is a limitation of the Config service. Proactive evaluation mode is supported for single-account custom and managed rules.
 
 ## Support & Feedback
 
 This project is maintained by AWS Solution Architects and Consultants.
 It is not part of an AWS service and support is provided best-effort by
 the maintainers. To post feedback, submit feature ideas, or report bugs,
-please use the [Issues
-section](https://github.com/awslabs/aws-config-rdk/issues) of this repo.
+please use the [Issues section](https://github.com/awslabs/aws-config-rdk/issues) of this repo.
 
 ## Contributing
 
-email us at <rdk-maintainers@amazon.com> if you have any questions. We
+Email us at <rdk-maintainers@amazon.com> if you have any questions. We
 are happy to help and discuss.
 
 ## Contacts
 
-- **Benjamin Morris** - [bmorrissirromb](https://github.com/bmorrissirromb) - _current maintainer_
-- **Julio Delgado Jr** - [tekdj7](https://github.com/tekdj7) - _current maintainer_
+- **Benjamin Morris** - [bmorrissirromb](https://github.com/bmorrissirromb) - _current lead maintainer_
+- **Carlo DePaolis** - [depaolism](https://github.com/depaolism) - _current maintainer_
+- **Nima Fotouhi** - [nimaft](https://github.com/nimaft) - _current maintainer_
 
 ## Past Contributors
 
@@ -550,6 +560,7 @@ are happy to help and discuss.
 - **Sandeep Batchu** - [batchus](https://github.com/batchus) - _maintainer_
 - **Mark Beacom** - [mbeacom](https://github.com/mbeacom) - _maintainer_
 - **Ricky Chau** - [rickychau2780](https://github.com/rickychau2780) - _maintainer_
+- **Julio Delgado Jr** - [tekdj7](https://github.com/tekdj7) - _maintainer_
 
 ## License
 

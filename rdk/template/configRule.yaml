@@ -1,0 +1,306 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS CloudFormation template to create custom AWS Config rules. You
+  will be billed for the AWS resources used if you create a stack from this
+  template.
+Parameters:
+  RuleName:
+    Description: Name of the Rule
+    Type: String
+    MinLength: "1"
+    MaxLength: "128"
+  Description:
+    Description: Description of the Rule
+    Type: String
+    MinLength: "1"
+    MaxLength: "255"
+  RuleLambdaName:
+    Description: Name of the Rule's Lambda function
+    Type: String
+    MinLength: "1"
+    MaxLength: "64"
+  LambdaRoleArn:
+    Description: ARN of the existing IAM role that you want to attach to the lambda
+      function.
+    Type: String
+    Default: ""
+  BoundaryPolicyArn:
+    Description: ARN of a Boundary Policy, will be used only if LambdaRoleArn is NOT set.
+    Type: String
+    Default: ""
+  SourceBucket:
+    Description: Name of the S3 bucket that you have stored the rule zip files in.
+    Type: String
+    MinLength: "1"
+    MaxLength: "255"
+  # SourcePath:
+  #   Description: Location in the S3 bucket where you have stored the rule zip files.
+  #   Type: String
+  #   MinLength: "1"
+  #   MaxLength: "255"
+  SourceEvents:
+    Description: Event Type
+    Type: CommaDelimitedList
+    Default: NONE
+  SourceRuntime:
+    Description: Runtime Language
+    Type: String
+    MinLength: "1"
+    MaxLength: "255"
+  SourcePeriodic:
+    Description: Execution Frequency
+    Type: String
+    MinLength: "1"
+    MaxLength: "255"
+    Default: NONE
+  SourceInputParameters:
+    Description: Input Parameters
+    Type: String
+    Default: "{}"
+  SourceHandler:
+    Description: Lambda Function Handler
+    Type: String
+  Layers:
+    Description: Comma-separated list of Lambda layers to be included with Lambda
+      Function deployment
+    Type: String
+    Default: ""
+  SecurityGroupIds:
+    Description: Comma-separated list of Security Group Ids for Lambda Function deployment
+    Type: String
+    Default: ""
+  SubnetIds:
+    Description: Comma-separated list of Subnet Ids for Lambda Function deployment
+    Type: String
+    Default: ""
+  Timeout:
+    Description: Lambda Function timeout
+    Type: String
+    Default: "60"
+  EvaluationMode:
+    Description: The evaluation mode to use, either DETECTIVE, PROACTIVE, or BOTH.
+    Type: String
+    Default: DETECTIVE
+    AllowedValues:
+      - DETECTIVE
+      - PROACTIVE
+      - BOTH
+Conditions:
+  RemoveEventScope:
+    Fn::Or:
+      - Fn::Not:
+          - Condition: EventTriggered
+      - Fn::Equals:
+          - Fn::Join:
+              - ","
+              - Ref: SourceEvents
+          - ALL
+  CreateNewLambdaRole:
+    Fn::Equals:
+      - Ref: LambdaRoleArn
+      - ""
+  UseBoundaryPolicyInRole:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: BoundaryPolicyArn
+          - ""
+  EventTriggered:
+    Fn::Not:
+      - Fn::Equals:
+          - Fn::Join:
+              - ","
+              - Ref: SourceEvents
+          - NONE
+  PeriodicTriggered:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: SourcePeriodic
+          - NONE
+  UseAdditionalLayers:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: Layers
+          - ""
+  UseVpcConfig:
+    Fn::And:
+      - Fn::Not:
+          - Fn::Equals:
+              - Ref: SecurityGroupIds
+              - ""
+      - Fn::Not:
+          - Fn::Equals:
+              - Ref: SubnetIds
+              - ""
+  UseBothEvaluationModes:
+    Fn::Equals:
+      - Ref: EvaluationMode
+      - "BOTH"
+Resources:
+  rdkRuleCodeLambda:
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W92
+            reason: "Concurrent execution is not typically necessary for Config rules"
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName:
+        Ref: RuleLambdaName
+      Code:
+        S3Bucket:
+          Ref: SourceBucket
+        S3Key:
+          Fn::Sub: "${RuleName}/${RuleName}.zip"
+      Description: Create a new AWS lambda function for rule code
+      Handler:
+        Ref: SourceHandler
+      MemorySize: "256"
+      Role:
+        Fn::If:
+          - CreateNewLambdaRole
+          - Fn::GetAtt:
+              - rdkLambdaRole
+              - Arn
+          - Ref: LambdaRoleArn
+      Runtime:
+        Ref: SourceRuntime
+      Timeout:
+        Ref: Timeout
+      Layers:
+        Fn::If:
+          - UseAdditionalLayers
+          - Fn::Split:
+              - ","
+              - Ref: Layers
+          - Ref: AWS::NoValue
+      VpcConfig:
+        Fn::If:
+          - UseVpcConfig
+          - SecurityGroupIds:
+              Fn::Split:
+                - ","
+                - Ref: SecurityGroupIds
+            SubnetIds:
+              Fn::Split:
+                - ","
+                - Ref: SubnetIds
+          - Ref: AWS::NoValue
+  ConfigPermissionToCallrdkRuleCodeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::GetAtt:
+          - rdkRuleCodeLambda
+          - Arn
+      Action: lambda:InvokeFunction
+      Principal: config.amazonaws.com
+  rdkConfigRule:
+    Type: AWS::Config::ConfigRule
+    DependsOn:
+      - ConfigPermissionToCallrdkRuleCodeLambda
+    Properties:
+      ConfigRuleName:
+        Ref: RuleName
+      Description:
+        Ref: Description
+      Scope:
+        Fn::If:
+          - RemoveEventScope
+          - Ref: AWS::NoValue
+          - ComplianceResourceTypes:
+              Ref: SourceEvents
+      EvaluationModes:
+        Fn::If:
+          - UseBothEvaluationModes
+          - 
+            - Mode: DETECTIVE
+            - Mode: PROACTIVE
+          - 
+            - Mode:
+                Ref: EvaluationMode
+      Source:
+        Owner: CUSTOM_LAMBDA
+        SourceIdentifier:
+          Fn::GetAtt:
+            - rdkRuleCodeLambda
+            - Arn
+        SourceDetails:
+          - Fn::If:
+              - EventTriggered
+              - EventSource: aws.config
+                MessageType: ConfigurationItemChangeNotification
+              - Ref: AWS::NoValue
+          - Fn::If:
+              - EventTriggered
+              - EventSource: aws.config
+                MessageType: OversizedConfigurationItemChangeNotification
+              - Ref: AWS::NoValue
+          - Fn::If:
+              - PeriodicTriggered
+              - EventSource: aws.config
+                MessageType: ScheduledNotification
+                MaximumExecutionFrequency:
+                  Ref: SourcePeriodic
+              - Ref: AWS::NoValue
+      InputParameters:
+        Ref: SourceInputParameters
+  rdkLambdaRole:
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W11
+            reason: "TODO - Will scope down permissions gradually, tracked via GitHub Issues"
+    Condition: CreateNewLambdaRole
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /rdk/
+      PermissionsBoundary:
+        Fn::If:
+          - UseBoundaryPolicyInRole
+          - Ref: BoundaryPolicyArn
+          - Ref: AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowLambdaAssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ConfigRulePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: "WriteCloudWatchLogs"
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                Effect: Allow
+                Resource: "arn:aws:logs:*:*:log-group:/aws/lambda/RDK-Rule-Function*" # Consider scoping to the current account only, if that doesn't break cross-account
+              - Sid: "PutConfigEvaluations"
+                Action:
+                  - config:PutEvaluations
+                Effect: Allow
+                Resource: "*" # This action cannot be scoped to specific ARNs
+              - Sid: "ReadIamResources"
+                Action:
+                  - iam:List*
+                  - iam:Get*
+                Effect: Allow
+                Resource: "*" # TODO - Determine how these permissions can be scoped down.
+              - Sid: "AllowRoleAssumption"
+                Action:
+                  - sts:AssumeRole
+                Effect: Allow
+                Resource: "*" # This could be scoped down to specific roles, but has implications for cross-account access.
+      ManagedPolicyArns:
+        - Fn::Sub: arn:${AWS::Partition}:iam::aws:policy/ReadOnlyAccess
+Outputs:
+  RuleCodeLambda:
+    Description: ARN for the Rule Code lambda
+    Value:
+      Fn::GetAtt:
+        - rdkRuleCodeLambda
+        - Arn

@@ -1,4 +1,4 @@
-#    Copyright 2017-2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#    Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License").
 #
@@ -56,7 +56,7 @@ code_bucket_prefix = "config-rule-code-bucket-"
 parameter_file_name = "parameters.json"
 example_ci_dir = "example_ci"
 test_ci_filename = "test_ci.json"
-event_template_filename = "test_event_template.json"
+event_template_filename = "test_event_template.yaml"
 
 rdklib_versions_filepath = os.path.join(os.path.dirname(__file__), "rdklib_versions.yaml")
 RDKLIB_LAYER_VERSION = yaml.safe_load(open(rdklib_versions_filepath).read()).get("rdklib_layer_versions")
@@ -237,14 +237,14 @@ def get_modify_parser():
 
 
 def get_rule_parser(is_required, command):
-    usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--tags <tags JSON>] [--rulesets <RuleSet tags>]"
+    # usage_string = "[--runtime <runtime>] [--resource-types <resource types>] [--maximum-frequency <max execution frequency>] [--input-parameters <parameter JSON>] [--tags <tags JSON>] [--rulesets <RuleSet tags>]"
 
-    if is_required:
-        usage_string = "[ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--runtime <runtime>] [--rulesets <RuleSet tags>]"
+    # if is_required:
+    #     usage_string = "[ --resource-types <resource types> | --maximum-frequency <max execution frequency> ] [optional configuration flags] [--runtime <runtime>] [--rulesets <RuleSet tags>]"
 
     parser = argparse.ArgumentParser(
         prog="rdk " + command,
-        usage="rdk " + command + " <rulename> " + usage_string,
+        # usage="rdk " + command + " <rulename> " + usage_string, # Commented out to avoid double-documentation; will use auto-generated output
         description="Rules are stored in their own directory along with their metadata.  This command is used to "
         + command
         + " the Rule and metadata.",
@@ -381,6 +381,12 @@ def get_rule_parser(is_required, command):
         "--excluded-accounts",
         required=False,
         help="[optional] Comma-separated list of AWS accounts to exclude from the rule. Will only be used for organizational rules.",
+    )
+    parser.add_argument(
+        "--evaluation-mode",
+        required=False,
+        default="DETECTIVE",
+        help="[optional] The evaluation mode to deploy the rule into, either DETECTIVE (default), PROACTIVE, or BOTH. DETECTIVE rules are typical Config rules, whereas PROACTIVE rules are used to evaluate resources in CFTs prior to deployment.",
     )
 
     return parser
@@ -1215,7 +1221,7 @@ class rdk:
 
         if not self.args.source_identifier:
             if not self.args.runtime:
-                print("Runtime is required for 'create' command.")
+                print("Runtime is required for 'create' command (unless deploying a managed rule).")
                 return 1
 
             extension_mapping = {
@@ -1385,6 +1391,10 @@ class rdk:
 
         if not self.args.source_identifier and "SourceIdentifier" in old_params:
             self.args.source_identifier = old_params["SourceIdentifier"]
+
+        # TODO - is this appropriate?
+        if not self.args.evaluation_mode and "EvaluationMode" in old_params:
+            self.args.evaluation_mode = old_params["EvaluationMode"]
 
         if not self.args.tags and tags:
             self.args.tags = tags
@@ -1754,6 +1764,10 @@ class rdk:
                         "ParameterKey": "SourceIdentifier",
                         "ParameterValue": rule_params["SourceIdentifier"],
                     },
+                    {
+                        "ParameterKey": "EvaluationMode",
+                        "ParameterValue": rule_params.get("EvaluationMode", "DETECTIVE"),
+                    },
                 ]
                 my_cfn = my_session.client("cloudformation")
                 if "Remediation" in rule_params:
@@ -1761,12 +1775,12 @@ class rdk:
                     cfn_body = os.path.join(
                         path.dirname(__file__),
                         "template",
-                        "configManagedRuleWithRemediation.json",
+                        "configManagedRuleWithRemediation.yaml",
                     )
                     template_body = open(cfn_body, "r").read()
-                    json_body = json.loads(template_body)
+                    yaml_body = yaml.safe_load(template_body)
                     remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
-                    json_body["Resources"]["Remediation"] = remediation
+                    yaml_body["Resources"]["Remediation"] = remediation
 
                     if "SSMAutomation" in rule_params:
                         # Reference the SSM Automation Role Created, if IAM is created
@@ -1775,13 +1789,13 @@ class rdk:
                             rule_params["SSMAutomation"],
                             self.__get_alphanumeric_rule_name(rule_name),
                         )
-                        json_body["Resources"][
+                        yaml_body["Resources"][
                             self.__get_alphanumeric_rule_name(rule_name + "RemediationAction")
                         ] = ssm_automation
                         if "IAM" in rule_params["SSMAutomation"]:
                             print(f"[{my_session.region_name}]: Lets Build IAM Role and Policy")
                             # TODO Check For IAM Settings
-                            json_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
+                            yaml_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
                                 "StaticValue"
                             ]["Values"] = [
                                 {
@@ -1799,8 +1813,8 @@ class rdk:
                                 rule_params["SSMAutomation"],
                                 self.__get_alphanumeric_rule_name(rule_name),
                             )
-                            json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Role")] = ssm_iam_role
-                            json_body["Resources"][
+                            yaml_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Role")] = ssm_iam_role
+                            yaml_body["Resources"][
                                 self.__get_alphanumeric_rule_name(rule_name + "Policy")
                             ] = ssm_iam_policy
 
@@ -1810,8 +1824,8 @@ class rdk:
                                 self.__get_alphanumeric_rule_name(rule_name + "RemediationAction"),
                             ]
                             # Builds SSM Document Before Config RUle
-                            json_body["Resources"]["Remediation"]["DependsOn"] = resource_depends_on
-                            json_body["Resources"]["Remediation"]["Properties"]["TargetId"] = {
+                            yaml_body["Resources"]["Remediation"]["DependsOn"] = resource_depends_on
+                            yaml_body["Resources"]["Remediation"]["Properties"]["TargetId"] = {
                                 "Ref": self.__get_alphanumeric_rule_name(rule_name + "RemediationAction")
                             }
 
@@ -1823,7 +1837,7 @@ class rdk:
                         try:
                             cfn_args = {
                                 "StackName": my_stack_name,
-                                "TemplateBody": json.dumps(json_body, indent=2),
+                                "TemplateBody": json.dumps(yaml_body, indent=2),
                                 "Parameters": my_params,
                                 "Capabilities": [
                                     "CAPABILITY_IAM",
@@ -1854,7 +1868,7 @@ class rdk:
                         if "Remediation" in rule_params:
                             cfn_args = {
                                 "StackName": my_stack_name,
-                                "TemplateBody": json.dumps(json_body, indent=2),
+                                "TemplateBody": json.dumps(yaml_body, indent=2),
                                 "Parameters": my_params,
                                 "Capabilities": [
                                     "CAPABILITY_IAM",
@@ -1880,7 +1894,7 @@ class rdk:
 
                 else:
                     # deploy config rule
-                    cfn_body = os.path.join(path.dirname(__file__), "template", "configManagedRule.json")
+                    cfn_body = os.path.join(path.dirname(__file__), "template", "configManagedRule.yaml")
 
                     try:
                         my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
@@ -1984,10 +1998,10 @@ class rdk:
                     "ParameterKey": "SourceBucket",
                     "ParameterValue": code_bucket_name,
                 },
-                {
-                    "ParameterKey": "SourcePath",
-                    "ParameterValue": s3_dst,
-                },
+                # {
+                #     "ParameterKey": "SourcePath",
+                #     "ParameterValue": s3_dst,
+                # },
                 {
                     "ParameterKey": "SourceRuntime",
                     "ParameterValue": self.__get_runtime_string(rule_params),
@@ -2011,6 +2025,10 @@ class rdk:
                 {
                     "ParameterKey": "Timeout",
                     "ParameterValue": str(self.args.lambda_timeout),
+                },
+                {
+                    "ParameterKey": "EvaluationMode",
+                    "ParameterValue": rule_params.get("EvaluationMode", "DETECTIVE"),
                 },
             ]
             layers = self.__get_lambda_layers(my_session, self.args, rule_params)
@@ -2037,14 +2055,14 @@ class rdk:
                 )
 
             # create json of CFN template
-            cfn_body = os.path.join(path.dirname(__file__), "template", "configRule.json")
+            cfn_body = os.path.join(path.dirname(__file__), "template", "configRule.yaml")
             template_body = open(cfn_body, "r").read()
-            json_body = json.loads(template_body)
+            yaml_body = yaml.safe_load(template_body)
 
             remediation = ""
             if "Remediation" in rule_params:
                 remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
-                json_body["Resources"]["Remediation"] = remediation
+                yaml_body["Resources"]["Remediation"] = remediation
 
                 if "SSMAutomation" in rule_params:
                     ##AWS needs to build the SSM before the Config Rule
@@ -2062,13 +2080,13 @@ class rdk:
                 print(f"[{my_session.region_name}]: Building SSM Automation Section")
 
                 ssm_automation = self.__create_automation_cloudformation_block(rule_params["SSMAutomation"], rule_name)
-                json_body["Resources"][
+                yaml_body["Resources"][
                     self.__get_alphanumeric_rule_name(rule_name + "RemediationAction")
                 ] = ssm_automation
                 if "IAM" in rule_params["SSMAutomation"]:
                     print("Lets Build IAM Role and Policy")
                     # TODO Check For IAM Settings
-                    json_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
+                    yaml_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
                         "StaticValue"
                     ]["Values"] = [
                         {
@@ -2083,8 +2101,8 @@ class rdk:
                         ssm_iam_role,
                         ssm_iam_policy,
                     ) = self.__create_automation_iam_cloudformation_block(rule_params["SSMAutomation"], rule_name)
-                    json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Role")] = ssm_iam_role
-                    json_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Policy")] = ssm_iam_policy
+                    yaml_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Role")] = ssm_iam_role
+                    yaml_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Policy")] = ssm_iam_policy
 
             # debugging
             # print(json.dumps(json_body, indent=2))
@@ -2099,7 +2117,7 @@ class rdk:
                 try:
                     cfn_args = {
                         "StackName": my_stack_name,
-                        "TemplateBody": json.dumps(json_body, indent=2),
+                        "TemplateBody": json.dumps(yaml_body, indent=2),
                         "Parameters": my_params,
                         "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
                     }
@@ -2139,7 +2157,7 @@ class rdk:
                 print(f"[{my_session.region_name}]: Creating CloudFormation Stack for " + rule_name)
                 cfn_args = {
                     "StackName": my_stack_name,
-                    "TemplateBody": json.dumps(json_body, indent=2),
+                    "TemplateBody": json.dumps(yaml_body, indent=2),
                     "Parameters": my_params,
                     "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
                 }
@@ -2190,6 +2208,13 @@ class rdk:
         # If we're deploying both the functions and the Config rules, run the following process:
         for rule_name in rule_names:
             rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
+
+            if "EvaluationMode" in rule_params:
+                if rule_params["EvaluationMode"] in ["PROACTIVE", "BOTH"]:
+                    print(
+                        "Proactive evaluation mode is not supported for Organization rules. Please update your rule parameters."
+                    )
+                    sys.exit(1)
 
             # create CFN Parameters common for Managed and Custom
             source_events = "NONE"
@@ -2274,7 +2299,7 @@ class rdk:
                 cfn_body = os.path.join(
                     path.dirname(__file__),
                     "template",
-                    "configManagedRuleOrganization.json",
+                    "configManagedRuleOrganization.yaml",
                 )
 
                 try:
@@ -2381,10 +2406,10 @@ class rdk:
                     "ParameterKey": "SourceBucket",
                     "ParameterValue": code_bucket_name,
                 },
-                {
-                    "ParameterKey": "SourcePath",
-                    "ParameterValue": s3_dst,
-                },
+                # {
+                #     "ParameterKey": "SourcePath",
+                #     "ParameterValue": s3_dst,
+                # },
                 {
                     "ParameterKey": "SourceRuntime",
                     "ParameterValue": self.__get_runtime_string(rule_params),
@@ -2438,9 +2463,9 @@ class rdk:
                 )
 
             # create json of CFN template
-            cfn_body = os.path.join(path.dirname(__file__), "template", "configRuleOrganization.json")
+            cfn_body = os.path.join(path.dirname(__file__), "template", "configRuleOrganization.yaml")
             template_body = open(cfn_body, "r").read()
-            json_body = json.loads(template_body)
+            yaml_body = yaml.safe_load(template_body)
 
             # debugging
             # print(json.dumps(json_body, indent=2))
@@ -2455,7 +2480,7 @@ class rdk:
                 try:
                     cfn_args = {
                         "StackName": my_stack_name,
-                        "TemplateBody": json.dumps(json_body),
+                        "TemplateBody": json.dumps(yaml_body),
                         "Parameters": my_params,
                         "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
                     }
@@ -2495,7 +2520,7 @@ class rdk:
                 print("Creating CloudFormation Stack for " + rule_name)
                 cfn_args = {
                     "StackName": my_stack_name,
-                    "TemplateBody": json.dumps(json_body),
+                    "TemplateBody": json.dumps(yaml_body),
                     "Parameters": my_params,
                     "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
                 }
@@ -2693,7 +2718,7 @@ class rdk:
                 print("\t\tTesting CI " + my_ci["resourceType"])
 
                 # Generate test event from templates
-                test_event = json.load(
+                test_event = yaml.safe_load(
                     open(
                         os.path.join(path.dirname(__file__), "template", event_template_filename),
                         "r",
@@ -3339,7 +3364,7 @@ class rdk:
                 if os.path.isdir(obj_path) and not obj_name == "rdk":
                     for file_name in os.listdir(obj_path):
                         if obj_name not in rule_names:
-                            if os.path.exists(os.path.join(obj_path, "parameters.json")):
+                            if os.path.exists(os.path.join(obj_path, parameter_file_name)):
                                 rule_names.append(obj_name)
                             else:
                                 if file_name.split(".")[0] == obj_name:
@@ -3449,6 +3474,12 @@ class rdk:
             if len(self.args.rulename) > 128:
                 print("Rule names must be 128 characters or fewer.")
                 sys.exit(1)
+
+        if self.args.evaluation_mode in ["PROACTIVE", "BOTH"] and self.args.resource_types is None:
+            print(
+                "You are attempting to create a proactive rule without a configuration-change trigger. This is not supported. Please revise your request."
+            )
+            sys.exit(1)
 
         resource_type_error = ""
         if self.args.resource_types:
@@ -3735,6 +3766,7 @@ class rdk:
             "RuleName": self.args.rulename,
             "Description": description,
             "SourceRuntime": self.args.runtime,
+            "EvaluationMode": self.args.evaluation_mode,
             # 'CodeBucket': code_bucket_prefix + account_id,
             "CodeKey": self.args.rulename + my_session.region_name + ".zip",
             "InputParameters": json.dumps(my_input_params),

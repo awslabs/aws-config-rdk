@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS CloudFormation template to create Managed AWS Config rules. You
+  will be billed for the AWS resources used if you create a stack from this
+  template.
+Parameters:
+  RuleName:
+    Description: Name of the Rule
+    Type: String
+    MinLength: "1"
+    MaxLength: "128"
+  Description:
+    Description: Description of the Rule
+    Type: String
+    MinLength: "1"
+    MaxLength: "255"
+  SourceEvents:
+    Description: Event Type
+    Type: CommaDelimitedList
+    Default: NONE
+  SourcePeriodic:
+    Description: Execution Frequency
+    Type: String
+    MinLength: "1"
+    MaxLength: "255"
+    Default: NONE
+  SourceIdentifier:
+    Description: Source Identifier of Managed Rule
+    Type: String
+    MinLength: "1"
+    MaxLength: "255"
+  SourceInputParameters:
+    Description: Input Parameters
+    Type: String
+    Default: "{}"
+  ExcludedAccounts:
+    Description: List of account IDs to exclude from rule deployment
+    Type: CommaDelimitedList
+    Default: ""
+Conditions:
+  RemoveEventScope:
+    Fn::Or:
+      - Fn::Not:
+          - Condition: EventTriggered
+      - Fn::Equals:
+          - Fn::Join:
+              - ","
+              - Ref: SourceEvents
+          - ALL
+  EventTriggered:
+    Fn::Not:
+      - Fn::Equals:
+          - Fn::Join:
+              - ","
+              - Ref: SourceEvents
+          - NONE
+  PeriodicTriggered:
+    Fn::Not:
+      - Fn::Equals:
+          - Ref: SourcePeriodic
+          - NONE
+  ExcludedAccountsPresent:
+    Fn::Not:
+      - Fn::Equals:
+          - Fn::Join:
+              - ","
+              - Ref: ExcludedAccounts
+          - ""
+Resources:
+  rdkConfigRule:
+    Type: AWS::Config::OrganizationConfigRule
+    Properties:
+      OrganizationConfigRuleName:
+        Ref: RuleName
+      OrganizationManagedRuleMetadata:
+        Description:
+          Ref: Description
+        RuleIdentifier:
+          Ref: SourceIdentifier
+        InputParameters:
+          Ref: SourceInputParameters
+        ResourceTypesScope:
+          Fn::If:
+            - RemoveEventScope
+            - Ref: AWS::NoValue
+            - Ref: SourceEvents
+        MaximumExecutionFrequency:
+          Fn::If:
+            - PeriodicTriggered
+            - Ref: SourcePeriodic
+            - Ref: AWS::NoValue
+      ExcludedAccounts:
+        Fn::If:
+          - ExcludedAccountsPresent
+          - Ref: ExcludedAccounts
+          - Ref: AWS::NoValue
