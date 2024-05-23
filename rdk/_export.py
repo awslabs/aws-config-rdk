@@ -103,6 +103,12 @@ def get_export_parser():
         required=False,
         help='[optional] To use with --generated-lambda-layer, forces the flag to look for a specific lambda-layer name. If omitted, "rdklib-layer" will be used',
     )
+    parser.add_argument(
+        "--copy-terraform-module",
+        required=False,
+        action="store_true",
+        help="[optional] Copies the terraform module to the current directory",
+    )
 
     return parser
 
@@ -172,6 +178,8 @@ def parse_export_args(rdk_instance):
 def export(rdk_instance):
     # Construct mangled names for private methods
     class_name = rdk_instance.__class__.__name__
+
+    # Gather CLI args
     rdk_instance.parse_export_args()
 
     # get the rule names
@@ -179,45 +187,29 @@ def export(rdk_instance):
     rule_names = getattr(rdk_instance, f"_{class_name}__get_rule_list_for_command")("export")
 
     # run the export code
-    print("Running export")
-
     for rule_name in rule_names:
-        rule_params, cfn_tags = getattr(rdk_instance, f"_{class_name}__get_rule_parameters")(rule_name)
+        print(f"Running export of {rule_name}")
+        rule_params, _ = getattr(rdk_instance, f"_{class_name}__get_rule_parameters")(rule_name)
 
         if "SourceIdentifier" in rule_params:
-            print("Found Managed Rule, Ignored.")
-            print("Export support only Custom Rules.")
+            print(f"Found Managed Rule {rule_name}, Ignored.")
+            print("Export supports only Custom Rules.")  # TODO - support managed rules
             continue
 
-        source_events = []
-        if "SourceEvents" in rule_params:
-            source_events = [rule_params["SourceEvents"]]
-
-        source_periodic = ""
-        if "SourcePeriodic" in rule_params:
-            source_periodic = rule_params["SourcePeriodic"]
-
-        combined_input_parameters = {}
-        if "InputParameters" in rule_params:
-            combined_input_parameters.update(json.loads(rule_params["InputParameters"]))
+        source_events = rule_params.get("SourceEvents", [])
+        source_periodic = rule_params.get("SourcePeriodic", "")
+        combined_input_parameters = rule_params.get("InputParameters", {})
 
         if "OptionalParameters" in rule_params:
-            # Remove empty parameters
-            keys_to_delete = []
+            # Add non-empty optional parameters
             optional_parameters_json = json.loads(rule_params["OptionalParameters"])
             for key, value in optional_parameters_json.items():
-                if not value:
-                    keys_to_delete.append(key)
-            for key in keys_to_delete:
-                del optional_parameters_json[key]
-            combined_input_parameters.update(optional_parameters_json)
+                if value:
+                    combined_input_parameters.update({key: value})
 
-        print("Found Custom Rule.")
-        s3_src = ""
-        s3_dst = rdk_instance.package_function_code(rule_name, rule_params)
+        print(f"Found Custom Rule {rule_name}.")
 
         layers = []
-        rdk_lib_version = "0"
         my_session = getattr(rdk_instance, f"_{class_name}__get_boto_session")()
         layers = getattr(rdk_instance, f"_{class_name}__get_lambda_layers")(my_session, rdk_instance.args, rule_params)
 
@@ -241,10 +233,14 @@ def export(rdk_instance):
         my_params = {
             "rule_name": rule_name,
             "rule_lambda_name": getattr(rdk_instance, f"_{class_name}__get_lambda_name")(rule_name, rule_params),
+            "source_bucket": "config-rule-code-bucket-"
+            + rdk_instance.account_id
+            + "-"
+            + rdk_instance.region_name,  # TODO - rdk export assumes that you want your TF code to upload your code to the standard code bucket.
             "source_runtime": getattr(rdk_instance, f"_{class_name}__get_runtime_string")(rule_params),
             "source_events": source_events,
             "source_periodic": source_periodic,
-            "source_input_parameters": json.dumps(combined_input_parameters),
+            "source_input_parameters": json.dumps(combined_input_parameters)[1:-1],  # Remove first and last quote chars
             "source_handler": getattr(rdk_instance, f"_{class_name}__get_handler")(rule_name, rule_params),
             "subnet_ids": subnet_ids,
             "security_group_ids": security_group_ids,
@@ -252,42 +248,39 @@ def export(rdk_instance):
             "lambda_role_arn": lambda_role_arn,
             "lambda_timeout": str(rdk_instance.args.lambda_timeout),
         }
+        longest_param_length = max(len(x) for x in my_params.keys() if bool(my_params.get(x, False)))
 
+        # Write out the file with the variable values
         params_file_path = os.path.join(
             os.getcwd(),
             rules_dir,
             rule_name,
-            rule_name.lower() + ".tfvars.json",
+            f"{rule_name}.tf",
         )
-        parameters_file = open(
-            params_file_path,
-            "w",
-        )
-        json.dump(
-            my_params,
-            parameters_file,
-            indent=4,
-        )
-        parameters_file.close()
-        # create json of CFN template
-        print(rdk_instance.args.format + " version: " + rdk_instance.args.output_version)
-        tf_file_body = os.path.join(
-            path.dirname(__file__),
-            "template",
-            rdk_instance.args.format,
-            rdk_instance.args.output_version,
-            "config_rule.tf",
-        )
-        tf_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + "_rule.tf")
-        shutil.copy(tf_file_body, tf_file_path)
+        with open(params_file_path, "w") as f:
+            f.write(f'module "{rule_name}" {{\n')
+            f.write(f'  {"source".ljust(longest_param_length)} = "./rdk_module"\n')
+            for param in my_params.keys():
+                if not my_params[param]:
+                    continue  # Skip empty values for clarity
+                padded_param = param.ljust(longest_param_length)  # Pad to meet TF formatting standards
+                f.write(f'  {padded_param} = "{my_params[param]}"\n')
+            f.write("}\n")
 
-        variables_file_body = os.path.join(
-            path.dirname(__file__),
-            "template",
-            rdk_instance.args.format,
-            rdk_instance.args.output_version,
-            "variables.tf",
-        )
-        variables_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + "_variables.tf")
-        shutil.copy(variables_file_body, variables_file_path)
+        # If requested, copy the Terraform module to the rule directory
+        if rdk_instance.args.copy_terraform_module:
+            print("Exporting Terraform module rdk_module")
+            tf_module_dir = os.path.join(
+                path.dirname(__file__),
+                "template",
+                rdk_instance.args.format,
+                rdk_instance.args.output_version,
+                "rdk_module",
+            )
+            rule_dir = os.path.join(os.getcwd(), rules_dir, rule_name, "rdk_module")
+            shutil.copytree(
+                tf_module_dir,
+                rule_dir,
+                dirs_exist_ok=True,
+            )
         print("Export completed. This generated the .tf files required to deploy this rule.")
