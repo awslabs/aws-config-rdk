@@ -782,6 +782,10 @@ def run_multi_region(args):
 class rdk:
     def __init__(self, args):
         self.args = args
+        self.my_session = self.__get_boto_session()
+        identity_details = self.__get_caller_identity_details(self.my_session)
+        self.account_id = identity_details.get("account_id") # Useful for passing to externalized functions
+        self.region_name = self.my_session.region_name
 
     # Import external methods
     from ._export import export, parse_export_args, package_function_code  # Importing export feels natural!
@@ -798,13 +802,14 @@ class rdk:
 
     def init(self):
         """
-        This is a test.
+        This is the method containing the rdk init logic.
+
+        This is NOT the class initializer!!!
         """
         self.args = get_init_parser().parse_args(self.args.command_args, self.args)
 
         # create custom session based on whatever credentials are available to us
-        my_session = self.__get_boto_session()
-
+        my_session = self.my_session
         print(f"[{my_session.region_name}]: Running init!")
 
         # Create our ConfigService client
@@ -812,7 +817,7 @@ class rdk:
 
         # get accountID, AWS partition (e.g. aws or aws-us-gov), region (us-east-1, us-gov-west-1)
         identity_details = self.__get_caller_identity_details(my_session)
-        account_id = identity_details["account_id"]
+        account_id = self.account_id
         partition = identity_details["partition"]
 
         config_recorder_exists = False

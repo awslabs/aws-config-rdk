@@ -30,8 +30,8 @@ data "aws_iam_policy_document" "config_iam_policy" {
   # Allow reading from the rule bucket
   statement {
     sid       = "AllowGetS3Objects"
-    actions   = "s3:GetObject"
-    resources = "arn:${data.aws_partition.current.partition}:s3:::${var.source_bucket}/${local.rule_name_source}"
+    actions   = ["s3:GetObject"]
+    resources = ["arn:${data.aws_partition.current.partition}:s3:::${var.source_bucket}/${local.rule_name_source}"]
   }
 
   # Allow Lambda to log events
@@ -43,14 +43,14 @@ data "aws_iam_policy_document" "config_iam_policy" {
       "logs:PutLogEvents",
       "logs:DescribeLogStreams",
     ]
-    resources = "*"
+    resources = ["*"]
   }
 
   # Allow Lambda to put evaluations
   statement {
     sid       = "AllowConfigPutEvaluations"
-    actions   = "config:PutEvaluations"
-    resources = "*"
+    actions   = ["config:PutEvaluations"]
+    resources = ["*"]
   }
 
   # Allow Lambda to read IAM resource details
@@ -61,13 +61,13 @@ data "aws_iam_policy_document" "config_iam_policy" {
       "iam:Describe*",
       "iam:Get*",
     ]
-    resources = "*"
+    resources = ["*"]
   }
 
   # Allow role assumption # TODO - scope down significantly
   statement {
     sid       = "AllowAssumeRole"
-    actions   = "sts:AssumeRole"
-    resources = "*"
+    actions   = ["sts:AssumeRole"]
+    resources = ["*"]
   }
 }

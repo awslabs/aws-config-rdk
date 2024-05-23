@@ -4,6 +4,10 @@ This command will export the specified Rule(s) to Terraform.
 
 It supports Terraform version 1.x (older version support is deprecated).
 
+In order to reduce repeated code, the 1.x Terraform export will generate a module invocation that passes appropriate arguments to the source module.
+
+The source module will live in `rdk/template/terraform/1.x/rdk_module` and will be exported by default (though you can also point it to a different module folder if you want to reduce repeated code).
+
 # Arguments
 
 - The `--format` flag can be used to specify export format, currently it supports only Terraform.
