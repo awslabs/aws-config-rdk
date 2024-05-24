@@ -2,6 +2,12 @@
 data "aws_caller_identity" "current" {}
 data "aws_partition" "current" {}
 
+data "archive_file" "lambda" {
+  type        = "zip"
+  source_file = "${path.module}/../${var.rule_name}.py"
+  output_path = "${path.module}/../${var.rule_name}.zip"
+}
+
 # Trust policy to allow Config service to assume Lambda role
 data "aws_iam_policy_document" "aws_config_policy_doc" {
   count = local.create_new_lambda_role ? 1 : 0
