@@ -12,20 +12,23 @@ locals {
 resource "aws_s3_object" "rule_code" {
   bucket = var.source_bucket
   key    = local.rule_name_source
-  source = local.rule_name_source
+  source = data.archive_file.lambda.output_path
+  etag   = filemd5(data.archive_file.lambda.output_path)
 }
 
 resource "aws_lambda_function" "rdk_rule" {
-  function_name = var.rule_lambda_name
-  description   = "Create a new AWS Lambda function for rule code"
-  runtime       = var.source_runtime
-  handler       = var.source_handler
-  role          = local.rdk_lambda_rule_role
-  timeout       = var.lambda_timeout
-  s3_bucket     = aws_s3_object.rule_code.bucket
-  s3_key        = aws_s3_object.rule_code.key
-  memory_size   = "256"
-  layers        = var.lambda_layers
+  depends_on       = [aws_s3_object.rule_code]
+  function_name    = var.rule_lambda_name
+  description      = "Create a new AWS Lambda function for rule code"
+  runtime          = var.source_runtime
+  handler          = var.source_handler
+  role             = local.rdk_lambda_rule_role
+  timeout          = var.lambda_timeout
+  s3_bucket        = aws_s3_object.rule_code.bucket
+  s3_key           = aws_s3_object.rule_code.key
+  source_code_hash = aws_s3_object.rule_code.etag
+  memory_size      = "256"
+  layers           = var.lambda_layers
 
   vpc_config {
     subnet_ids         = var.subnet_ids
