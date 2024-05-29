@@ -784,7 +784,7 @@ class rdk:
         self.args = args
         self.my_session = self.__get_boto_session()
         identity_details = self.__get_caller_identity_details(self.my_session)
-        self.account_id = identity_details.get("account_id") # Useful for passing to externalized functions
+        self.account_id = identity_details.get("account_id")  # Useful for passing to externalized functions
         self.region_name = self.my_session.region_name
 
     # Import external methods
@@ -1322,7 +1322,6 @@ class rdk:
         if not self.args.source_identifier and "SourceIdentifier" in old_params:
             self.args.source_identifier = old_params["SourceIdentifier"]
 
-        # TODO - is this appropriate?
         if not self.args.evaluation_mode and "EvaluationMode" in old_params:
             self.args.evaluation_mode = old_params["EvaluationMode"]
 
@@ -1719,7 +1718,6 @@ class rdk:
                         ] = ssm_automation
                         if "IAM" in rule_params["SSMAutomation"]:
                             print(f"[{my_session.region_name}]: Lets Build IAM Role and Policy")
-                            # TODO Check For IAM Settings
                             yaml_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
                                 "StaticValue"
                             ]["Values"] = [
@@ -2010,7 +2008,6 @@ class rdk:
                 ] = ssm_automation
                 if "IAM" in rule_params["SSMAutomation"]:
                     print("Lets Build IAM Role and Policy")
-                    # TODO Check For IAM Settings
                     yaml_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
                         "StaticValue"
                     ]["Values"] = [
@@ -3693,8 +3690,8 @@ class rdk:
             # Check to see if there is a test_ci.json file in the Rule directory
             tests_path = os.path.join(os.getcwd(), rules_dir, rulename, test_ci_filename)
             if os.path.exists(tests_path):
-                print("\tTesting with CI's provided in test_ci.json file. NOT YET IMPLEMENTED")  # TODO
-            #    test_ci_list self._load_cis_from_file(tests_path)
+                print("\tTesting with CI's provided in test_ci.json file. NOT YET IMPLEMENTED")
+            #   test_ci_list self._load_cis_from_file(tests_path)
             else:
                 print("\tTesting with generic CI for configured Resource Type(s)")
                 my_rule_params, my_rule_tags = self.__get_rule_parameters(rulename)

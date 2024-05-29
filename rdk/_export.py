@@ -10,7 +10,7 @@ from os import path
 
 # This is the first method to be externalized from rdk.py!
 
-rules_dir = ""  # TODO - why...? Copied this over from rdk.py but don't understand why it is needed
+rules_dir = ""  # This is effectively a placeholder value
 
 
 def get_export_parser():
@@ -35,6 +35,11 @@ def get_export_parser():
         "-a",
         action="store_true",
         help="All rules in the working directory will be deployed.",
+    )
+    parser.add_argument(
+        "--custom-code-bucket",
+        required=False,
+        help="[optional] The code bucket to which you want to upload a copy of your RDK rule. If not specified, will use the default code bucket for the current region",
     )
     parser.add_argument(
         "--lambda-layers",
@@ -193,7 +198,7 @@ def export(rdk_instance):
 
         if "SourceIdentifier" in rule_params:
             print(f"Found Managed Rule {rule_name}, Ignored.")
-            print("Export supports only Custom Rules.")  # TODO - support managed rules
+            print("Export supports only Custom Rules.")
             continue
 
         source_events = rule_params.get("SourceEvents", [])
@@ -230,13 +235,18 @@ def export(rdk_instance):
             print("Existing IAM Role provided: " + rdk_instance.args.lambda_role_arn)
             lambda_role_arn = rdk_instance.args.lambda_role_arn
 
+        if rdk_instance.args.custom_code_bucket:
+            code_bucket = rdk_instance.args.custom_code_bucket
+        else:
+            code_bucket = "config-rule-code-bucket-"
+            +rdk_instance.account_id
+            +"-"
+            +rdk_instance.region_name
+
         my_params = {
             "rule_name": rule_name,
             "rule_lambda_name": getattr(rdk_instance, f"_{class_name}__get_lambda_name")(rule_name, rule_params),
-            "source_bucket": "config-rule-code-bucket-"
-            + rdk_instance.account_id
-            + "-"
-            + rdk_instance.region_name,  # TODO - rdk export assumes that you want your TF code to upload your code to the standard code bucket.
+            "source_bucket": code_bucket,
             "source_runtime": getattr(rdk_instance, f"_{class_name}__get_runtime_string")(rule_params),
             "source_events": source_events,
             "source_periodic": source_periodic,

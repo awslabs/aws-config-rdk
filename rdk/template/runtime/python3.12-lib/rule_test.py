@@ -12,7 +12,7 @@ import rdklibtest
 ##############
 
 # Define the default resource to report to Config Rules
-# TODO - Replace with your resource type
+# NOTE TO USER - Replace with your resource type
 RESOURCE_TYPE = "AWS::IAM::Role"
 
 #############

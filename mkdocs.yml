@@ -6,11 +6,6 @@ theme:
     primary: navy
 plugins:
   - search
-  # TODO: Enable this if/when docstrings are expanded in the core rdk module.
-  # - mkdocstrings:
-  #     handlers:
-  #       python:
-  #         paths: [rdk]
 markdown_extensions:
   - markdown_include.include:
       base_path: .

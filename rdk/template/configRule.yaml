@@ -40,7 +40,7 @@ Parameters:
   SourceEvents:
     Description: Event Type
     Type: CommaDelimitedList
-    Default: NONE # TODO - Replace NONE with an empty string to avoid weirdness with truthiness
+    Default: NONE
   SourceRuntime:
     Description: Runtime Language
     Type: String
@@ -51,7 +51,7 @@ Parameters:
     Type: String
     MinLength: "1"
     MaxLength: "255"
-    Default: NONE # TODO - Replace NONE with an empty string to avoid weirdness with truthiness
+    Default: NONE
   SourceInputParameters:
     Description: Input Parameters
     Type: String
@@ -248,7 +248,7 @@ Resources:
       cfn_nag:
         rules_to_suppress:
           - id: W11
-            reason: "TODO - Will scope down permissions gradually, tracked via GitHub Issues"
+            reason: "Will scope down permissions gradually, tracked via GitHub Issues"
     Condition: CreateNewLambdaRole
     Type: AWS::IAM::Role
     Properties:
@@ -289,7 +289,7 @@ Resources:
                   - iam:List*
                   - iam:Get*
                 Effect: Allow
-                Resource: "*" # TODO - Determine how these permissions can be scoped down.
+                Resource: "*"
               - Sid: "AllowRoleAssumption"
                 Action:
                   - sts:AssumeRole
