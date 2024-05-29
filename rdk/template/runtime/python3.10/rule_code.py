@@ -4,11 +4,6 @@ import datetime
 import boto3
 import botocore
 
-try:
-    import liblogging
-except ImportError:
-    pass
-
 ##############
 # Parameters #
 ##############
@@ -70,6 +65,7 @@ def evaluate_parameters(rule_parameters):
 ####################
 # Helper Functions #
 ####################
+
 
 # Build an error to be displayed in the logs when the parameter is invalid.
 def build_parameters_value_error_response(ex):
@@ -150,6 +146,7 @@ def build_evaluation_from_config_item(configuration_item, compliance_type, annot
 ####################
 # Boilerplate Code #
 ####################
+
 
 # Get execution role for Lambda function
 def get_execution_role_arn(event):
@@ -259,8 +256,9 @@ def get_assume_role_credentials(role_arn, region=None):
         assume_role_response = sts_client.assume_role(
             RoleArn=role_arn, RoleSessionName="configLambdaExecution", DurationSeconds=CONFIG_ROLE_TIMEOUT_SECONDS
         )
-        if "liblogging" in sys.modules:
-            liblogging.logSession(role_arn, assume_role_response)
+        print(
+            f"Successfully assumed the role {role_arn} using the assumed role {assume_role_response['AssumedRoleUser']['Arn']}"
+        )
         return assume_role_response["Credentials"]
     except botocore.exceptions.ClientError as ex:
         # Scrub error message for any internal account info leaks
@@ -311,13 +309,11 @@ def clean_up_old_evaluations(latest_evaluations, event):
 
 
 def lambda_handler(event, context):
-    if "liblogging" in sys.modules:
-        liblogging.logEvent(event)
 
     global AWS_CONFIG_CLIENT
 
-    # print(event)
     check_defined(event, "event")
+    print(event)
     invoking_event = json.loads(event["invokingEvent"])
     rule_parameters = {}
     if "ruleParameters" in event:
