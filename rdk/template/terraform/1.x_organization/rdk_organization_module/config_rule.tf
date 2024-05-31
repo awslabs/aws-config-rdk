@@ -43,44 +43,22 @@ resource "aws_lambda_permission" "lambda_invoke" {
   statement_id  = "AllowExecutionFromConfig"
 }
 
-resource "aws_config_config_rule" "event_triggered" {
-  count       = local.event_triggered ? 1 : 0
-  name        = var.rule_name
-  description = var.rule_name
-
-  scope {
-    compliance_resource_types = var.source_events
-  }
-
-  input_parameters = var.source_input_parameters
-
-  source {
-    owner             = "CUSTOM_LAMBDA"
-    source_identifier = aws_lambda_function.rdk_rule.arn
-
-    source_detail {
-      event_source = "aws.config"
-      message_type = "ConfigurationItemChangeNotification"
-    }
-  }
+resource "aws_config_organization_custom_rule" "event_triggered" {
+  count               = local.event_triggered ? 1 : 0
+  trigger_types       = ["ConfigurationItemChangeNotification"]
+  name                = var.rule_name
+  description         = var.rule_name
+  lambda_function_arn = aws_lambda_function.rdk_rule.arn
+  input_parameters    = var.source_input_parameters
 }
 
-resource "aws_config_config_organization_rule" "periodic_triggered_rule" {
-  count       = local.periodic_triggered ? 1 : 0
-  depends_on  = [aws_lambda_permission.lambda_invoke]
-  name        = var.rule_name
-  description = var.rule_name
+resource "aws_config_organization_custom_rule" "periodic_triggered_rule" {
+  count         = local.periodic_triggered ? 1 : 0
+  trigger_types = ["ScheduledNotification"]
+  depends_on    = [aws_lambda_permission.lambda_invoke]
+  name          = var.rule_name
+  description   = var.rule_name
 
-  input_parameters = var.source_input_parameters
-
-  source {
-    owner             = "CUSTOM_LAMBDA"
-    source_identifier = aws_lambda_function.rdk_rule.arn
-
-    source_detail {
-      event_source                = "aws.config"
-      message_type                = "ScheduledNotification"
-      maximum_execution_frequency = var.source_periodic
-    }
-  }
+  input_parameters    = var.source_input_parameters
+  lambda_function_arn = aws_lambda_function.rdk_rule.arn
 }
