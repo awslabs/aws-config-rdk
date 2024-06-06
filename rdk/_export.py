@@ -83,9 +83,7 @@ def get_export_parser():
         "--output-version",
         # required=True,
         help="The Terraform version to use when outputting the export",
-        choices=[
-            "1.x",
-        ],
+        choices=["1.x", "1.x_organization"],
         default="1.x",
     )
     parser.add_argument(
@@ -187,6 +185,13 @@ def export(rdk_instance):
     # Gather CLI args
     rdk_instance.parse_export_args()
 
+    if rdk_instance.args.output_version == "1.x":
+        module_name = "rdk_module"
+    elif rdk_instance.args.output_version == "1.x_organization":
+        module_name = "rdk_organization_module"
+    else:
+        raise ValueError("Invalid output version specified")
+
     # get the rule names
     # getattr is used to reference private class names from external modules
     rule_names = getattr(rdk_instance, f"_{class_name}__get_rule_list_for_command")("export")
@@ -238,10 +243,7 @@ def export(rdk_instance):
         if rdk_instance.args.custom_code_bucket:
             code_bucket = rdk_instance.args.custom_code_bucket
         else:
-            code_bucket = "config-rule-code-bucket-"
-            +rdk_instance.account_id
-            +"-"
-            +rdk_instance.region_name
+            code_bucket = "config-rule-code-bucket-" + rdk_instance.account_id + "-" + rdk_instance.region_name
 
         my_params = {
             "rule_name": rule_name,
@@ -269,7 +271,7 @@ def export(rdk_instance):
         )
         with open(params_file_path, "w") as f:
             f.write(f'module "{rule_name}" {{\n')
-            f.write(f'  {"source".ljust(longest_param_length)} = "./rdk_module"\n')
+            f.write(f'  {"source".ljust(longest_param_length)} = "./{module_name}"\n')
             for param in my_params.keys():
                 if not my_params[param]:
                     continue  # Skip empty values for clarity
@@ -279,15 +281,15 @@ def export(rdk_instance):
 
         # If requested, copy the Terraform module to the rule directory
         if rdk_instance.args.copy_terraform_module:
-            print("Exporting Terraform module rdk_module")
+            print(f"Exporting Terraform module {module_name}")
             tf_module_dir = os.path.join(
                 path.dirname(__file__),
                 "template",
                 rdk_instance.args.format,
                 rdk_instance.args.output_version,
-                "rdk_module",
+                module_name,
             )
-            rule_dir = os.path.join(os.getcwd(), rules_dir, rule_name, "rdk_module")
+            rule_dir = os.path.join(os.getcwd(), rules_dir, rule_name, module_name)
             shutil.copytree(
                 tf_module_dir,
                 rule_dir,
