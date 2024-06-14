@@ -1,0 +1,3 @@
+rule <%RuleName%><%ApplicableResources%> {
+    # Add your custom logic here
+}
