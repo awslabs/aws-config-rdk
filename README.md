@@ -118,7 +118,7 @@ rdk init --generate-lambda-layer --custom-layer-name <LAYER_NAME>
 ## Create Rules
 
 In your working directory, use the `create` command to start creating a
-new custom rule. You must specify the runtime for the lambda function
+new custom rule. You must specify the runtime for the lambda function (or CfnGuard rule)
 that will back the Rule, and you can also specify a resource type (or
 comma-separated list of types) that the Rule will evaluate or a maximum
 frequency for a periodic rule. This will add a new directory for the
@@ -143,6 +143,10 @@ Note that you can create rules that use EITHER resource-types OR
 maximum-frequency, but not both. We have found that rules that try to be
 both event-triggered as well as periodic wind up being very complicated
 and so we do not recommend it as a best practice.
+
+As of RDK v0.18.0, you can also specify a runtime of `guard-2.x.x` to generate the files for deploying a CfnGuard Custom Policy Config rule.
+
+CfnGuard rules are only event-triggered; they **cannot** be run periodically.
 
 ### Edit Rules Locally
 

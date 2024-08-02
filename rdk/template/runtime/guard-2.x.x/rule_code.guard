@@ -1,0 +1,16 @@
+# # This is an example rule -- for full documentation, see https://docs.aws.amazon.com/cfn-guard/latest/ug/query-and-filtering.html
+
+# # Set resources variable
+#  let resources = Resources.*[ Type == 'AWS::S3::Bucket' ]
+
+# # Check S3 Bucket has required tags
+# rule check_tags when %resources !empty {
+#     %resources.Properties.Tags exists
+#     #For each resource in resources
+#     %resources {
+#         #Check a tag has a key of "billingcode"
+#         some Properties.Tags[*].key == "billingcode" 
+#         #Check a tag has a key of "env" and value of "dev"
+#         some Properties.Tags[*] { Key == "env" Value == "dev"}
+#     }
+# }

@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS CloudFormation template to create custom AWS Config Custom Policy rules (CfnGuard Rules).
+Parameters:
+  RuleName:
+    Description: Name of the Rule
+    Type: String
+    MinLength: "1"
+    MaxLength: "128"
+  Description:
+    Description: Description of the Rule
+    Type: String
+    MinLength: "1"
+    MaxLength: "255"
+  PolicyText:
+    Description: The policy definition, written as a CfnGuard rule
+    Type: String
+    MinLength: "1"
+  SourceEvents:
+    Description: Event Type
+    Type: CommaDelimitedList
+  DebugLogging:
+    Description: Whether to enable Debug Logging
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+  EvaluationMode:
+    Description: The evaluation mode to use, either DETECTIVE, PROACTIVE, or BOTH.
+    Type: String
+    Default: DETECTIVE
+    AllowedValues:
+      - DETECTIVE
+      - PROACTIVE
+      - BOTH
+Conditions:
+  UseBothEvaluationModes:
+    Fn::Equals:
+      - Ref: EvaluationMode
+      - "BOTH"
+Resources:
+  rdkConfigRule:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName:
+        Ref: RuleName
+      Description:
+        Ref: Description
+      Scope:
+        ComplianceResourceTypes:
+          Ref: SourceEvents # TODO - Confirm this expands to a list
+      EvaluationModes:
+        Fn::If:
+          - UseBothEvaluationModes
+          - 
+            - Mode: DETECTIVE
+            - Mode: PROACTIVE
+          - 
+            - Mode:
+                Ref: EvaluationMode
+      Source:
+        Owner: CUSTOM_POLICY
+        CustomPolicyDetails:
+          EnableDebugLogDelivery:
+            Ref: DebugLogging
+          PolicyRuntime: "guard-2.x.x"
+          PolicyText:
+            Ref: PolicyText
+        SourceDetails:
+        - EventSource: aws.config
+          MessageType: ConfigurationItemChangeNotification
+        - EventSource: aws.config
+          MessageType: OversizedConfigurationItemChangeNotification
