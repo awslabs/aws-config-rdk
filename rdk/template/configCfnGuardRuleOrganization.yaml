@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: AWS CloudFormation template to create custom AWS Config Custom Policy rules (CfnGuard Rules).
+Parameters:
+  RuleName:
+    Description: Name of the Rule
+    Type: String
+    MinLength: "1"
+    MaxLength: "128"
+  Description:
+    Description: Description of the Rule
+    Type: String
+    MinLength: "1"
+    MaxLength: "255"
+  PolicyText:
+    Description: The policy definition, written as a CfnGuard rule
+    Type: String
+    MinLength: "1"
+  SourceEvents:
+    Description: Event Type
+    Type: CommaDelimitedList
+  ExcludedAccounts:
+    Description: A comma-separated list of account IDs to exclude from the rule
+    Type: CommaDelimitedList
+    Default: ""
+Conditions:
+  ExcludedAccountsPresent:
+    Fn::Not:
+      - Fn::Equals:
+          - Fn::Join:
+              - ","
+              - Ref: ExcludedAccounts
+          - ""
+Resources:
+  rdkConfigRule:
+    Type: AWS::Config::OrganizationConfigRule
+    Properties:
+      OrganizationConfigRuleName:
+        Ref: RuleName
+      ExcludedAccounts:
+        Fn::If:
+          - ExcludedAccountsPresent
+          - Ref: ExcludedAccounts
+          - Ref: AWS::NoValue
+      OrganizationCustomPolicyRuleMetadata:
+        Description:
+          Ref: Description
+        PolicyText:
+          Ref: PolicyText
+        ResourceTypesScope:
+          Ref: SourceEvents # TODO - Confirm this expands to a list
+        OrganizationConfigRuleTriggerTypes:
+        - ConfigurationItemChangeNotification 
+        - OversizedConfigurationItemChangeNotification 
+        Runtime: "guard-2.x.x"
+        # DebugLogDeliveryAccounts:
+          # - TODO

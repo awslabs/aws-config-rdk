@@ -1238,6 +1238,7 @@ class rdk:
                 "python3.11-lib": ".py",
                 "python3.12": ".py",
                 "python3.12-lib": ".py",
+                "guard-2.x.x": ".guard",
             }
             if self.args.runtime not in extension_mapping:
                 print("rdk does not support that runtime yet.")
@@ -1259,6 +1260,9 @@ class rdk:
                 # copy rule template into rule directory
                 if self.args.runtime == "java8":
                     self.__create_java_rule()
+                if self.args.runtime == "guard-2.x.x":
+                    # TODO - implement this! It should copy the baseline rule_code.guard to your local directory
+                    pass
                 else:
                     src = os.path.join(
                         path.dirname(__file__),
@@ -1361,6 +1365,8 @@ class rdk:
         return 0
 
     def modify(self):
+        # TODO - Should we even support this for CfnGuard rules? Seems almost unnecessary since they're so simple
+
         # Parse the command-line arguments necessary for modifying a Config Rule.
         self.__parse_rule_args(False)
 
@@ -1768,6 +1774,7 @@ class rdk:
                         "ParameterKey": "EvaluationMode",
                         "ParameterValue": rule_params.get("EvaluationMode", "DETECTIVE"),
                     },
+                    # TODO - Add any additional CfnGuard-specific keys
                 ]
                 my_cfn = my_session.client("cloudformation")
                 if "Remediation" in rule_params:
@@ -1892,6 +1899,8 @@ class rdk:
                     self.__wait_for_cfn_stack(my_cfn, my_stack_name)
                     continue
 
+                # TODO - Add a case for CfnGuard rule deployment
+
                 else:
                     # deploy config rule
                     cfn_body = os.path.join(path.dirname(__file__), "template", "configManagedRule.yaml")
@@ -1946,6 +1955,8 @@ class rdk:
                     self.__tag_config_rule(rule_name, cfn_tags, my_session)
 
                 continue
+
+            # TODO - Determine what of this can be skipped for CfnGuard rules
 
             print(f"[{my_session.region_name}]: Found Custom Rule.")
 
@@ -2292,6 +2303,7 @@ class rdk:
                         "ParameterKey": "ExcludedAccounts",
                         "ParameterValue": combined_excluded_accounts_str,
                     },
+                    # TODO - Add CfnGuard properties
                 ]
                 my_cfn = my_session.client("cloudformation")
 
@@ -2299,7 +2311,7 @@ class rdk:
                 cfn_body = os.path.join(
                     path.dirname(__file__),
                     "template",
-                    "configManagedRuleOrganization.yaml",
+                    "configManagedRuleOrganization.yaml",  # TODO - option for CfnGuard
                 )
 
                 try:
@@ -3459,6 +3471,7 @@ class rdk:
         return my_json["Parameters"], my_tags
 
     def __parse_rule_args(self, is_required):
+        # TODO - Validate CfnGuard args
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
 
         max_resource_types = 100
@@ -3532,9 +3545,11 @@ class rdk:
         return self.args
 
     def __parse_deploy_args(self, ForceArgument=False):
+
         self.args = get_deployment_parser(ForceArgument).parse_args(self.args.command_args, self.args)
 
         # Validate inputs #
+        # TODO - Validate that CfnGuard rule inputs are sane
         if bool(self.args.lambda_security_groups) != bool(self.args.lambda_subnets):
             print("You must specify both lambda-security-groups and lambda-subnets, or neither.")
             sys.exit(1)
@@ -3584,6 +3599,7 @@ class rdk:
         self.args = get_deployment_organization_parser(ForceArgument).parse_args(self.args.command_args, self.args)
 
         # Validate inputs #
+        # TODO - Validate sane inputs for CfnGuard rules
         if bool(self.args.lambda_security_groups) != bool(self.args.lambda_subnets):
             print("You must specify both lambda-security-groups and lambda-subnets, or neither.")
             sys.exit(1)
@@ -3690,6 +3706,9 @@ class rdk:
         return s3_dst
 
     def __populate_params(self):
+
+        # TODO - Ensure that parameters.json is populated appropriately for CfnGuard rules
+
         # create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
 
