@@ -8,6 +8,7 @@
 [tool.poetry]
 name = "rdk"
 version = "0.18.0"
+
 description = "Rule Development Kit CLI for AWS Config"
 authors = [
     "AWS RDK Maintainers <rdk-maintainers@amazon.com>",

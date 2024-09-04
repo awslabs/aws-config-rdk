@@ -278,7 +278,8 @@ Resources:
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
                 Effect: Allow
-                Resource: "arn:aws:logs:*:*:log-group:/aws/lambda/RDK-Rule-Function*" # Consider scoping to the current account only, if that doesn't break cross-account
+                Resource: 
+                  Fn::Sub: "arn:${AWS::Partition}:logs:*:*:log-group:/aws/lambda/RDK-Rule-Function*" # Consider scoping to the current account only, if that doesn't break cross-account
               - Sid: "PutConfigEvaluations"
                 Action:
                   - config:PutEvaluations
