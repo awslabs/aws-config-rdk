@@ -545,7 +545,6 @@ are happy to help and discuss.
 ## Contacts
 
 - **Benjamin Morris** - [bmorrissirromb](https://github.com/bmorrissirromb) - _current lead maintainer_
-- **Carlo DePaolis** - [depaolism](https://github.com/depaolism) - _current maintainer_
 - **Nima Fotouhi** - [nimaft](https://github.com/nimaft) - _current maintainer_
 
 ## Past Contributors
@@ -561,6 +560,7 @@ are happy to help and discuss.
 - **Mark Beacom** - [mbeacom](https://github.com/mbeacom) - _maintainer_
 - **Ricky Chau** - [rickychau2780](https://github.com/rickychau2780) - _maintainer_
 - **Julio Delgado Jr** - [tekdj7](https://github.com/tekdj7) - _maintainer_
+- **Carlo DePaolis** - [depaolism](https://github.com/depaolism) - _current maintainer_
 
 ## License
 
