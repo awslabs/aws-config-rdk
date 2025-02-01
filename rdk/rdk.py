@@ -35,6 +35,9 @@ import boto3
 import botocore
 from botocore.exceptions import ClientError, EndpointConnectionError
 
+# logging
+logging.basicConfig(level=logging.INFO)
+
 # sphinx-argparse is a delight.
 try:
     from rdk import MY_VERSION
@@ -262,6 +265,7 @@ def get_rule_parser(is_required, command):
         required=False,
         help="Runtime for lambda function",
         choices=[
+            "guard-2.x.x",
             "java8",
             "python3.7",
             "python3.7-lib",
@@ -1238,6 +1242,7 @@ class rdk:
                 "python3.11-lib": ".py",
                 "python3.12": ".py",
                 "python3.12-lib": ".py",
+                "guard-2.x.x": ".guard",
             }
             if self.args.runtime not in extension_mapping:
                 print("rdk does not support that runtime yet.")
@@ -1259,6 +1264,11 @@ class rdk:
                 # copy rule template into rule directory
                 if self.args.runtime == "java8":
                     self.__create_java_rule()
+                if self.args.runtime == "guard-2.x.x":
+                    response = self.__create_guard_rule()
+                    if response != 0:
+                        logging.info("Error encountered creating CfnGuard Rule.")
+                        return 1
                 else:
                     src = os.path.join(
                         path.dirname(__file__),
@@ -1370,6 +1380,10 @@ class rdk:
 
         # Get existing parameters
         old_params, tags = self.__get_rule_parameters(self.args.rulename)
+
+        if re.match(r"guard", old_params["SourceRuntime"]):
+            print("CfnGuard rules are not yet supported for 'modify' command.")
+            return
 
         if not self.args.custom_lambda_name and "CustomLambdaName" in old_params:
             self.args.custom_lambda_name = old_params["CustomLambdaName"]
@@ -1768,6 +1782,7 @@ class rdk:
                         "ParameterKey": "EvaluationMode",
                         "ParameterValue": rule_params.get("EvaluationMode", "DETECTIVE"),
                     },
+                    # TODO - Add any additional CfnGuard-specific keys
                 ]
                 my_cfn = my_session.client("cloudformation")
                 if "Remediation" in rule_params:
@@ -1947,185 +1962,220 @@ class rdk:
 
                 continue
 
-            print(f"[{my_session.region_name}]: Found Custom Rule.")
+            # CfnGuard rule logic
+            elif re.match(r"guard", rule_params["SourceRuntime"]):
+                logging.info(f"[{my_session.region_name}]: Found CfnGuard Rule: " + rule_name)
+                try:
+                    rule_description = rule_params["Description"]
+                except KeyError:
+                    rule_description = rule_name
 
-            s3_src = ""
-            s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
-
-            # create CFN Parameters for Custom Rules
-            lambdaRoleArn = ""
-            if self.args.lambda_role_arn:
-                print(f"[{my_session.region_name}]: Existing IAM Role provided: " + self.args.lambda_role_arn)
-                lambdaRoleArn = self.args.lambda_role_arn
-            elif self.args.lambda_role_name:
-                print(f"[{my_session.region_name}]: Building IAM Role ARN from Name: " + self.args.lambda_role_name)
-                arn = f"arn:{partition}:iam::{account_id}:role/{self.args.lambda_role_name}"
-                lambdaRoleArn = arn
-
-            if self.args.boundary_policy_arn:
-                print(f"[{my_session.region_name}]: Boundary Policy provided: " + self.args.boundary_policy_arn)
-                boundaryPolicyArn = self.args.boundary_policy_arn
+                my_params = [
+                    {
+                        "ParameterKey": "RuleName",
+                        "ParameterValue": rule_name,
+                    },
+                    {
+                        "ParameterKey": "Description",
+                        "ParameterValue": rule_description,
+                    },
+                    {
+                        "ParameterKey": "SourceEvents",
+                        "ParameterValue": source_events,
+                    },
+                    # {
+                    #     "ParameterKey": "SourceInputParameters",
+                    #     "ParameterValue": json.dumps(combined_input_parameters),
+                    # },
+                    {
+                        "ParameterKey": "EvaluationMode",
+                        "ParameterValue": rule_params.get("EvaluationMode", "DETECTIVE"),
+                    },
+                    {
+                        "ParameterKey": "PolicyText",
+                        "ParameterValue": open(os.path.join(os.getcwd(), rule_name, f"{rule_name}.guard"), "r").read(),
+                    },
+                ]
+                cfn_body = os.path.join(path.dirname(__file__), "template", "configCfnGuardRule.yaml")
+                template_body = open(cfn_body, "r").read()
+                yaml_body = yaml.safe_load(template_body)
             else:
-                boundaryPolicyArn = ""
+                print(f"[{my_session.region_name}]: Found Custom Rule.")
 
-            try:
-                rule_description = rule_params["Description"]
-            except KeyError:
-                rule_description = rule_name
+                s3_src = ""
+                s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
 
-            my_params = [
-                {
-                    "ParameterKey": "RuleName",
-                    "ParameterValue": rule_name,
-                },
-                {
-                    "ParameterKey": "RuleLambdaName",
-                    "ParameterValue": self.__get_lambda_name(rule_name, rule_params),
-                },
-                {
-                    "ParameterKey": "Description",
-                    "ParameterValue": rule_description,
-                },
-                {
-                    "ParameterKey": "LambdaRoleArn",
-                    "ParameterValue": lambdaRoleArn,
-                },
-                {
-                    "ParameterKey": "BoundaryPolicyArn",
-                    "ParameterValue": boundaryPolicyArn,
-                },
-                {
-                    "ParameterKey": "SourceBucket",
-                    "ParameterValue": code_bucket_name,
-                },
-                # {
-                #     "ParameterKey": "SourcePath",
-                #     "ParameterValue": s3_dst,
-                # },
-                {
-                    "ParameterKey": "SourceRuntime",
-                    "ParameterValue": self.__get_runtime_string(rule_params),
-                },
-                {
-                    "ParameterKey": "SourceEvents",
-                    "ParameterValue": source_events,
-                },
-                {
-                    "ParameterKey": "SourcePeriodic",
-                    "ParameterValue": source_periodic,
-                },
-                {
-                    "ParameterKey": "SourceInputParameters",
-                    "ParameterValue": json.dumps(combined_input_parameters),
-                },
-                {
-                    "ParameterKey": "SourceHandler",
-                    "ParameterValue": self.__get_handler(rule_name, rule_params),
-                },
-                {
-                    "ParameterKey": "Timeout",
-                    "ParameterValue": str(self.args.lambda_timeout),
-                },
-                {
-                    "ParameterKey": "EvaluationMode",
-                    "ParameterValue": rule_params.get("EvaluationMode", "DETECTIVE"),
-                },
-            ]
-            layers = self.__get_lambda_layers(my_session, self.args, rule_params)
+                # create CFN Parameters for Custom Rules
+                lambdaRoleArn = ""
+                if self.args.lambda_role_arn:
+                    print(f"[{my_session.region_name}]: Existing IAM Role provided: " + self.args.lambda_role_arn)
+                    lambdaRoleArn = self.args.lambda_role_arn
+                elif self.args.lambda_role_name:
+                    print(f"[{my_session.region_name}]: Building IAM Role ARN from Name: " + self.args.lambda_role_name)
+                    arn = f"arn:{partition}:iam::{account_id}:role/{self.args.lambda_role_name}"
+                    lambdaRoleArn = arn
 
-            if self.args.lambda_layers:
-                additional_layers = self.args.lambda_layers.split(",")
-                layers.extend(additional_layers)
+                if self.args.boundary_policy_arn:
+                    print(f"[{my_session.region_name}]: Boundary Policy provided: " + self.args.boundary_policy_arn)
+                    boundaryPolicyArn = self.args.boundary_policy_arn
+                else:
+                    boundaryPolicyArn = ""
 
-            if layers:
-                my_params.append({"ParameterKey": "Layers", "ParameterValue": ",".join(layers)})
+                try:
+                    rule_description = rule_params["Description"]
+                except KeyError:
+                    rule_description = rule_name
 
-            if self.args.lambda_security_groups and self.args.lambda_subnets:
-                my_params.append(
+                my_params = [
                     {
-                        "ParameterKey": "SecurityGroupIds",
-                        "ParameterValue": self.args.lambda_security_groups,
-                    }
-                )
-                my_params.append(
+                        "ParameterKey": "RuleName",
+                        "ParameterValue": rule_name,
+                    },
                     {
-                        "ParameterKey": "SubnetIds",
-                        "ParameterValue": self.args.lambda_subnets,
-                    }
-                )
+                        "ParameterKey": "RuleLambdaName",
+                        "ParameterValue": self.__get_lambda_name(rule_name, rule_params),
+                    },
+                    {
+                        "ParameterKey": "Description",
+                        "ParameterValue": rule_description,
+                    },
+                    {
+                        "ParameterKey": "LambdaRoleArn",
+                        "ParameterValue": lambdaRoleArn,
+                    },
+                    {
+                        "ParameterKey": "BoundaryPolicyArn",
+                        "ParameterValue": boundaryPolicyArn,
+                    },
+                    {
+                        "ParameterKey": "SourceBucket",
+                        "ParameterValue": code_bucket_name,
+                    },
+                    # {
+                    #     "ParameterKey": "SourcePath",
+                    #     "ParameterValue": s3_dst,
+                    # },
+                    {
+                        "ParameterKey": "SourceRuntime",
+                        "ParameterValue": self.__get_runtime_string(rule_params),
+                    },
+                    {
+                        "ParameterKey": "SourceEvents",
+                        "ParameterValue": source_events,
+                    },
+                    {
+                        "ParameterKey": "SourcePeriodic",
+                        "ParameterValue": source_periodic,
+                    },
+                    {
+                        "ParameterKey": "SourceInputParameters",
+                        "ParameterValue": json.dumps(combined_input_parameters),
+                    },
+                    {
+                        "ParameterKey": "SourceHandler",
+                        "ParameterValue": self.__get_handler(rule_name, rule_params),
+                    },
+                    {
+                        "ParameterKey": "Timeout",
+                        "ParameterValue": str(self.args.lambda_timeout),
+                    },
+                    {
+                        "ParameterKey": "EvaluationMode",
+                        "ParameterValue": rule_params.get("EvaluationMode", "DETECTIVE"),
+                    },
+                ]
+                layers = self.__get_lambda_layers(my_session, self.args, rule_params)
 
-            # create json of CFN template
-            cfn_body = os.path.join(path.dirname(__file__), "template", "configRule.yaml")
-            template_body = open(cfn_body, "r").read()
-            yaml_body = yaml.safe_load(template_body)
+                if self.args.lambda_layers:
+                    additional_layers = self.args.lambda_layers.split(",")
+                    layers.extend(additional_layers)
 
-            remediation = ""
-            if "Remediation" in rule_params:
-                remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
-                yaml_body["Resources"]["Remediation"] = remediation
+                if layers:
+                    my_params.append({"ParameterKey": "Layers", "ParameterValue": ",".join(layers)})
+
+                if self.args.lambda_security_groups and self.args.lambda_subnets:
+                    my_params.append(
+                        {
+                            "ParameterKey": "SecurityGroupIds",
+                            "ParameterValue": self.args.lambda_security_groups,
+                        }
+                    )
+                    my_params.append(
+                        {
+                            "ParameterKey": "SubnetIds",
+                            "ParameterValue": self.args.lambda_subnets,
+                        }
+                    )
+
+                # create json of CFN template
+                cfn_body = os.path.join(path.dirname(__file__), "template", "configRule.yaml")
+                template_body = open(cfn_body, "r").read()
+                yaml_body = yaml.safe_load(template_body)
+
+                remediation = ""
+                if "Remediation" in rule_params:
+                    remediation = self.__create_remediation_cloudformation_block(rule_params["Remediation"])
+                    yaml_body["Resources"]["Remediation"] = remediation
+
+                    if "SSMAutomation" in rule_params:
+                        ##AWS needs to build the SSM before the Config Rule
+                        resource_depends_on = [
+                            "rdkConfigRule",
+                            self.__get_alphanumeric_rule_name(rule_name + "RemediationAction"),
+                        ]
+                        remediation["DependsOn"] = resource_depends_on
+                        # Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
+                        remediation["Properties"]["TargetId"] = {
+                            "Ref": self.__get_alphanumeric_rule_name(rule_name + "RemediationAction")
+                        }
 
                 if "SSMAutomation" in rule_params:
-                    ##AWS needs to build the SSM before the Config Rule
-                    resource_depends_on = [
-                        "rdkConfigRule",
-                        self.__get_alphanumeric_rule_name(rule_name + "RemediationAction"),
-                    ]
-                    remediation["DependsOn"] = resource_depends_on
-                    # Add JSON Reference to SSM Document { "Ref" : "MyEC2Instance" }
-                    remediation["Properties"]["TargetId"] = {
-                        "Ref": self.__get_alphanumeric_rule_name(rule_name + "RemediationAction")
-                    }
+                    print(f"[{my_session.region_name}]: Building SSM Automation Section")
 
-            if "SSMAutomation" in rule_params:
-                print(f"[{my_session.region_name}]: Building SSM Automation Section")
+                    ssm_automation = self.__create_automation_cloudformation_block(
+                        rule_params["SSMAutomation"], rule_name
+                    )
+                    yaml_body["Resources"][
+                        self.__get_alphanumeric_rule_name(rule_name + "RemediationAction")
+                    ] = ssm_automation
+                    if "IAM" in rule_params["SSMAutomation"]:
+                        print("Lets Build IAM Role and Policy")
+                        # TODO Check For IAM Settings
+                        yaml_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
+                            "StaticValue"
+                        ]["Values"] = [
+                            {
+                                "Fn::GetAtt": [
+                                    self.__get_alphanumeric_rule_name(rule_name + "Role"),
+                                    "Arn",
+                                ]
+                            }
+                        ]
 
-                ssm_automation = self.__create_automation_cloudformation_block(rule_params["SSMAutomation"], rule_name)
-                yaml_body["Resources"][
-                    self.__get_alphanumeric_rule_name(rule_name + "RemediationAction")
-                ] = ssm_automation
-                if "IAM" in rule_params["SSMAutomation"]:
-                    print("Lets Build IAM Role and Policy")
-                    # TODO Check For IAM Settings
-                    yaml_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
-                        "StaticValue"
-                    ]["Values"] = [
-                        {
-                            "Fn::GetAtt": [
-                                self.__get_alphanumeric_rule_name(rule_name + "Role"),
-                                "Arn",
-                            ]
-                        }
-                    ]
-
-                    (
-                        ssm_iam_role,
-                        ssm_iam_policy,
-                    ) = self.__create_automation_iam_cloudformation_block(rule_params["SSMAutomation"], rule_name)
-                    yaml_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Role")] = ssm_iam_role
-                    yaml_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Policy")] = ssm_iam_policy
-
-            # debugging
-            # print(json.dumps(json_body, indent=2))
+                        (
+                            ssm_iam_role,
+                            ssm_iam_policy,
+                        ) = self.__create_automation_iam_cloudformation_block(rule_params["SSMAutomation"], rule_name)
+                        yaml_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Role")] = ssm_iam_role
+                        yaml_body["Resources"][self.__get_alphanumeric_rule_name(rule_name + "Policy")] = ssm_iam_policy
 
             # deploy config rule
             my_cfn = my_session.client("cloudformation")
+            my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
+            cfn_args = {
+                "StackName": my_stack_name,
+                "TemplateBody": json.dumps(yaml_body, indent=2),
+                "Parameters": my_params,
+                "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
+            }
+            # If no tags key is specified, or if the tags dict is empty
+            if cfn_tags is not None:
+                cfn_args["Tags"] = cfn_tags
             try:
-                my_stack_name = self.__get_stack_name_from_rule_name(rule_name)
                 my_stack = my_cfn.describe_stacks(StackName=my_stack_name)
                 # If we've gotten here, stack exists and we should update it.
                 print(f"[{my_session.region_name}]: Updating CloudFormation Stack for " + rule_name)
                 try:
-                    cfn_args = {
-                        "StackName": my_stack_name,
-                        "TemplateBody": json.dumps(yaml_body, indent=2),
-                        "Parameters": my_params,
-                        "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
-                    }
-
-                    # If no tags key is specified, or if the tags dict is empty
-                    if cfn_tags is not None:
-                        cfn_args["Tags"] = cfn_tags
-
                     response = my_cfn.update_stack(**cfn_args)
                 except ClientError as e:
                     if e.response["Error"]["Code"] == "ValidationError":
@@ -2155,16 +2205,7 @@ class rdk:
             except ClientError as e:
                 # If we're in the exception, the stack does not exist and we should create it.
                 print(f"[{my_session.region_name}]: Creating CloudFormation Stack for " + rule_name)
-                cfn_args = {
-                    "StackName": my_stack_name,
-                    "TemplateBody": json.dumps(yaml_body, indent=2),
-                    "Parameters": my_params,
-                    "Capabilities": ["CAPABILITY_IAM", "CAPABILITY_NAMED_IAM"],
-                }
-
-                if cfn_tags is not None:
-                    cfn_args["Tags"] = cfn_tags
-
+                logging.info(f"Creating stack with parameters {my_params}")
                 response = my_cfn.create_stack(**cfn_args)
 
             # wait for changes to propagate.
@@ -2292,6 +2333,7 @@ class rdk:
                         "ParameterKey": "ExcludedAccounts",
                         "ParameterValue": combined_excluded_accounts_str,
                     },
+                    # TODO - Add CfnGuard properties
                 ]
                 my_cfn = my_session.client("cloudformation")
 
@@ -2299,7 +2341,7 @@ class rdk:
                 cfn_body = os.path.join(
                     path.dirname(__file__),
                     "template",
-                    "configManagedRuleOrganization.yaml",
+                    "configManagedRuleOrganization.yaml",  # TODO - option for CfnGuard
                 )
 
                 try:
@@ -2662,20 +2704,7 @@ class rdk:
 
         for rule_name in rule_names:
             rule_params, rule_tags = self.__get_rule_parameters(rule_name)
-            if rule_params["SourceRuntime"] not in (
-                "python3.7",
-                "python3.7-lib",
-                "python3.8",
-                "python3.8-lib",
-                "python3.9",
-                "python3.9-lib",
-                "python3.10",
-                "python3.10-lib",
-                "python3.11",
-                "python3.11-lib",
-                "python3.12",
-                "python3.12-lib",
-            ):
+            if not re.match(r"python", rule_params["SourceRuntime"]):
                 print("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
 
@@ -3261,6 +3290,18 @@ class rdk:
         dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, "build.gradle")
         shutil.copyfile(src, dst)
 
+    def __create_guard_rule(self):
+        runtime = "guard-2.x.x"  # TODO - make dynamic
+        file_name = "rule_code.guard"
+        src = os.path.join(path.dirname(__file__), "template", "runtime", runtime, file_name)
+        dst = os.path.join(os.getcwd(), rules_dir, self.args.rulename, f"{self.args.rulename}.guard")
+        try:
+            shutil.copy(src, dst)
+            return 0
+        except FileExistsError:
+            print("Rule " + self.args.rulename + " already exists. Exiting.")
+            return 1
+
     def __print_log_event(self, event):
         time_string = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(event["timestamp"] / 1000))
 
@@ -3459,6 +3500,7 @@ class rdk:
         return my_json["Parameters"], my_tags
 
     def __parse_rule_args(self, is_required):
+        # TODO - Validate CfnGuard args
         self.args = get_rule_parser(is_required, self.args.command).parse_args(self.args.command_args, self.args)
 
         max_resource_types = 100
@@ -3532,9 +3574,11 @@ class rdk:
         return self.args
 
     def __parse_deploy_args(self, ForceArgument=False):
+
         self.args = get_deployment_parser(ForceArgument).parse_args(self.args.command_args, self.args)
 
         # Validate inputs #
+        # TODO - Validate that CfnGuard rule inputs are sane
         if bool(self.args.lambda_security_groups) != bool(self.args.lambda_subnets):
             print("You must specify both lambda-security-groups and lambda-subnets, or neither.")
             sys.exit(1)
@@ -3584,6 +3628,7 @@ class rdk:
         self.args = get_deployment_organization_parser(ForceArgument).parse_args(self.args.command_args, self.args)
 
         # Validate inputs #
+        # TODO - Validate sane inputs for CfnGuard rules
         if bool(self.args.lambda_security_groups) != bool(self.args.lambda_subnets):
             print("You must specify both lambda-security-groups and lambda-subnets, or neither.")
             sys.exit(1)
@@ -3690,6 +3735,9 @@ class rdk:
         return s3_dst
 
     def __populate_params(self):
+
+        # TODO - Ensure that parameters.json is populated appropriately for CfnGuard rules
+
         # create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
 
@@ -3896,33 +3944,15 @@ class rdk:
     def __get_handler(self, rule_name, params):
         if "SourceHandler" in params:
             return params["SourceHandler"]
-        if params["SourceRuntime"] in [
-            "python3.7",
-            "python3.7-lib",
-            "python3.8",
-            "python3.8-lib",
-            "python3.9",
-            "python3.9-lib",
-            "python3.10",
-            "python3.10-lib",
-            "python3.11",
-            "python3.11-lib",
-            "python3.12",
-            "python3.12-lib",
-        ]:
+        if re.match(r"python", params["SourceRuntime"]):
             return rule_name + ".lambda_handler"
+        elif re.match(r"guard", params["SourceRuntime"]):
+            return "N/A"
         elif params["SourceRuntime"] in ["java8"]:
             return "com.rdk.RuleUtil::handler"
 
     def __get_runtime_string(self, params):
-        if params["SourceRuntime"] in [
-            "python3.7-lib",
-            "python3.8-lib",
-            "python3.9-lib",
-            "python3.10-lib",
-            "python3.11-lib",
-            "python3.12-lib",
-        ]:
+        if re.match(r"python", params["SourceRuntime"]):
             runtime = params["SourceRuntime"].split("-")
             return runtime[0]
 
@@ -4309,14 +4339,7 @@ class rdk:
     def __get_lambda_layers(self, my_session, args, params):
         layers = []
         if "SourceRuntime" in params:
-            if params["SourceRuntime"] in [
-                "python3.7-lib",
-                "python3.8-lib",
-                "python3.9-lib",
-                "python3.10-lib",
-                "python3.11-lib",
-                "python3.12-lib",
-            ]:
+            if re.match(r"python", params["SourceRuntime"]):
                 if hasattr(args, "generated_lambda_layer") and args.generated_lambda_layer:
                     lambda_layer_version = self.__get_existing_lambda_layer(
                         my_session, layer_name=args.custom_layer_name
