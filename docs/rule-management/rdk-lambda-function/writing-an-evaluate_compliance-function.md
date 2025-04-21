@@ -1,14 +1,14 @@
 # Introduction
 
-RDK creates evaluate_compliance function for you, but you don’t need to keep the default structure; you can even create multiple functions to evaluate compliance. We’re going to start with the default structure and keep building on top of it in the following examples.
+RDK creates `evaluate_compliance` function for you, but you don’t need to keep the default structure; you can even create multiple functions to evaluate compliance. We’re going to start with the default structure and keep building on top of it in the following examples.
 
 ## Compliance evaluation function for evaluations triggered by periodic frequency
 
-One of the evaluate_compliance function’s input is `event`. See [Example Events for AWS Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_develop-rules_example-events.html) for more information. Events have different type of information required to evaluate compliance of AWS resources based on Config rule type.
+One of the `evaluate_compliance` function's inputs is `event`. See [Example Events for AWS Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_develop-rules_example-events.html) for more information. Events have different type of information required to evaluate compliance of AWS resources based on Config rule type.
 
 For periodic trigger type rules, the _messageType_ element in _invokingEvent_ element of Event has the value of _ScheduledNotification_. Scheduled compliance validation usually checks numerous resources of same type for compliance and the published event has no _Configuration_item_ so you should use AWS SDK (i.e. [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html) for python) to gather required information for compliance evaluation.
 
-Imagine you want to scan your account for IAM roles with no policies attached to them and report them as non-compliant resources. Once you have created your rule and set `-m` , `--maximum-frequency` option of `rdk create` command to the desired value, AWS Config triggers your rule at the set frequency and your Lambda function calls evaluate_compliance function to report the results.
+Imagine you want to scan your account for IAM roles with no policies attached to them and report them as non-compliant resources. Once you have created your rule and set `-m` , `--maximum-frequency` option of `rdk create` command to the desired value, AWS Config triggers your rule at the set frequency and your Lambda function calls the `evaluate_compliance` function to report the results.
 Let’s build the logic:
 
 1. Initiate an empty evaluations list: `evaluations = []`
@@ -21,7 +21,7 @@ we use get_client function which is defined in our skeleton file to create the c
 5. Finally, we’re going to check the length of inline and managed policy arrays and if it is equal to zero, it means the role does not have any attached policies and is noncompliant.
 6. We use build_evaluation function, already defined in our skeleton file to create an evaluation dictionary and append it to the evaluation list initiated on step1.
 
-Fully developed evaluate_compliance function for this example:
+Here's the fully-developed `evaluate_compliance` function for this example:
 
 ```python
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
@@ -54,13 +54,13 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
 ```
 
-Make sure to read boto3 documentation for each class you are using to understand its limitations and capabilities. In our case `list_roles` method might not return a complete list of roles in one call, so we are using a `while` loop and checking for `Marker` in the results to make subsequent calls in case of receiving a truncated role list. Read more about Marker on `list_roles` method [documentation](https://boto3.amazonaws.com/v1/documentation/api/1.9.42/reference/services/iam.html#IAM.Client.list_roles).
+Make sure to read the `boto3` documentation for each class you are using to understand its limitations and capabilities. In our case, the `list_roles` method might not return a complete list of roles in one call, so we use a `while` loop to check for `Marker` in the results to make subsequent calls in case of receiving a truncated role list. Read more about Marker on `list_roles` method [documentation](https://boto3.amazonaws.com/v1/documentation/api/1.9.42/reference/services/iam.html#IAM.Client.list_roles).
 
 Notes:
 
-- For compliant resources we are also creating an evaluation dictionary and appending it to the evaluation list.
-- You can remove any unused arguments of the evaluate_compliance function definition, as long as you also remove them from when the lambda_handler function calls evaluate_compliance.
-- build_evaluation function returns an evaluation dictionary (refer to previous section for more information).
+- For compliant resources, we are also creating an evaluation dictionary and appending it to the evaluation list.
+- You can remove any unused arguments of the `evaluate_compliance` function definition, as long as you also remove them from when the `lambda_handler` function calls `evaluate_compliance`.
+- The `build_evaluation` function returns an evaluation dictionary (refer to previous section for more information).
 
 ## Compliance evaluation function for evaluations triggered by configuration changes
 
@@ -71,7 +71,7 @@ We can recreate the example in the previous section using Configuration_item. IA
 
 - Check the length of `rolePolicyList` and `attachedManagedPolicies` arrays and return `NON_COMPLIANT` if both are equal to 0.
 
-Fully developed evaluate_compliance function for this example:
+Here's the fully-developed `evaluate_compliance` function for this example:
 
 ```python
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
@@ -88,11 +88,11 @@ Notes:
 - Once you deploy the rule, AWS Config evaluates all the resources in scope using the already available configuration items (it does not create a new configuration item unless the resource is changed)
 - After the initial evaluation, Config runs compliance evaluation for configuration change triggered rules once resource at a time and when the resource changes.
 - If the configuration_item does not provide all the necessary information for compliance evaluation, you can use boto3 to gather any extra information you require to complete the evaluation.
-- In this example, evaluate_compliance function returns the compliance status as a string. If lambda_handler receives a string from evaluate_compliance functions, it uses build_evaluation_from_config_item function to build compliance results.
-  - build_evaluation_from_config_item function returns an evaluation dictionary (refer to previous section for more information)
-- If you need to add annotations to your compliance results, instead of returning a string, you can call build_evaluation_from_config_item function and pass the annotation string.
+- In this example, the `evaluate_compliance` function returns the compliance status as a string. If `lambda_handler` receives a string from `evaluate_compliance` functions, it uses the `build_evaluation_from_config_item` function to build compliance results.
+  - The `build_evaluation_from_config_item` function returns an evaluation dictionary (refer to previous section for more information)
+- If you need to add annotations to your compliance results, instead of returning a string, you can call `build_evaluation_from_config_item` function and pass the annotation string.
 
-Modified evaluate_compliance function to include annotations in compliance evaluation:
+Here's the modified `evaluate_compliance` function to include annotations in compliance evaluation:
 
 ```python
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
@@ -107,7 +107,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters):
 
 Writing evaluation logic for these types of rules is rather complicated and need to be very well-thought of before execution. It’s best not to create hybrid triggered rules unless you can’t accomplish compliance evaluation using periodic or change-triggered rules.
 
-Imagine a scenario where you need assess your resources periodically and upon any resource changes, for example you want a Config rule that checks for unused IAM Roles, but it ignores newly created roles for a few days (role cooldown period). In this scenario if you rely only on configuration change triggers, your new roles will be marked non-compliant upon creation (technically they have never been used before), so you need another mechanism to check them regularly to assess their compliance. In this case you can modify your evaluation logic to accommodate both trigger types. One way to do this, is modifying evaluate_compliance function to take an extra argument:
+Imagine a scenario where you need assess your resources periodically and upon any resource changes, for example you want a Config rule that checks for unused IAM Roles, but it ignores newly created roles for a few days (role cooldown period). In this scenario if you rely only on configuration change triggers, your new roles will be marked non-compliant upon creation (technically they have never been used before), so you need another mechanism to check them regularly to assess their compliance. In this case you can modify your evaluation logic to accommodate both trigger types. One way to do this is modifying the `evaluate_compliance` function to take an extra argument:
 
 ```python
 def evaluate_compliance(event, configuration_item, valid_rule_parameters, message_type):
@@ -118,7 +118,7 @@ def evaluate_compliance(event, configuration_item, valid_rule_parameters, messag
 
 ```
 
-When calling evaluate_compliance function from lambda_handler function, pass `invoking_event['messageType']` as message type:
+When calling the `evaluate_compliance` function from lambda_handler function, pass `invoking_event['messageType']` as message type:
 
 ```python
 compliance_result = evaluate_compliance(event, configuration_item, valid_rule_parameters, invoking_event['messageType'])
