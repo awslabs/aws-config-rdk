@@ -128,3 +128,8 @@ API_GW_NOT_EDGE_OPTIMISED/
 manageTest/
 
 football/
+
+.infracost
+
+# For testing guard rule functionality
+myguardrule/

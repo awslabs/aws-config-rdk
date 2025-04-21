@@ -5,56 +5,31 @@
 
 AWS Config Rules Development Kit
 
-We greatly appreciate feedback and bug reports at
-<rdk-maintainers@amazon.com>! You may also create an issue on this repo.
+We greatly appreciate feedback and bug reports at <rdk-maintainers@amazon.com>! You may also create an issue on this repo.
 
-The RDK is designed to support a "Compliance-as-Code" workflow that is
-intuitive and productive. It abstracts away much of the undifferentiated
-heavy lifting associated with deploying AWS Config rules backed by
-custom lambda functions, and provides a streamlined
-develop-deploy-monitor iterative process.
+The RDK is designed to support a "Compliance-as-Code" workflow that is intuitive and productive. It abstracts away much of the undifferentiated heavy lifting associated with deploying AWS Config rules backed by custom Lambda functions, and provides a streamlined develop-deploy-monitor iterative process.
 
-For complete documentation, including command reference, check out the
-[ReadTheDocs documentation](https://aws-config-rdk.readthedocs.io/).
+For complete documentation, including command reference, check out the [ReadTheDocs documentation](https://aws-config-rdk.readthedocs.io/).
 
 ## Getting Started
 
-Uses Python 3.7+ and is installed via pip. Requires you to have
-an AWS account and sufficient permissions to manage the Config service,
-and to create S3 Buckets, Roles, and Lambda Functions. An AWS IAM Policy
-Document that describes the minimum necessary permissions can be found
-at `policy/rdk-minimum-permissions.json`.
+Uses Python 3.7+ and is installed via `pip`. Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions. An AWS IAM Policy Document that describes the minimum necessary permissions can be found at `policy/rdk-minimum-permissions.json`.
 
-Under the hood, rdk uses boto3 to make API calls to AWS, so you can set
-your credentials any way that boto3 recognizes (options 3 through 8
-[here](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#guide-credentials))
-or pass them in with the command-line parameters `--profile`,
-`--region`, `--access-key-id`, or `--secret-access-key`
+Under the hood, `rdk` uses `boto3` to make API calls to AWS, so you can set your credentials any way that boto3 recognizes (options 3 through 8 [here](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#guide-credentials)) or pass them in with the command-line parameters `--profile`, `--region`, `--access-key-id`, or `--secret-access-key`
 
 If you just want to use the RDK, go ahead and install it using pip.
 
 ```bash
-pip install rdk
-# Consider also installing rdklib, a helper for rdk
-pip install rdklib
+pip install rdk rdklib # rdklib is highly-recommended for simplifying rule management.
 ```
 
-Alternately, if you want to see the code and/or contribute you can clone
-the git repo, and then from the repo directory use pip to install the
-package. Use the `-e` flag to generate symlinks so that any edits you
-make will be reflected when you run the installed package.
-
-If you are going to author your Lambda functions using Java you will
-need to have Java 8 and gradle installed. If you are going to author
-your Lambda functions in C# you will need to have the dotnet CLI and the
-.NET Core Runtime 1.08 installed.
+Alternately, if you want to see the code and/or contribute you can clone the git repo, and then from the repo directory use `pip` to install the package. Use the `-e` flag to generate symlinks so that any edits you make will be reflected when you run the installed package.
 
 ```bash
 pip install -e .
 ```
 
-To make sure the rdk is installed correctly, running the package from
-the command line without any arguments should display help information.
+To make sure `rdk` is installed correctly, running the package from the command line without any arguments should display help information.
 
 ```bash
 rdk
@@ -68,10 +43,7 @@ rdk: error: the following arguments are required: <command>, <command arguments>
 
 ### Configure your env
 
-To use the RDK, it's recommended to create a directory that will be
-your working directory. This should be committed to a source code repo,
-and ideally created as a python virtualenv. In that directory, run the
-`init` command to set up your AWS Config environment.
+To use the RDK, it's recommended to create a directory that will be your working directory. This should be committed to a source code repo, and ideally created as a python virtualenv. In that directory, run the `init` command to set up your AWS Config environment.
 
 ```bash
 rdk init
@@ -84,8 +56,7 @@ Config setup complete.
 Creating Code bucket config-rule-code-bucket-780784666283ap-southeast-1
 ```
 
-Running `init` subsequent times will validate your AWS Config setup and
-re-create any S3 buckets or IAM resources that are needed.
+Running `init` subsequent times will validate your AWS Config setup and re-create any S3 buckets or IAM resources that are needed.
 
 - If you have config delivery bucket already present in some other AWS account then use `--config-bucket-exists-in-another-account` as argument.
 
@@ -119,13 +90,7 @@ rdk init --generate-lambda-layer --custom-layer-name <LAYER_NAME>
 
 ## Create Rules
 
-In your working directory, use the `create` command to start creating a
-new custom rule. You must specify the runtime for the lambda function
-that will back the Rule, and you can also specify a resource type (or
-comma-separated list of types) that the Rule will evaluate or a maximum
-frequency for a periodic rule. This will add a new directory for the
-rule and populate it with several files, including a skeleton of your
-Lambda code.
+In your working directory, use the `create` command to start creating a new custom rule. You must specify the runtime for the Lambda function that will back the Rule, and you can also specify a resource type (or comma-separated list of types) that the Rule will evaluate or a maximum frequency for a periodic rule. This will add a new directory for the rule and populate it with several files, including a skeleton of your Lambda code.
 
 ```bash
 rdk create MyRule --runtime python3.12 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
@@ -133,31 +98,17 @@ Running create!
 Local Rule files created.
 ```
 
-On Windows it is necessary to escape the double-quotes when specifying
-input parameters, so the `--input-parameters` argument would instead
-look something like this:
+On Windows it is necessary to escape the double-quotes when specifying input parameters, so the `--input-parameters` argument would instead look something like this:
 
 `'{\"desiredInstanceType\":\"t2.micro\"}'`
 
 As of RDK v0.17.0, you can also specify `--resource-types ALL` to include all resource types.
 
-Note that you can create rules that use EITHER resource-types OR
-maximum-frequency, but not both. We have found that rules that try to be
-both event-triggered as well as periodic wind up being very complicated
-and so we do not recommend it as a best practice.
+Note that you can create rules that use EITHER `resource-types` OR `maximum-frequency`, but not both. We have found that rules that try to be both event-triggered as well as periodic wind up being very complicated and so we do not recommend it as a best practice.
 
 ### Edit Rules Locally
 
-Once you have created the rule, edit the python file in your rule
-directory (in the above example it would be `MyRule/MyRule.py`, but may
-be deeper into the rule directory tree depending on your chosen Lambda
-runtime) to add whatever logic your Rule requires in the
-`evaluate_compliance` function. You will have access to the CI that was
-sent by Config, as well as any parameters configured for the Config
-Rule. Your function should return either a simple compliance status (one
-of `COMPLIANT`, `NON_COMPLIANT`, or `NOT_APPLICABLE`), or if you're
-using the python or node runtimes you can return a JSON object with
-multiple evaluation responses that the RDK will send back to AWS Config.
+Once you have created the rule, edit the python file in your rule directory (in the above example it would be `MyRule/MyRule.py`, but may be deeper into the rule directory tree depending on your chosen Lambda runtime) to add whatever logic your Rule requires in the `evaluate_compliance` function. You will have access to the CI that was sent by Config, as well as any parameters configured for the Config Rule. Your function should return either a simple compliance status (one of `COMPLIANT`, `NON_COMPLIANT`, or `NOT_APPLICABLE`) or a JSON object with multiple evaluation responses that the RDK will send back to AWS Config.
 
 An example would look like:
 
@@ -174,12 +125,9 @@ for sg in response['SecurityGroups']:
 return evaluations
 ```
 
-This is necessary for periodic rules that are not triggered by any CI
-change (which means the CI that is passed in will be null), and also for
-attaching annotations to your evaluation results.
+This is necessary for periodic rules that are not triggered by any CI change (which means the CI that is passed in will be null), and also for attaching annotations to your evaluation results.
 
-If you want to see what the JSON structure of a CI looks like for
-creating your logic, you can use
+If you want to see what the JSON structure of a CI looks like for creating your logic, you can use
 
 ```bash
 rdk sample-ci <Resource Type>
@@ -189,12 +137,7 @@ to output a formatted JSON document.
 
 ### Write and Run Unit Tests
 
-If you are writing Config Rules using either of the Python runtimes
-there will be a `<rule name>_test.py` file deployed along with your
-Lambda function skeleton. This can be used to write unit tests according
-to the standard Python unittest framework (documented
-[here](https://docs.python.org/3/library/unittest.html)), which can be
-run using the `test-local` rdk command:
+If you are writing Config Rules using either of the Python runtimes there will be a `<rule name>_test.py` file deployed along with your Lambda function skeleton. This can be used to write unit tests according to the standard Python unittest framework (documented [here](https://docs.python.org/3/library/unittest.html)), which can be run using the `test-local` rdk command:
 
 ```bash
 rdk test-local MyTestRule
@@ -210,18 +153,11 @@ OK
 <unittest.runner.TextTestResult run=0 errors=0 failures=0>
 ```
 
-The test file includes setup for the MagicMock library that can be used
-to stub boto3 API calls if your rule logic will involve making API calls
-to gather additional information about your AWS environment. For some
-tips on how to do this, check out this blog post:
-[Mock Is Magic](https://sgillies.net/2017/10/19/mock-is-magic.html)
+The test file includes setup for the MagicMock library that can be used to stub `boto3` API calls if your rule logic will involve making API calls to gather additional information about your AWS environment. For some tips on how to do this, check out this blog post: [Mock Is Magic](https://sgillies.net/2017/10/19/mock-is-magic.html)
 
 ### Modify Rule
 
-If you need to change the parameters of a Config rule in your working
-directory you can use the `modify` command. Any parameters you specify
-will overwrite existing values, any that you do not specify will not be
-changed.
+If you need to change the parameters of a Config rule in your working directory you can use the `modify` command. Any parameters you specify will overwrite existing values, any that you do not specify will not be changed.
 
 ```bash
 rdk modify MyRule --runtime python3.12 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
@@ -233,9 +169,7 @@ Again, on Windows the input parameters would look like:
 
 `'{\"desiredInstanceType\":\"t2.micro\"}'`
 
-It is worth noting that until you actually call the `deploy` command
-your rule only exists in your working directory, none of the Rule
-commands discussed thus far actually makes changes to your account.
+It is worth noting that until you actually call the `deploy` command your rule only exists in your working directory; none of the Rule commands discussed thus far actually makes changes to your account.
 
 ### Deploy Rule
 
