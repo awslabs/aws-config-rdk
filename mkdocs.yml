@@ -1,6 +1,6 @@
 site_name: AWS RDK Documentation
 theme:
-  name: material
+  name: mkdocs
   palette:
     scheme: default
     primary: navy
@@ -11,9 +11,9 @@ plugins:
   #     handlers:
   #       python:
   #         paths: [rdk]
-markdown_extensions:
-  - markdown_include.include:
-      base_path: .
+# markdown_extensions:
+#   - markdown_include.include:
+#       base_path: .
 docs_dir: docs
 nav:
   - 'index.md'
