@@ -20,8 +20,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Run Safety Check
-        run: poetry poe safety
+      - name: Run Safety CLI to check for vulnerabilities
+        uses: pyupio/safety-action@v1
+        with:
+          api-key: ${{ secrets.SAFETY_API_KEY }}
 
       - name: Get Python Module Version
         run: |

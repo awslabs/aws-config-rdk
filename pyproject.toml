@@ -101,7 +101,7 @@ lint = ["check-docstrings", "check-ruff"]
 fix = ["isort", "black"]
 # test = "pytest --cov=rdk --cov-report=xml --cov-report=term"
 ruff = "ruff check --fix rdk"
-safety = "safety check --ignore 70612" # Ignoring a disputed Jinja finding
+safety = "safety scan --ignore 70612" # Ignoring a disputed Jinja finding
 bandit = "bandit -r rdk"
 security = ["safety", "bandit"]
 update-doc-deps = {cmd = "poetry export --only=docs -f requirements.txt > docs/requirements.txt", help = "Generate an updated requirements.txt for docs" }
@@ -111,9 +111,10 @@ install = "poetry install"
 build = "poetry build"
 
 [tool.poetry.dependencies]
-python = "^3.9.0"
+python = "^3.10.0"
 boto3 = "^1.35.0"
 pyyaml = "^6.0"
+cryptography = "^44.0.2"
 
 [tool.poetry.group.dev.dependencies]
 rdklib = "^0.3"
