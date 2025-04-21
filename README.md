@@ -1,4 +1,6 @@
-# AWS RDK - AWS Config Rules Development Kit
+# AWS RDK
+
+The AWS Config Rules Development Kit
 
 [![pypibadge](https://static.pepy.tech/personalized-badge/rdk?period=total&units=international_system&left_color=black&right_color=blue&left_text=downloads)](https://pepy.tech/project/rdk)
 ![PyPI](https://img.shields.io/pypi/v/rdk)
