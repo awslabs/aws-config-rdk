@@ -35,6 +35,8 @@ If you just want to use the RDK, go ahead and install it using pip.
 
 ```bash
 pip install rdk
+# Consider also installing rdklib, a helper for rdk
+pip install rdklib
 ```
 
 Alternately, if you want to see the code and/or contribute you can clone
