@@ -1,9 +1,7 @@
-# AWS RDK
+# AWS RDK - AWS Config Rules Development Kit
 
 [![pypibadge](https://static.pepy.tech/personalized-badge/rdk?period=total&units=international_system&left_color=black&right_color=blue&left_text=downloads)](https://pepy.tech/project/rdk)
 ![PyPI](https://img.shields.io/pypi/v/rdk)
-
-AWS Config Rules Development Kit
 
 We greatly appreciate feedback and bug reports at <rdk-maintainers@amazon.com>! You may also create an issue on this repo.
 
@@ -13,7 +11,7 @@ For complete documentation, including command reference, check out the [ReadTheD
 
 ## Getting Started
 
-Uses Python 3.7+ and is installed via `pip`. Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions. An AWS IAM Policy Document that describes the minimum necessary permissions can be found at `policy/rdk-minimum-permissions.json`.
+Uses Python 3.9+ and is installed via `pip`. Requires you to have an AWS account and sufficient permissions to manage the Config service, and to create S3 Buckets, Roles, and Lambda Functions. An AWS IAM Policy Document that describes the minimum necessary permissions can be found at `policy/rdk-minimum-permissions.json`.
 
 Under the hood, `rdk` uses `boto3` to make API calls to AWS, so you can set your credentials any way that boto3 recognizes (options 3 through 8 [here](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html#guide-credentials)) or pass them in with the command-line parameters `--profile`, `--region`, `--access-key-id`, or `--secret-access-key`
 
@@ -76,7 +74,7 @@ rdk init --control-tower --config-bucket-exists-in-another-account
 rdk init --skip-code-bucket-creation
 ```
 
-- If you want rdk to create/update and upload the rdklib-layer for you, then use `--generate-lambda-layer` argument. In supported regions, rdk will deploy the layer using the Serverless Application Repository, otherwise it will build a local lambda layer archive and upload it for use.
+- If you want rdk to create/update and upload the `rdklib-layer` for you, then use `--generate-lambda-layer` argument. In supported regions, rdk will deploy the layer using the Serverless Application Repository, otherwise it will build a local lambda layer archive and upload it for use.
 
 ```bash
 rdk init --generate-lambda-layer
@@ -91,6 +89,8 @@ rdk init --generate-lambda-layer --custom-layer-name <LAYER_NAME>
 ## Create Rules
 
 In your working directory, use the `create` command to start creating a new custom rule. You must specify the runtime for the Lambda function that will back the Rule, and you can also specify a resource type (or comma-separated list of types) that the Rule will evaluate or a maximum frequency for a periodic rule. This will add a new directory for the rule and populate it with several files, including a skeleton of your Lambda code.
+
+> :warning: By default, if you do not specify a runtime, `rdk` will select the latest `rdklib` Python runtime (eg. `python3.12-lib`). If you use an `rdklib` runtime, you will need to have `rdklib` Lambda layer installed in your AWS account (see `--generate-lambda-layer` in `rdk init` above), and will need `rdklib` installed locally if you plan to run unit tests locally. Alternatively, you can explicitly specify a non-`rdklib` runtime like `python3.12`.
 
 ```bash
 rdk create MyRule --runtime python3.12 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'

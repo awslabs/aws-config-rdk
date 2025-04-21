@@ -1,27 +1,29 @@
 # Introduction
 
-RDK creates `evaluate_compliance` function for you, but you don’t need to keep the default structure; you can even create multiple functions to evaluate compliance. We’re going to start with the default structure and keep building on top of it in the following examples.
+RDK creates an `evaluate_compliance()` function for you, but you don’t need to keep the default structure; you can even create multiple functions to evaluate compliance. We’re going to start with the default structure and keep building on top of it in the following examples.
 
 ## Compliance evaluation function for evaluations triggered by periodic frequency
 
-One of the `evaluate_compliance` function's inputs is `event`. See [Example Events for AWS Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_develop-rules_example-events.html) for more information. Events have different type of information required to evaluate compliance of AWS resources based on Config rule type.
+> :warning: This section uses helper functions (eg. `build_evaluation()`) that are only present in non-`rdklib` runtimes. If you are using an `rdklib` runtime (eg. `python3.12-lib`), most of this guidance will not be relevant to you.
+
+One of the `evaluate_compliance()` function's inputs is `event`. See [Example Events for AWS Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_develop-rules_example-events.html) for more information. Events have different type of information required to evaluate compliance of AWS resources based on Config rule type.
 
 For periodic trigger type rules, the _messageType_ element in _invokingEvent_ element of Event has the value of _ScheduledNotification_. Scheduled compliance validation usually checks numerous resources of same type for compliance and the published event has no _Configuration_item_ so you should use AWS SDK (i.e. [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html) for python) to gather required information for compliance evaluation.
 
-Imagine you want to scan your account for IAM roles with no policies attached to them and report them as non-compliant resources. Once you have created your rule and set `-m` , `--maximum-frequency` option of `rdk create` command to the desired value, AWS Config triggers your rule at the set frequency and your Lambda function calls the `evaluate_compliance` function to report the results.
+Imagine you want to scan your account for IAM roles with no policies attached to them and report them as non-compliant resources. Once you have created your rule and set `-m` , `--maximum-frequency` option of `rdk create` command to the desired value, AWS Config triggers your rule at the set frequency and your Lambda function calls the `evaluate_compliance()` function to report the results.
 Let’s build the logic:
 
 1. Initiate an empty evaluations list: `evaluations = []`
 2. Create a boto3 client representing AWS Identity and Access Management (IAM): `iam_client = get_client('iam', event)`
 we use get_client function which is defined in our skeleton file to create the client.
-3. Getting a list of roles: `roles_list = iam_client.list_roles()`
-4. We can create a loop and for every role gather a list of attached inline policies and managed policies.
+1. Getting a list of roles: `roles_list = iam_client.list_roles()`
+2. We can create a loop and for every role gather a list of attached inline policies and managed policies.
    1. Inline policies: `role_policies_inline = iam_client.list_role_policies(RoleName=role_name)['PolicyNames']`
    2. Managed policies: `role_policies_managed = iam_client.list_attached_role_policies(RoleName=role_name)['AttachedPolicies']`
-5. Finally, we’re going to check the length of inline and managed policy arrays and if it is equal to zero, it means the role does not have any attached policies and is noncompliant.
-6. We use build_evaluation function, already defined in our skeleton file to create an evaluation dictionary and append it to the evaluation list initiated on step1.
+3. Finally, we’re going to check the length of inline and managed policy arrays and if it is equal to zero, it means the role does not have any attached policies and is noncompliant.
+4. We use build_evaluation function, already defined in our skeleton file to create an evaluation dictionary and append it to the evaluation list initiated on step1.
 
-Here's the fully-developed `evaluate_compliance` function for this example:
+Here's the fully-developed `evaluate_compliance()` function for this example:
 
 ```python
 def evaluate_compliance(event, configuration_item, valid_rule_parameters):
