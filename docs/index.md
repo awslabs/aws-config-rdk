@@ -92,10 +92,10 @@ rdk init --generate-lambda-layer --custom-layer-name <LAYER_NAME>
 
 In your working directory, use the `create` command to start creating a new custom rule. You must specify the runtime for the Lambda function that will back the Rule, and you can also specify a resource type (or comma-separated list of types) that the Rule will evaluate or a maximum frequency for a periodic rule. This will add a new directory for the rule and populate it with several files, including a skeleton of your Lambda code.
 
-> :warning: By default, if you do not specify a runtime, `rdk` will select the latest `rdklib` Python runtime (eg. `python3.12-lib`). If you use an `rdklib` runtime, you will need to have `rdklib` Lambda layer installed in your AWS account (see `--generate-lambda-layer` in `rdk init` above), and will need `rdklib` installed locally if you plan to run unit tests locally. Alternatively, you can explicitly specify a non-`rdklib` runtime like `python3.12`.
+> :warning: By default, if you do not specify a runtime, `rdk` will select the latest `rdklib` Python runtime (eg. `python3.13-lib`). If you use an `rdklib` runtime, you will need to have `rdklib` Lambda layer installed in your AWS account (see `--generate-lambda-layer` in `rdk init` above), and will need `rdklib` installed locally if you plan to run unit tests locally. Alternatively, you can explicitly specify a non-`rdklib` runtime like `python3.13`.
 
 ```bash
-rdk create MyRule --runtime python3.12 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
+rdk create MyRule --runtime python3.13 --resource-types AWS::EC2::Instance --input-parameters '{"desiredInstanceType":"t2.micro"}'
 Running create!
 Local Rule files created.
 ```
@@ -162,7 +162,7 @@ The test file includes setup for the MagicMock library that can be used to stub 
 If you need to change the parameters of a Config rule in your working directory you can use the `modify` command. Any parameters you specify will overwrite existing values, any that you do not specify will not be changed.
 
 ```bash
-rdk modify MyRule --runtime python3.12 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
+rdk modify MyRule --runtime python3.13 --maximum-frequency TwentyFour_Hours --input-parameters '{"desiredInstanceType":"t2.micro"}'
 Running modify!
 Modified Rule 'MyRule'.  Use the `deploy` command to push your changes to AWS.
 ```
@@ -259,7 +259,7 @@ CloudFormation template written to remote-rule-template.json
 It is now possible to define a resource type that is not yet supported by `rdk`. To disable the supported resource check use the optional flag `--skip-supported-resource-check` during the create command.
 
 ```bash
-rdk create MyRule --runtime python3.12 --resource-types AWS::New::ResourceType --skip-supported-resource-check
+rdk create MyRule --runtime python3.13 --resource-types AWS::New::ResourceType --skip-supported-resource-check
 'AWS::New::ResourceType' not found in list of accepted resource types.
 Skip-Supported-Resource-Check Flag set (--skip-supported-resource-check), ignoring missing resource type error.
 Running create!
@@ -274,7 +274,7 @@ As of version 0.7.14, instead of defaulting the lambda function names to `RDK-Ru
 2. Custom lambda function naming as per personal or enterprise standards.
 
 ```bash
-rdk create MyLongerRuleName --runtime python3.12 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
+rdk create MyLongerRuleName --runtime python3.13 --resource-types AWS::EC2::Instance --custom-lambda-name custom-prefix-for-MyLongerRuleName
 Running create!
 Local Rule files created.
 ```
