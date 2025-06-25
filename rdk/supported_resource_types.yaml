@@ -16,6 +16,7 @@ supported_resources:
   - AWS::AppConfig::ConfigurationProfile
   - AWS::AppConfig::DeploymentStrategy
   - AWS::AppConfig::Environment
+  - AWS::AppConfig::ExtensionAssociation
   - AWS::AppConfig::HostedConfigurationVersion
   - AWS::AppFlow::Flow
   - AWS::AppIntegrations::EventIntegration
@@ -32,6 +33,7 @@ supported_resources:
   - AWS::AppStream::DirectoryConfig
   - AWS::AppStream::Fleet
   - AWS::AppStream::Stack
+  - AWS::AppSync::ApiCache
   - AWS::AppSync::GraphQLApi
   - AWS::Athena::DataCatalog
   - AWS::Athena::PreparedStatement
@@ -77,6 +79,8 @@ supported_resources:
   - AWS::Connect::Instance
   - AWS::Connect::PhoneNumber
   - AWS::Connect::QuickConnect
+  - AWS::Connect::Rule
+  - AWS::Connect::User
   - AWS::CustomerProfiles::Domain
   - AWS::CustomerProfiles::ObjectType
   - AWS::DMS::Certificate
@@ -102,6 +106,7 @@ supported_resources:
   - AWS::EC2::CapacityReservation
   - AWS::EC2::CarrierGateway
   - AWS::EC2::ClientVpnEndpoint
+  - AWS::EC2::ClientVpnTargetNetworkAssociation
   - AWS::EC2::CustomerGateway
   - AWS::EC2::DHCPOptions
   - AWS::EC2::EC2Fleet
@@ -111,6 +116,8 @@ supported_resources:
   - AWS::EC2::Host
   - AWS::EC2::IPAM
   - AWS::EC2::IPAMPool
+  - AWS::EC2::IPAMResourceDiscovery
+  - AWS::EC2::IPAMResourceDiscoveryAssociation
   - AWS::EC2::IPAMScope
   - AWS::EC2::Instance
   - AWS::EC2::InternetGateway
@@ -142,6 +149,7 @@ supported_resources:
   - AWS::EC2::VPCEndpointService
   - AWS::EC2::VPCPeeringConnection
   - AWS::EC2::VPNConnection
+  - AWS::EC2::VPNConnectionRoute
   - AWS::EC2::VPNGateway
   - AWS::EC2::Volume
   - AWS::ECR::PublicRepository
@@ -179,6 +187,7 @@ supported_resources:
   - AWS::Events::Rule
   - AWS::Evidently::Launch
   - AWS::Evidently::Project
+  - AWS::Evidently::Segment
   - AWS::FIS::ExperimentTemplate
   - AWS::Forecast::Dataset
   - AWS::Forecast::DatasetGroup
@@ -204,6 +213,7 @@ supported_resources:
   - AWS::HealthLake::FHIRDatastore
   - AWS::IAM::Group
   - AWS::IAM::InstanceProfile
+  - AWS::IAM::OIDCProvider
   - AWS::IAM::Policy
   - AWS::IAM::Role
   - AWS::IAM::SAMLProvider
@@ -276,13 +286,16 @@ supported_resources:
   - AWS::M2::Environment
   - AWS::MSK::BatchScramSecret
   - AWS::MSK::Cluster
+  - AWS::MSK::ClusterPolicy
   - AWS::MSK::Configuration
+  - AWS::MSK::VpcConnection
   - AWS::MediaConnect::FlowEntitlement
   - AWS::MediaConnect::FlowSource
   - AWS::MediaConnect::FlowVpcInterface
   - AWS::MediaPackage::PackagingConfiguration
   - AWS::MediaPackage::PackagingGroup
   - AWS::MediaTailor::PlaybackConfiguration
+  - AWS::MemoryDB::SubnetGroup
   - AWS::NetworkFirewall::Firewall
   - AWS::NetworkFirewall::FirewallPolicy
   - AWS::NetworkFirewall::RuleGroup
@@ -310,6 +323,9 @@ supported_resources:
   - AWS::Pinpoint::InAppTemplate
   - AWS::Pinpoint::Segment
   - AWS::QLDB::Ledger
+  - AWS::QuickSight::DataSource
+  - AWS::QuickSight::Template
+  - AWS::QuickSight::Theme
   - AWS::RDS::DBCluster
   - AWS::RDS::DBClusterSnapshot
   - AWS::RDS::DBInstance
@@ -326,6 +342,7 @@ supported_resources:
   - AWS::Redshift::ClusterSnapshot
   - AWS::Redshift::ClusterSubnetGroup
   - AWS::Redshift::EndpointAccess
+  - AWS::Redshift::EndpointAuthorization
   - AWS::Redshift::EventSubscription
   - AWS::Redshift::ScheduledAction
   - AWS::ResilienceHub::App
@@ -395,6 +412,7 @@ supported_resources:
   - AWS::Transfer::Agreement
   - AWS::Transfer::Certificate
   - AWS::Transfer::Connector
+  - AWS::Transfer::Profile
   - AWS::Transfer::Workflow
   - AWS::WAF::RateBasedRule
   - AWS::WAF::Rule

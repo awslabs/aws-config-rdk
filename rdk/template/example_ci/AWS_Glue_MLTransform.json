@@ -1,0 +1,53 @@
+{
+    "version": "1.3",
+    "accountId": "111111111111",
+    "configurationItemCaptureTime": "2024-08-01T19:25:39.896Z",
+    "configurationItemStatus": "ResourceDiscovered",
+    "configurationStateId": "1234567890123",
+    "configurationItemMD5Hash": "",
+    "arn": "arn:aws:glue:us-east-1:111111111111:mlTransform/tfm-1111111122222222333333334444444455555555",
+    "resourceType": "AWS::Glue::MLTransform",
+    "resourceId": "tfm-1111111122222222333333334444444455555555",
+    "resourceName": "TestMachineLearning",
+    "awsRegion": "us-east-1",
+    "availabilityZone": "Regional",
+    "resourceCreationTime": "2024-08-01T19:23:32.122Z",
+    "tags": {},
+    "relatedEvents": [],
+    "relationships": [],
+    "configuration": {
+        "MaxRetries": 0,
+        "Description": "This is an example CI for ML Transforms",
+        "TransformEncryption": {
+            "MLUserDataEncryption": {
+                "MLUserDataEncryptionMode": "DISABLED"
+            }
+        },
+        "Timeout": 2880,
+        "Name": "TestMachineLearning",
+        "Role": "arn:aws:iam::111111111111:role/MyGlueServiceRole",
+        "WorkerType": "G.2X",
+        "GlueVersion": "2.0",
+        "TransformParameters": {
+            "TransformType": "FIND_MATCHES",
+            "FindMatchesParameters": {
+                "PrimaryKeyColumnName": "eventversion",
+                "PrecisionRecallTradeoff": 0.5,
+                "AccuracyCostTradeoff": 0.5,
+                "EnforceProvidedLabels": false
+            }
+        },
+        "Id": "tfm-1111111122222222333333334444444455555555",
+        "InputRecordTables": {
+            "GlueTables": [
+                {
+                    "DatabaseName": "configsavingschecker",
+                    "TableName": "cloudtrail_logs"
+                }
+            ]
+        },
+        "NumberOfWorkers": 10,
+        "Tags": {}
+    },
+    "supplementaryConfiguration": {}
+}

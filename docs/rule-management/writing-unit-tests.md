@@ -1,6 +1,7 @@
 # Introduction
 
 If you are creating a new rule using RDK, the `rdk create` command will automatically create a unit test script file (named with "_test" appended to your Config rule name).
+
 If you are adding a unit test script to an existing rule, you can use `rdk create` with the same parameters like you're creating a new rule, then copy just the `*_test.py` file it creates to your existing python-code folder (you can delete any other files it creates). For example, the following command will create `MyCoolNewRule.py` and `MyCoolNewRule_test.py`, as well as a `parameters.json` file containing some metadata about your rule.
 
 ```bash

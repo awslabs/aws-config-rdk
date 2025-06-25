@@ -276,6 +276,8 @@ def get_rule_parser(is_required, command):
             "python3.11-lib",
             "python3.12",
             "python3.12-lib",
+            "python3.13",
+            "python3.13-lib",
         ],
         metavar="",
     )
@@ -290,7 +292,7 @@ def get_rule_parser(is_required, command):
         required=False,
         help="[optional] Provide custom lambda name",
     )
-    parser.set_defaults(runtime="python3.12-lib")
+    parser.set_defaults(runtime="python3.13-lib")
     parser.add_argument(
         "-r",
         "--resource-types",
@@ -1168,6 +1170,8 @@ class rdk:
                 "python3.11-lib": ".py",
                 "python3.12": ".py",
                 "python3.12-lib": ".py",
+                "python3.13": ".py",
+                "python3.13-lib": ".py",
             }
             if self.args.runtime not in extension_mapping:
                 print("rdk does not support that runtime yet.")
@@ -1213,6 +1217,7 @@ class rdk:
                             "python3.10-lib",
                             "python3.11-lib",
                             "python3.12-lib",
+                            "python3.13-lib",
                         ]:
                             if self.args.resource_types:
                                 applicable_resource_list = ""
@@ -2484,6 +2489,8 @@ class rdk:
                 "python3.11-lib",
                 "python3.12",
                 "python3.12-lib",
+                "python3.13",
+                "python3.13-lib",
             ):
                 print("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
@@ -3659,6 +3666,8 @@ class rdk:
             "python3.11-lib",
             "python3.12",
             "python3.12-lib",
+            "python3.13",
+            "python3.13-lib",
         ]:
             return rule_name + ".lambda_handler"
         elif params["SourceRuntime"] in ["java8"]:
@@ -3672,6 +3681,7 @@ class rdk:
             "python3.10-lib",
             "python3.11-lib",
             "python3.12-lib",
+            "python3.13-lib",
         ]:
             runtime = params["SourceRuntime"].split("-")
             return runtime[0]
@@ -4066,6 +4076,7 @@ class rdk:
                 "python3.10-lib",
                 "python3.11-lib",
                 "python3.12-lib",
+                "python3.13-lib",
             ]:
                 if hasattr(args, "generated_lambda_layer") and args.generated_lambda_layer:
                     lambda_layer_version = self.__get_existing_lambda_layer(
@@ -4199,6 +4210,7 @@ class rdk:
                 "python3.10",
                 "python3.11",
                 "python3.12",
+                "python3.13",
             ],
         )
 

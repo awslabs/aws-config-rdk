@@ -1,21 +1,26 @@
 site_name: AWS RDK Documentation
 theme:
-  name: material
+  name: mkdocs
   palette:
     scheme: default
     primary: navy
 plugins:
   - search
-markdown_extensions:
-  - markdown_include.include:
-      base_path: .
+  # TODO: Enable this if/when docstrings are expanded in the core rdk module.
+  # - mkdocstrings:
+  #     handlers:
+  #       python:
+  #         paths: [rdk]
+# markdown_extensions:
+#   - markdown_include.include:
+#       base_path: .
 docs_dir: docs
 nav:
-  - 'index.md'
   - 'Rule Management':
     - 'Creating Rules': 'rule-management/creating-rules.md'
     - 'Deploying Rules': 'rule-management/deploy-rules.md'
     - 'Modifying Rules': 'rule-management/modifying-rules.md'
+    - 'Writing Unit Tests': 'rule-management/writing-unit-tests.md'
   - 'RDK Lambda Function':
     - 'Lambda Function Logic': 'rule-management/rdk-lambda-function/lambda-function-logic.md'
     -  'Writing an evaluate_compliance function': 'rule-management/rdk-lambda-function/writing-an-evaluate_compliance-function.md'

@@ -132,3 +132,7 @@ football/
 terraform.tfvars
 **/.terraform
 .terraform.lock.hcl
+.infracost
+
+# For testing guard rule functionality
+myguardrule/
