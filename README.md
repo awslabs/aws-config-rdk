@@ -233,6 +233,16 @@ The `testing` directory contains scripts and buildspec files that I use to run b
 
 ## Advanced Features
 
+### Security Considerations
+
+By default, RDK creates Lambda functions with permissions which allow the AWS Config service to use the `lambda:InvokeFunction` action. There are no additional conditions added to the permissions to restrict which source accounts may invoke the function. That is, any Config rule can be configured with the function ARN to invoke the function.
+
+In practice, this is not a large security risk:
+1. The primary security risk is that the function may be invoked repeatedly, leading to unwanted costs. The attacker would also incur costs for using the Config service. This risk can be further mitigated by adding concurrency configuration to the function.
+2. The secondary security risk is that the Lambda function may return evaluations to the calling account that expose unwanted information. Depending on what information is included in the Evaluation messages, this could give an attacker information about how a rule is evaluated. However, it will not reveal information about resources in your account(s), as the function will be evaluated in the context of the account where the Config rule is present.
+
+In any case, avoid publicizing your Lambda ARNs and don't include sensitive information in your Evaluation responses. You may also choose to use the `aws:sourceAccount` or `aws:SourceOrgID` condition keys to restrict the Config rules that are allowed to invoke the Lambda function.
+
 ### Cross-Account Deployments
 
 Features have been added to the RDK to facilitate the cross-account deployment pattern that enterprise customers have standardized for custom Config Rules. A cross-account architecture is one in which the Lambda functions are deployed to a single central "Compliance" account (which may be the same as a central "Security" account), and the Config Rules are deployed to any number of "Satellite" accounts that are used by other teams or departments. This gives the compliance team confidence that their rule logic cannot be tampered with and makes it much easier for them to modify rule logic without having to go through a complex deployment process to potentially hundreds of AWS accounts. The cross-account pattern uses two advanced RDK features:
