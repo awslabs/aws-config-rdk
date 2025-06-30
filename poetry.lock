@@ -191,14 +191,14 @@ test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
 
 [[package]]
 name = "asteval"
-version = "1.0.5"
+version = "1.0.6"
 description = "Safe, minimalistic evaluator of python expression using ast module"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "asteval-1.0.5-py3-none-any.whl", hash = "sha256:082b95312578affc8a6d982f7d92b7ac5de05634985c87e7eedd3188d31149fa"},
-    {file = "asteval-1.0.5.tar.gz", hash = "sha256:bac3c8dd6d2b789e959cfec9bb296fb8338eec066feae618c462132701fbc665"},
+    {file = "asteval-1.0.6-py3-none-any.whl", hash = "sha256:5e119ed306e39199fd99c881cea0e306b3f3807f050c9be79829fe274c6378dc"},
+    {file = "asteval-1.0.6.tar.gz", hash = "sha256:1aa8e7304b2e171a90d64dd269b648cacac4e46fe5de54ac0db24776c0c4a19f"},
 ]
 
 [package.extras]
@@ -374,14 +374,14 @@ yaml = ["PyYAML"]
 
 [[package]]
 name = "bc-detect-secrets"
-version = "1.5.44"
+version = "1.5.41"
 description = "Tool for detecting secrets in the codebase"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "bc_detect_secrets-1.5.44-py3-none-any.whl", hash = "sha256:0ab63d6c4f6680ec2dbe42cc3c63480568c55dbb6254afcc5bb6d4375a4e1d27"},
-    {file = "bc_detect_secrets-1.5.44.tar.gz", hash = "sha256:bebd82c56055c600335f85db95f7ca3b434087f16292a0396a60705de1b94183"},
+    {file = "bc_detect_secrets-1.5.41-py3-none-any.whl", hash = "sha256:629df912f2a4f4d5039cc1fece906c34700586f7db1ae6a8d1c830c25df6db9b"},
+    {file = "bc_detect_secrets-1.5.41.tar.gz", hash = "sha256:4bd08292a975bfc9b95771e118dd1131e1afbd479610eb29e4e0c15bd33677fc"},
 ]
 
 [package.dependencies]
@@ -1242,14 +1242,14 @@ files = [
 
 [[package]]
 name = "checkov"
-version = "3.2.447"
+version = "3.2.414"
 description = "Infrastructure as code static analysis"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "checkov-3.2.447-py3-none-any.whl", hash = "sha256:b462b3b362378ade8efed8448a57ccff702ec03bdfb6bf2c81230243231bf4c0"},
-    {file = "checkov-3.2.447.tar.gz", hash = "sha256:241644e5a68764eb5cd391331b93ec452c5c01421737591cd1553ea84c2785f0"},
+    {file = "checkov-3.2.414-py3-none-any.whl", hash = "sha256:e70cc3fccfad99125c96045250b6f35a839c08104a55498a427b4e8891c29962"},
+    {file = "checkov-3.2.414.tar.gz", hash = "sha256:f7b1bd8533c4c17db2471baed9e3ce97cc22a248ababd7516ea3e907123976ad"},
 ]
 
 [package.dependencies]
@@ -1257,8 +1257,7 @@ aiodns = ">=3.0.0,<4.0.0"
 aiohttp = ">=3.8.0,<4.0.0"
 aiomultiprocess = ">=0.9.0,<0.10.0"
 argcomplete = ">=3.0.0,<4.0.0"
-asteval = "1.0.5"
-bc-detect-secrets = "1.5.44"
+bc-detect-secrets = "1.5.41"
 bc-jsonpath-ng = "1.6.1"
 bc-python-hcl2 = "0.4.2"
 boto3 = "1.35.49"
@@ -1279,6 +1278,7 @@ jsonschema = ">=4.17.0,<5.0.0"
 junit-xml = ">=1.9,<2.0"
 license-expression = ">=30.1.0,<31.0.0"
 networkx = "<2.7"
+openai = "<1.0.0"
 packageurl-python = ">=0.11.1,<0.14.0"
 packaging = ">=23.0,<24.0"
 prettytable = ">=3.6.0,<4.0.0"
@@ -1295,7 +1295,6 @@ tabulate = ">=0.9.0,<0.10.0"
 termcolor = ">=1.1.0,<2.4.0"
 tqdm = ">=4.65.0,<5.0.0"
 typing-extensions = ">=4.5.0,<5.0.0"
-urllib3 = "1.26.20"
 yarl = ">=1.9.1,<2.0.0"
 
 [package.extras]
@@ -2697,6 +2696,29 @@ files = [
     {file = "numpy-2.2.5-pp310-pypy310_pp73-win_amd64.whl", hash = "sha256:d2e3bdadaba0e040d1e7ab39db73e0afe2c74ae277f5614dad53eadbecbbb169"},
     {file = "numpy-2.2.5.tar.gz", hash = "sha256:a9c0d994680cd991b1cb772e8b297340085466a6fe964bc9d4e80f5e2f43c291"},
 ]
+
+[[package]]
+name = "openai"
+version = "0.28.1"
+description = "Python client library for the OpenAI API"
+optional = false
+python-versions = ">=3.7.1"
+groups = ["dev"]
+files = [
+    {file = "openai-0.28.1-py3-none-any.whl", hash = "sha256:d18690f9e3d31eedb66b57b88c2165d760b24ea0a01f150dd3f068155088ce68"},
+    {file = "openai-0.28.1.tar.gz", hash = "sha256:4be1dad329a65b4ce1a660fe6d5431b438f429b5855c883435f0f7fcb6d2dcc8"},
+]
+
+[package.dependencies]
+aiohttp = "*"
+requests = ">=2.20"
+tqdm = "*"
+
+[package.extras]
+datalib = ["numpy", "openpyxl (>=3.0.7)", "pandas (>=1.2.3)", "pandas-stubs (>=1.1.0.11)"]
+dev = ["black (>=21.6b0,<22.0)", "pytest (==6.*)", "pytest-asyncio", "pytest-mock"]
+embeddings = ["matplotlib", "numpy", "openpyxl (>=3.0.7)", "pandas (>=1.2.3)", "pandas-stubs (>=1.1.0.11)", "plotly", "scikit-learn (>=1.0.2)", "scipy", "tenacity (>=8.0.1)"]
+wandb = ["numpy", "openpyxl (>=3.0.7)", "pandas (>=1.2.3)", "pandas-stubs (>=1.1.0.11)", "wandb"]
 
 [[package]]
 name = "orjson"
