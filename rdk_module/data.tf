@@ -72,9 +72,10 @@ data "aws_iam_policy_document" "config_iam_policy" {
 
   # Allow role assumption -- this has been limited to avoid overly permissive roles
   statement {
-    sid       = "AllowAssumeRole"
-    actions   = ["sts:AssumeRole"]
+    sid     = "AllowAssumeRole"
+    actions = ["sts:AssumeRole"]
+    # These 2 role names represent the bulk of role ARNs used to configure Config
+    # However, we support passing an additional ARN just in case.
     resources = var.arns_lambda_can_assume
   }
 }
-

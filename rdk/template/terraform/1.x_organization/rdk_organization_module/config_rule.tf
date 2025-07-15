@@ -17,6 +17,9 @@ resource "aws_s3_object" "rule_code" {
 }
 
 resource "aws_lambda_function" "rdk_rule" {
+  # checkov:skip=CKV_AWS_50:X-Ray tracing should not be necessary for most use cases
+  # checkov:skip=CKV_AWS_115:Concurrent execution limits are unlikely to be needed
+  # checkov:skip=CKV_AWS_116:DLQ should not be necessary
   depends_on       = [aws_s3_object.rule_code]
   function_name    = var.rule_lambda_name
   description      = "Create a new AWS Lambda function for rule code"

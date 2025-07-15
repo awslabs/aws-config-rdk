@@ -112,6 +112,11 @@ def get_export_parser():
         action="store_true",
         help="[optional] Copies the terraform module to the current directory",
     )
+    parser.add_argument(
+        "--backend-bucket-name",
+        required=False,
+        help="[optional] The name of the bucket that contains the Terraform backend for this manifest",
+    )
 
     return parser
 
@@ -176,6 +181,12 @@ def parse_export_args(rdk_instance):
                     f"Error: Found Rule with name over 128 characters: {name} \n Recreate the Rule with a shorter name."
                 )
                 sys.exit(1)
+
+
+def generate_backend_manifest(rdk_instance):
+    # TODO - implement
+    # TODO - we may also need to generate a provider here, if only to make regions more explicit
+    pass
 
 
 def export(rdk_instance):
@@ -269,19 +280,42 @@ def export(rdk_instance):
             rule_name,
             f"{rule_name}.tf",
         )
+        if rdk_instance.args.backend_bucket_name:
+            # TODO - create the backend.tf file in each rule repo with sensible defaults
+            generate_backend_manifest(
+                rdk_instance=rdk_instance,
+            )
         with open(params_file_path, "w") as f:
             f.write(f'module "{rule_name}" {{\n')
-            f.write(f'  {"source".ljust(longest_param_length)} = "./{module_name}"\n')
+            f.write(f'  {"source".ljust(longest_param_length)} = "../{module_name}"\n')
             for param in my_params.keys():
                 if not my_params[param]:
                     continue  # Skip empty values for clarity
                 padded_param = param.ljust(longest_param_length)  # Pad to meet TF formatting standards
-                f.write(f'  {padded_param} = "{my_params[param]}"\n')
+                if param in [
+                    "lambda_layers",
+                    "lambda_timeout",
+                    "security_group_ids",
+                    "source_events",
+                    "subnet_ids",
+                ]:
+                    # these parameters aren't string type and shouldn't be quoted
+                    if isinstance(my_params[param], list):
+                        # Lists need to be broken out into double-quoted strings
+                        f.write(
+                            f"  {padded_param} = {('[' + ', '.join(f'"{item}"' for item in my_params[param]) + ']')}\n"
+                        )
+                    else:
+                        f.write(f"  {padded_param} = {my_params[param]}\n")
+                else:
+                    f.write(f'  {padded_param} = "{my_params[param]}"\n')
             f.write("}\n")
 
         # If requested, copy the Terraform module to the rule directory
-        if rdk_instance.args.copy_terraform_module:
-            print(f"Exporting Terraform module {module_name}")
+        copy_to_dir = os.path.join(os.getcwd(), rules_dir, module_name)
+        module_folder_not_present = not bool(os.path.exists(copy_to_dir) and os.path.isdir(copy_to_dir))
+        if rdk_instance.args.copy_terraform_module or module_folder_not_present:
+            print(f"Exporting RDK source module {module_name} to current working directory")
             tf_module_dir = os.path.join(
                 path.dirname(__file__),
                 "template",
@@ -289,10 +323,9 @@ def export(rdk_instance):
                 rdk_instance.args.output_version,
                 module_name,
             )
-            rule_dir = os.path.join(os.getcwd(), rules_dir, rule_name, module_name)
             shutil.copytree(
                 tf_module_dir,
-                rule_dir,
+                copy_to_dir,
                 dirs_exist_ok=True,
             )
         print("Export completed. This generated the .tf files required to deploy this rule.")

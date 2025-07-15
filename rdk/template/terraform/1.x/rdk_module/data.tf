@@ -4,8 +4,8 @@ data "aws_partition" "current" {}
 
 data "archive_file" "lambda" {
   type        = "zip"
-  source_file = "${path.module}/../${var.rule_name}.py"
-  output_path = "${path.module}/../${var.rule_name}.zip"
+  source_file = "${path.module}/../${var.rule_name}/${var.rule_name}.py"
+  output_path = "${path.module}/../${var.rule_name}/${var.rule_name}.zip"
 }
 
 # Trust policy to allow Config service to assume Lambda role
@@ -49,7 +49,7 @@ data "aws_iam_policy_document" "config_iam_policy" {
       "logs:PutLogEvents",
       "logs:DescribeLogStreams",
     ]
-    resources = ["*"]
+    resources = ["arn:aws:logs:*:*:log-group:/aws/lambda/RDK-Rule-Function-*"]
   }
 
   # Allow Lambda to put evaluations
@@ -67,13 +67,13 @@ data "aws_iam_policy_document" "config_iam_policy" {
       "iam:Describe*",
       "iam:Get*",
     ]
-    resources = ["*"]
+    resources = ["arn:aws:iam::*:*"]
   }
 
-  # Allow role assumption
+  # Allow role assumption -- this has been limited to avoid overly permissive roles
   statement {
     sid       = "AllowAssumeRole"
     actions   = ["sts:AssumeRole"]
-    resources = ["*"]
+    resources = var.arns_lambda_can_assume
   }
 }

@@ -70,6 +70,17 @@ variable "lambda_role_arn" {
 
 variable "lambda_timeout" {
   description = "Lambda function timeout"
-  type        = string
-  default     = "900"
+  type        = number
+  default     = 900
+}
+
+variable "arns_lambda_can_assume" {
+  description = "List of ARNs/ARN patterns the Lambda function is allowed to assume."
+  type        = list(string)
+  # These 2 role names represent the bulk of role ARNs used to configure Config
+  # However, we support passing an additional ARN just in case.
+  default = [
+    "arn:aws:iam::*:role/rdk/config-role",
+    "arn:aws:iam::*:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig"
+  ]
 }
