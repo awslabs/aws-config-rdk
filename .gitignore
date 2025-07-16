@@ -136,3 +136,6 @@ terraform.tfvars
 
 # For testing guard rule functionality
 myguardrule/
+
+# TF exports
+terraform_rdk_rules

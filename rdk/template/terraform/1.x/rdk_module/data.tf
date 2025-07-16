@@ -4,8 +4,8 @@ data "aws_partition" "current" {}
 
 data "archive_file" "lambda" {
   type        = "zip"
-  source_file = "${path.module}/../${var.rule_name}/${var.rule_name}.py"
-  output_path = "${path.module}/../${var.rule_name}/${var.rule_name}.zip"
+  source_file = "${path.module}/../../${var.rule_name}/${var.rule_name}.py"
+  output_path = "${path.module}/../../${var.rule_name}/${var.rule_name}.zip"
 }
 
 # Trust policy to allow Config service to assume Lambda role

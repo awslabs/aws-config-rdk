@@ -10,7 +10,7 @@ from os import path
 
 # This is the first method to be externalized from rdk.py!
 
-rules_dir = ""  # This is effectively a placeholder value
+rules_dir = "terraform_rdk_rules"  # All manifests are outputted to this directory so that they can be deployed in a single TF plan/apply
 
 
 def get_export_parser():
@@ -117,6 +117,12 @@ def get_export_parser():
         required=False,
         help="[optional] The name of the bucket that contains the Terraform backend for this manifest",
     )
+    parser.add_argument(
+        "--add-provider-manifest",
+        required=False,
+        action="store_true",
+        help="[optional] If specified, will create a providers.tf file using the specified --region argument (or default region)",
+    )
 
     return parser
 
@@ -150,7 +156,7 @@ def package_function_code(rdk_instance, rule_name, params):
         # zip rule code files and upload to s3 bucket
         s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
         tmp_src = shutil.make_archive(
-            os.path.join(tempfile.gettempdir(), rule_name + my_session.region_name),
+            os.path.join(tempfile.gettempdir(), rule_name + rdk_instance.args.region),
             "zip",
             s3_src_dir,
         )
@@ -183,10 +189,51 @@ def parse_export_args(rdk_instance):
                 sys.exit(1)
 
 
-def generate_backend_manifest(rdk_instance):
-    # TODO - implement
-    # TODO - we may also need to generate a provider here, if only to make regions more explicit
-    pass
+def generate_backend_and_provider_manifests(
+    rdk_instance,
+    rule_name,
+    backend_file_path="terraform_rdk_rules/backend.tf",
+    provider_file_path="terraform_rdk_rules/provider.tf",
+):
+    # backend
+    if rdk_instance.args.backend_bucket_name:
+        backend_bucket_name = rdk_instance.args.backend_bucket_name
+        print(f"Using provided backend bucket name: {backend_bucket_name}")
+        print("Generating backend manifest...")
+        os.makedirs(
+            backend_file_path.rsplit("/", 1)[0],
+            exist_ok=True,
+        )
+        with open(backend_file_path, "w") as f:
+            f.write(
+                f"""
+terraform {{
+  backend "s3" {{
+    encrypt = "true"
+    bucket  = "{backend_bucket_name}"
+    key     = "rdk_modules/{rule_name}"
+    region  = "{rdk_instance.args.region}"
+  }}
+}}
+"""
+            )
+    # provider
+    if rdk_instance.args.add_provider_manifest:
+        provider_region = rdk_instance.args.region
+        print(f"Using provided provider region: {provider_region}")
+        print("Generating provider manifest...")
+        os.makedirs(
+            provider_file_path.rsplit("/", 1)[0],
+            exist_ok=True,
+        )
+        with open(provider_file_path, "w") as f:
+            f.write(
+                f"""
+provider "aws" {{
+  region = "{provider_region}"
+}}
+"""
+            )
 
 
 def export(rdk_instance):
@@ -254,7 +301,7 @@ def export(rdk_instance):
         if rdk_instance.args.custom_code_bucket:
             code_bucket = rdk_instance.args.custom_code_bucket
         else:
-            code_bucket = "config-rule-code-bucket-" + rdk_instance.account_id + "-" + rdk_instance.region_name
+            code_bucket = "config-rule-code-bucket-" + rdk_instance.account_id + "-" + rdk_instance.args.region
 
         my_params = {
             "rule_name": rule_name,
@@ -277,17 +324,16 @@ def export(rdk_instance):
         params_file_path = os.path.join(
             os.getcwd(),
             rules_dir,
-            rule_name,
             f"{rule_name}.tf",
         )
         if rdk_instance.args.backend_bucket_name:
-            # TODO - create the backend.tf file in each rule repo with sensible defaults
-            generate_backend_manifest(
+            generate_backend_and_provider_manifests(
                 rdk_instance=rdk_instance,
+                rule_name=rule_name,
             )
         with open(params_file_path, "w") as f:
             f.write(f'module "{rule_name}" {{\n')
-            f.write(f'  {"source".ljust(longest_param_length)} = "../{module_name}"\n')
+            f.write(f'  {"source".ljust(longest_param_length)} = "./{module_name}"\n')
             for param in my_params.keys():
                 if not my_params[param]:
                     continue  # Skip empty values for clarity
