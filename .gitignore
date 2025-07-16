@@ -127,7 +127,7 @@ API_GW_NOT_EDGE_OPTIMISED/
 
 manageTest/
 
-football/
+football*/
 
 terraform.tfvars
 **/.terraform

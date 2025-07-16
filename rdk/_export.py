@@ -191,7 +191,6 @@ def parse_export_args(rdk_instance):
 
 def generate_backend_and_provider_manifests(
     rdk_instance,
-    rule_name,
     backend_file_path="terraform_rdk_rules/backend.tf",
     provider_file_path="terraform_rdk_rules/provider.tf",
 ):
@@ -211,7 +210,7 @@ terraform {{
   backend "s3" {{
     encrypt = "true"
     bucket  = "{backend_bucket_name}"
-    key     = "rdk_modules/{rule_name}"
+    key     = "rdk_modules"
     region  = "{rdk_instance.args.region}"
   }}
 }}
@@ -264,7 +263,10 @@ def export(rdk_instance):
             print("Export supports only Custom Rules.")
             continue
 
-        source_events = rule_params.get("SourceEvents", [])
+        try:
+            source_events = rule_params.get("SourceEvents").split(",")
+        except AttributeError:
+            source_events = []
         source_periodic = rule_params.get("SourcePeriodic", "")
         combined_input_parameters = rule_params.get("InputParameters", {})
 
@@ -329,7 +331,6 @@ def export(rdk_instance):
         if rdk_instance.args.backend_bucket_name:
             generate_backend_and_provider_manifests(
                 rdk_instance=rdk_instance,
-                rule_name=rule_name,
             )
         with open(params_file_path, "w") as f:
             f.write(f'module "{rule_name}" {{\n')

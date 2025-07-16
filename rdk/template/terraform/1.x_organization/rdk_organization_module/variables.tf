@@ -17,7 +17,8 @@ variable "source_runtime" {
 
 variable "source_handler" {
   type        = string
-  description = "Lambda handler name."
+  description = "Lambda handler name (not used for CfnGuard rules)."
+  default     = ""
 }
 
 variable "source_bucket" {

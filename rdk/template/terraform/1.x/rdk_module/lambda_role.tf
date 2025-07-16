@@ -9,7 +9,7 @@ resource "aws_iam_policy" "awsconfig_policy" {
   count = local.create_new_lambda_role ? 1 : 0
   name  = "${lower(var.rule_name)}-awsconfig-policy"
 
-  policy = data.aws_iam_policy_document.config_iam_policy.json
+  policy = data.aws_iam_policy_document.config_iam_policy[count.index].json
 }
 
 resource "aws_iam_role_policy_attachment" "awsconfig_policy_attach" {

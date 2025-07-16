@@ -297,7 +297,7 @@ def get_rule_parser(is_required, command):
         "-r",
         "--resource-types",
         required=False,
-        help="[optional] Resource types that will trigger event-based Rule evaluation. You can also specify 'ALL' to scope to all resources.",
+        help="[optional] Comma-delimited string of resource types that will trigger event-based Rule evaluation. You can also specify 'ALL' to scope to all resources.",
     )
     parser.add_argument(
         "-m",

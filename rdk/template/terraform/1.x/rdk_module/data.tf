@@ -3,6 +3,7 @@ data "aws_caller_identity" "current" {}
 data "aws_partition" "current" {}
 
 data "archive_file" "lambda" {
+  count = local.create_lambda_function ? 1 : 0
   type        = "zip"
   source_file = "${path.module}/../../${var.rule_name}/${var.rule_name}.py"
   output_path = "${path.module}/../../${var.rule_name}/${var.rule_name}.zip"
@@ -33,6 +34,7 @@ data "aws_iam_policy" "read_only_access" {
 }
 
 data "aws_iam_policy_document" "config_iam_policy" {
+  count = local.create_new_lambda_role ? 1 : 0
   # Allow reading from the rule bucket
   statement {
     sid       = "AllowGetS3Objects"
