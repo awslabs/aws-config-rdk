@@ -2,9 +2,9 @@
 
 This command will export the specified Rule(s) to Terraform (1.x and later) manifest(s).
 
-In order to reduce repeated code, the exported rule will reference a source module, by default `./rdk_module` (or `./rdk_organization_module` for Org Config rules). Running `rdk export` will create `rdk_module` in the current working directory if it does not exist already, by copying RDK's version of the module from `rdk/template/terraform/1.x/rdk_module` (or `rdk_organization_module`).
+The `export` command will create a Terraform manifest file per rule (eg. `myrule.tf`) and place it in a `terraform_rdk_rules` folder, over-writing any TF file of the same name. Setting the `--output-version` argument to `1.x_organization` will export the selected rules into Terraform manifests with Organization-wide Config rules.
 
-The `export` command will create a Terraform manifest file per rule (eg. `myrule.tf`) and place it in a `terraform_rdk_rules` folder, over-writing any TF file of the same name.
+In order to reduce repeated code, the exported rule will reference a source module, by default `./rdk_module` (or `./rdk_organization_module` for Org Config rules). Running `rdk export` will create `rdk_module` in the `terraform_rdk_rules` directory if it does not exist already, by copying RDK's version of the module from `rdk/template/terraform/1.x/rdk_module` (or `rdk_organization_module` where relevant).
 
 Users can also specify `--backend-bucket` and `--add-provider-manifest` to create `backend.tf` and `provider.tf` files in these repositories, with opinionated defaults. This should only be needed once.
 
@@ -31,7 +31,7 @@ cd rdk_source
 TF_STATE_BUCKET=my-bucket
 REGION=us-west-2
 # You could run this manually and commit it or include `rdk export` as a step in a CI/CD pipeline.
-rdk --region $REGION export -a --backend-bucket-name $TF_STATE_BUCKET --add-provider-manifest # Creates a TF manifest for each rule in the directory and adds to terraform_rdk_rules. Also adds a backend and provider manifest to terraform_rdk_rules.
+rdk --region $REGION export -a --organization-rule --backend-bucket-name $TF_STATE_BUCKET --add-provider-manifest # Creates a TF manifest for each rule in the directory and adds to terraform_rdk_rules. The TF manifests will all use the aws_config_organization_custom_rule resouce. Also adds a backend and provider manifest to terraform_rdk_rules.
 cd terraform_rdk_rules
 terraform plan
 ```
@@ -39,7 +39,7 @@ terraform plan
 # Arguments
 
 - The `--format` flag can be used to specify export format, though currently it supports only (and defaults to) `terraform`.
-- The `--output-version` flag can be used to specify the Terraform major version. Currently, only `1.x` is supported.
+- The `--output-version` flag can be used to specify the Terraform major version. Currently, only `1.x` or `1.x_organization` (for Org rules) is supported.
 - The `--rdklib-layer-arn` flag can be used for attaching Lambda Layer ARN that contains the desired `rdklib` layer. Note that Lambda Layers are region-specific.
 - The `--lambda-role-arn` flag can be used for assigning existing iam role to all Lambda functions created for Custom Config Rules.
 - The `--lambda-layers` flag can be used for attaching a comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).

@@ -57,6 +57,7 @@ resource "aws_config_organization_custom_rule" "event_triggered" {
   description         = var.rule_name
   lambda_function_arn = aws_lambda_function.rdk_rule[0].arn
   input_parameters    = var.source_input_parameters
+  resource_types_scope = contains(var.source_events,"ALL") ? null : var.source_events
 }
 
 resource "aws_config_organization_custom_rule" "periodic_triggered_rule" {

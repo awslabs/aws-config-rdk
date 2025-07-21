@@ -56,7 +56,7 @@ resource "aws_config_config_rule" "event_triggered" {
   description = var.rule_name
 
   scope {
-    compliance_resource_types = var.source_events
+    compliance_resource_types = (contains(var.source_events,"ALL") ? null : var.source_events)
   }
 
   input_parameters = var.source_input_parameters
