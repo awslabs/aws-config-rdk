@@ -31,14 +31,14 @@ cd rdk_source
 TF_STATE_BUCKET=my-bucket
 REGION=us-west-2
 # You could run this manually and commit it or include `rdk export` as a step in a CI/CD pipeline.
-rdk export -a --backend-bucket $TF_STATE_BUCKET --provider-region $REGION # Creates a TF manifest for each rule in the directory and adds to terraform_rdk_rules. Also adds a backend and provider manifest to terraform_rdk_rules.
+rdk --region $REGION export -a --backend-bucket-name $TF_STATE_BUCKET --add-provider-manifest # Creates a TF manifest for each rule in the directory and adds to terraform_rdk_rules. Also adds a backend and provider manifest to terraform_rdk_rules.
 cd terraform_rdk_rules
 terraform plan
 ```
 
 # Arguments
 
-- The `--format` flag can be used to specify export format, currently it supports only `terraform`.
+- The `--format` flag can be used to specify export format, though currently it supports only (and defaults to) `terraform`.
 - The `--output-version` flag can be used to specify the Terraform major version. Currently, only `1.x` is supported.
 - The `--rdklib-layer-arn` flag can be used for attaching Lambda Layer ARN that contains the desired `rdklib` layer. Note that Lambda Layers are region-specific.
 - The `--lambda-role-arn` flag can be used for assigning existing iam role to all Lambda functions created for Custom Config Rules.
@@ -47,7 +47,6 @@ terraform plan
 - The `--lambda-security-groups` flag can be used for attaching a comma-separated list of Security Groups to deploy with your Lambda function(s).
 - The `--lambda-timeout` flag can be used for specifying the timeout associated to the lambda function
 - The `--copy-terraform-module` flag will copy the `rdk_module` folder into your rule directory.
-- The `custom-module-source-location` flag will set the exported TF module invocation to be sourced from the location you specify. This is useful if you modify the module or want to source it from a central location. For example, you could pass the module call to a source that deploys an Config Organization rule.
+- The `custom-module-source-location` flag will set the exported TF module invocation to be sourced from the location you specify. This is useful if you modify the module or want to source it from a central location. For example, you could pass the module call to a source that deploys an Config Organization rule. By default, it will point to `./rdk_module`.
 - The `--backend-bucket-name` argument will create a `backend.tf` file in the `terraform_rdk_rules` directory, pointing to the specified backend S3 bucket. The key for the state file will be `rdk_modules/<rule name>`. 
 - The `--add-provider-manifest` argument will create a `provider.tf` file in the `terraform_rdk_rules` directory, ensuring that the rules are deployed in the right region. `export` does not currently natively support multi-region deployment.
-- The `add-terragrunt-file` flag will create a `terragrunt.hcl` file in the rule directory. This is used to indicate to `terragrunt` that the module should be included in `terragrunt` automations like `run-all`.
