@@ -2,7 +2,7 @@
 
 This command will export the specified Rule(s) to Terraform (1.x and later) manifest(s).
 
-In order to reduce repeated code, the exported rule will reference a source module, by default `../rdk_module` (or `../rdk_organization_module` for Org Config rules). Running `rdk export` will create `rdk_module` in the current working directory if it does not exist already, by copying RDK's version of the module from `rdk/template/terraform/1.x/rdk_module` (or `rdk_organization_module`).
+In order to reduce repeated code, the exported rule will reference a source module, by default `./rdk_module` (or `./rdk_organization_module` for Org Config rules). Running `rdk export` will create `rdk_module` in the current working directory if it does not exist already, by copying RDK's version of the module from `rdk/template/terraform/1.x/rdk_module` (or `rdk_organization_module`).
 
 The `export` command will create a Terraform manifest file per rule (eg. `myrule.tf`) and place it in a `terraform_rdk_rules` folder, over-writing any TF file of the same name.
 
