@@ -58,7 +58,7 @@ These are not a replacement for unit tests, but because RDK inherently relies on
 1. Basic periodic custom rule creation and deployment
 ```powershell
 $rule="myAutomationTest" # This is gitignored
-$runtime="python3.12"
+$runtime="python3.13"
 $frequency="TwentyFour_Hours"
 rdk create $rule --runtime $runtime --maximum-frequency $frequency
 rdk deploy $rule
@@ -69,7 +69,7 @@ Remove-Item $rule -recurse
 2. Basic configuration-change custom rule creation and deployment
 ```powershell
 $rule="myAutomationTest" # This is gitignored
-$runtime="python3.12"
+$runtime="python3.13"
 $test_event_type = "AWS::EC2::Instance"
 rdk create $rule --runtime $runtime --resource-types $test_event_type
 rdk deploy $rule
@@ -92,7 +92,7 @@ Remove-Item $rule -recurse
 4. Deploy a proactive rule
 ```powershell
 $rule="myAutomationTest" # This is gitignored
-$runtime="python3.12"
+$runtime="python3.13"
 $test_event_type = "AWS::S3::Bucket"
 $evaluation_mode="PROACTIVE"
 rdk create $rule --runtime $runtime --evaluation-mode $evaluation_mode --resource-types $test_event_type
@@ -105,7 +105,7 @@ Remove-Item $rule -recurse # clean up the directory for future testing
 5. Deploy a proactive rule as a periodic rule (should fail)
 ```powershell
 $rule="myAutomationTest" # This is gitignored
-$runtime="python3.12"
+$runtime="python3.13"
 $evaluation_mode="BOTH"
 $frequency="TwentyFour_Hours"
 rdk create $rule --runtime $runtime --evaluation-mode $evaluation_mode --maximum-frequency $frequency

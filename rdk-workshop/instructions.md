@@ -182,10 +182,10 @@ rdk init
 5. Create the MFA Enabled Rule using the RDK:
 
 ```
-rdk create MFA_ENABLED_RULE --runtime python3.12 --resource-types AWS::IAM::User
+rdk create MFA_ENABLED_RULE --runtime python3.13 --resource-types AWS::IAM::User
 ```
 
-  This will create a Rule backed by a Lambda function with that uses the python3.12 runtime and is triggered by resource changes to IAM users.  In your development environment this will create a directory named MFA_ENABLED_RULE, and populate it with Lambda boilerplate code (`MFA_ENABLED_RULE.py`), a base set of unit tests (`MFA_ENABLED_RULE_test.py`), and a metadata file that RDK uses to keep track of Rule configuration (`parameters.json`).  
+  This will create a Rule backed by a Lambda function with that uses the python3.13 runtime and is triggered by resource changes to IAM users.  In your development environment this will create a directory named MFA_ENABLED_RULE, and populate it with Lambda boilerplate code (`MFA_ENABLED_RULE.py`), a base set of unit tests (`MFA_ENABLED_RULE_test.py`), and a metadata file that RDK uses to keep track of Rule configuration (`parameters.json`).  
 
 6. Open up the `MFA_ENABLED_RULE.py` file.  Familiarize yourself with the overall structure, particularly the stubbed out function `evaluate_compliance`.
 
@@ -199,7 +199,7 @@ rdk sample-ci AWS::IAM::User
 
   and review the output.
 
-9. You should notice that there's nothing in the CI about MFA!  In order to get at the MFA settings we're going to need to pull the User ID from the CI, and then use the [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam.html) library bundled with the python3.12 Lambda runtime to get the extended information from IAM.
+9. You should notice that there's nothing in the CI about MFA!  In order to get at the MFA settings we're going to need to pull the User ID from the CI, and then use the [boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/iam.html) library bundled with the python3.13 Lambda runtime to get the extended information from IAM.
 
 10. Implement the logic to determine if the User supplied in the CI is compliant with our requirement that MFA be enabled.  From the `evaluate_compliance` function you can return one of the legal compliance statuses ("COMPLIANT", "NON_COMPLIANT", "NOT_APPLICABLE") as a string and the RDK-provided boilerplate will handle the rest.  If you need a hint, a basic solution is provided below.
 
@@ -316,7 +316,7 @@ After completing this lab, you will be able to:
 
 2. Make sure your Config solution matches the structure in the Lab 2 solution found at the end of this guide.
 
-3. Navigate to the Lambda service.  Click on "Create Function" and choose "Author From Scratch."  For the Name enter "MFA_ENABLED_REMEDIATION", and for Runtime choose python3.12.  For the Role drop-down select "Choose an existing role", and in the "Existing role" drop-down select the "WorkshopRemediationRole" that was created by the lab setup CloudFormation template.  Click on "Create Function" to complete the Function creation.
+3. Navigate to the Lambda service.  Click on "Create Function" and choose "Author From Scratch."  For the Name enter "MFA_ENABLED_REMEDIATION", and for Runtime choose python3.13.  For the Role drop-down select "Choose an existing role", and in the "Existing role" drop-down select the "WorkshopRemediationRole" that was created by the lab setup CloudFormation template.  Click on "Create Function" to complete the Function creation.
 
 4. Navigate to the EventBridge service.  Click on "Rules" in the left-hand navigation.
 

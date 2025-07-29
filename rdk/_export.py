@@ -44,17 +44,18 @@ def get_export_parser():
     parser.add_argument(
         "--lambda-layers",
         required=False,
-        help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).",
+        help="[optional] Comma-separated string of Lambda Layer ARNs to deploy with your Lambda function(s).",
     )
     parser.add_argument(
         "--lambda-subnets",
         required=False,
-        help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s). If specified, you must also specify --lambda-security-groups.",
+        help="[optional] Comma-separated string of Subnets to deploy your Lambda function(s). If specified, you must also specify --lambda-security-groups.",
     )
     parser.add_argument(
         "--lambda-security-groups",
         required=False,
-        help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s). If specified, you must also specify --lambda-subnets.",
+        type=str,
+        help="[optional] Comma-separated string of Security Groups to deploy with your Lambda function(s). If specified, you must also specify --lambda-subnets.",
     )
     parser.add_argument(
         "--lambda-timeout",
@@ -156,7 +157,7 @@ def package_function_code(rdk_instance, rule_name, params):
         # zip rule code files and upload to s3 bucket
         s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
         tmp_src = shutil.make_archive(
-            os.path.join(tempfile.gettempdir(), rule_name + rdk_instance.args.region),
+            os.path.join(tempfile.gettempdir(), rule_name + rdk_instance.my_session.region_name),
             "zip",
             s3_src_dir,
         )
@@ -211,14 +212,14 @@ terraform {{
     encrypt = "true"
     bucket  = "{backend_bucket_name}"
     key     = "rdk_modules"
-    region  = "{rdk_instance.args.region}"
+    region  = "{rdk_instance.my_session.region_name}"
   }}
 }}
 """
             )
     # provider
     if rdk_instance.args.add_provider_manifest:
-        provider_region = rdk_instance.args.region
+        provider_region = rdk_instance.my_session.region_name
         print(f"Using provided provider region: {provider_region}")
         print("Generating provider manifest...")
         os.makedirs(
@@ -303,7 +304,9 @@ def export(rdk_instance):
         if rdk_instance.args.custom_code_bucket:
             code_bucket = rdk_instance.args.custom_code_bucket
         else:
-            code_bucket = "config-rule-code-bucket-" + rdk_instance.account_id + "-" + rdk_instance.args.region
+            code_bucket = (
+                "config-rule-code-bucket-" + rdk_instance.account_id + "-" + rdk_instance.my_session.region_name
+            )
 
         my_params = {
             "rule_name": rule_name,
@@ -328,7 +331,7 @@ def export(rdk_instance):
             rules_dir,
             f"{rule_name}.tf",
         )
-        if rdk_instance.args.backend_bucket_name:
+        if rdk_instance.args.backend_bucket_name or rdk_instance.args.add_provider_manifest:
             generate_backend_and_provider_manifests(
                 rdk_instance=rdk_instance,
             )
