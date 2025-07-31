@@ -31,7 +31,7 @@ cd rdk_source
 TF_STATE_BUCKET=my-bucket
 REGION=us-west-2
 # You could run this manually and commit it or include `rdk export` as a step in a CI/CD pipeline.
-rdk --region $REGION export -a --organization-rule --backend-bucket-name $TF_STATE_BUCKET --add-provider-manifest # Creates a TF manifest for each rule in the directory and adds to terraform_rdk_rules. The TF manifests will all use the aws_config_organization_custom_rule resouce. Also adds a backend and provider manifest to terraform_rdk_rules.
+rdk --region $REGION export -a --output-version 1.x_organization --backend-bucket-name $TF_STATE_BUCKET --add-provider-manifest # Creates a TF manifest for each rule in the directory and adds to terraform_rdk_rules. The TF manifests will all use the aws_config_organization_custom_rule resouce. Also adds a backend and provider manifest to terraform_rdk_rules.
 cd terraform_rdk_rules
 terraform plan
 ```
