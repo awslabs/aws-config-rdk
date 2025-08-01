@@ -16,6 +16,7 @@ resource "aws_s3_object" "rule_code" {
   key    = local.rule_name_source
   source = data.archive_file.lambda[count.index].output_path
   etag   = filemd5(data.archive_file.lambda[count.index].output_path)
+  tags = var.tags
 }
 
 resource "aws_lambda_function" "rdk_rule" {
@@ -40,6 +41,8 @@ resource "aws_lambda_function" "rdk_rule" {
     subnet_ids         = var.subnet_ids
     security_group_ids = var.security_group_ids
   }
+
+  tags = var.tags
 }
 
 resource "aws_lambda_permission" "lambda_invoke" {

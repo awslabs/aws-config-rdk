@@ -3,6 +3,7 @@ resource "aws_iam_role" "awsconfig" {
   name  = local.rdk_role_name
 
   assume_role_policy = data.aws_iam_policy_document.aws_config_policy_doc[count.index].json
+  tags = var.tags
 }
 
 resource "aws_iam_policy" "awsconfig_policy" {
@@ -10,6 +11,7 @@ resource "aws_iam_policy" "awsconfig_policy" {
   name  = "${lower(var.rule_name)}-awsconfig-policy"
 
   policy = data.aws_iam_policy_document.config_iam_policy[count.index].json
+  tags   = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "awsconfig_policy_attach" {

@@ -85,3 +85,9 @@ variable "arns_lambda_can_assume" {
     "arn:aws:iam::*:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig"
   ]
 }
+
+variable "tags" {
+  description = "Rule-specific tags that should be applied to all resources that support tags."
+  type = map(string)
+  default = {}
+}

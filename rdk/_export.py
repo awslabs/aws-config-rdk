@@ -231,6 +231,12 @@ terraform {{
                 f"""
 provider "aws" {{
   region = "{provider_region}"
+  # default_tags {{
+  #   add any tags you want applied to all rules here!
+  #   tags = {{
+  #     "my-tag" = "value"
+  #   }}
+  # }}
 }}
 """
             )
@@ -257,7 +263,7 @@ def export(rdk_instance):
     # run the export code
     for rule_name in rule_names:
         print(f"Running export of {rule_name}")
-        rule_params, _ = getattr(rdk_instance, f"_{class_name}__get_rule_parameters")(rule_name)
+        rule_params, tags = getattr(rdk_instance, f"_{class_name}__get_rule_parameters")(rule_name)
 
         if "SourceIdentifier" in rule_params:
             print(f"Found Managed Rule {rule_name}, Ignored.")
@@ -322,6 +328,7 @@ def export(rdk_instance):
             "lambda_layers": layers,
             "lambda_role_arn": lambda_role_arn,
             "lambda_timeout": str(rdk_instance.args.lambda_timeout),
+            "tags": json.dumps({k: v for tag in tags for k, v in tag.items()}),  # convert list to map
         }
         longest_param_length = max(len(x) for x in my_params.keys() if bool(my_params.get(x, False)))
 
@@ -348,6 +355,7 @@ def export(rdk_instance):
                     "security_group_ids",
                     "source_events",
                     "subnet_ids",
+                    "tags",
                 ]:
                     # these parameters aren't string type and shouldn't be quoted
                     if isinstance(my_params[param], list):
@@ -356,6 +364,7 @@ def export(rdk_instance):
                             f"  {padded_param} = {('[' + ', '.join(f'"{item}"' for item in my_params[param]) + ']')}\n"
                         )
                     else:
+                        # "tags" will end up here
                         f.write(f"  {padded_param} = {my_params[param]}\n")
                 else:
                     f.write(f'  {padded_param} = "{my_params[param]}"\n')

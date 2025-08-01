@@ -214,7 +214,7 @@ The exact output will vary depending on Lambda runtime. You can use the `--all` 
 
 ### Export Rule for Terraform Deployment
 
-As of v0.18.0, RDK now supports using the `rdk export` command to create Terraform 1.x code that can be used to deploy your RDK rules. For more details, see the [export](https://aws-config-rdk.readthedocs.io/en/master/commands/export/) documentation.
+As of v1.0.0, RDK now supports using the `rdk export` command to create Terraform 1.x code that can be used to deploy your RDK rules. For more details, see the [export](https://aws-config-rdk.readthedocs.io/en/master/commands/export/) documentation.
 
 ### View Logs For Deployed Rule
 

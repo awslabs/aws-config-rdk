@@ -320,7 +320,7 @@ def get_rule_parser(is_required, command):
     parser.add_argument("--optional-parameters", help="[optional] JSON for optional Config parameters.")
     parser.add_argument(
         "--tags",
-        help="[optional] JSON for tags to be applied to all CFN created resources.",
+        help='[optional] JSON for tags to be applied to all CFN created resources. Format is stringify-ed JSON, like \'[{\\"narwhal\\":\\"bacon\\"},{\\"kevin\\":\\"bacon\\"}]\'',
     )
     parser.add_argument(
         "-s",
