@@ -129,7 +129,7 @@ pydocstyle = "^6.3.0"
 isort = {extras = ["toml"], version = ">=5.11.4,<7.0.0"}
 mypy = "^1.3.0"
 debugpy = "^1.6.7"
-ruff = ">=0.0.269,<0.12.3"
+ruff = ">=0.0.269,<0.12.10"
 checkov = "^3.2.447"
 
 [tool.poetry.group.security.dependencies]
