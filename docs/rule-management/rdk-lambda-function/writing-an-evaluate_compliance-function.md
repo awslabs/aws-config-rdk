@@ -4,7 +4,7 @@ RDK creates an `evaluate_compliance()` function for you, but you don’t need to
 
 ## Compliance evaluation function for evaluations triggered by periodic frequency
 
-> :warning: This section uses helper functions (eg. `build_evaluation()`) that are only present in non-`rdklib` runtimes. If you are using an `rdklib` runtime (eg. `python3.12-lib`), most of this guidance will not be relevant to you.
+> :warning: This section uses helper functions (eg. `build_evaluation()`) that are only present in non-`rdklib` runtimes. If you are using an `rdklib` runtime (eg. `python3.13-lib`), most of this guidance will not be relevant to you.
 
 One of the `evaluate_compliance()` function's inputs is `event`. See [Example Events for AWS Config Rules](https://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_develop-rules_example-events.html) for more information. Events have different type of information required to evaluate compliance of AWS resources based on Config rule type.
 

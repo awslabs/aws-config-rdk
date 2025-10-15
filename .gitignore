@@ -127,11 +127,15 @@ API_GW_NOT_EDGE_OPTIMISED/
 
 manageTest/
 
-football/
-football2/
-football3/
+football*/
 
+terraform.tfvars
+**/.terraform
+.terraform.lock.hcl
 .infracost
 
 # For testing guard rule functionality
 myguardrule/
+
+# TF exports
+terraform_rdk_rules

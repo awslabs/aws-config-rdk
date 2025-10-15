@@ -212,6 +212,10 @@ Config deploy complete.
 
 The exact output will vary depending on Lambda runtime. You can use the `--all` flag to deploy all of the rules in your working directory. This command uses `PutOrganizationConfigRule` API for the rule deployment. If a new account joins an organization, the rule is deployed to that account. When an account leaves an organization, the rule is removed. Deployment of existing organizational AWS Config Rules will only be retried for 7 hours after an account is added to your organization if a recorder is not available. You are expected to create a recorder if one doesn't exist within 7 hours of adding an account to your organization.
 
+### Export Rule for Terraform Deployment
+
+As of v1.0.0, RDK now supports using the `rdk export` command to create Terraform 1.x code that can be used to deploy your RDK rules. For more details, see the [export](https://aws-config-rdk.readthedocs.io/en/master/commands/export/) documentation.
+
 ### View Logs For Deployed Rule
 
 Once the Rule has been deployed to AWS you can get the CloudWatch logs associated with your Lambda function using the `logs` command.

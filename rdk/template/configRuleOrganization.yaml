@@ -235,7 +235,7 @@ Resources:
       cfn_nag:
         rules_to_suppress:
           - id: W11
-            reason: "TODO - Will scope down permissions gradually, tracked via GitHub Issues"
+            reason: "Will scope down permissions gradually, tracked via GitHub Issues"
     Condition: CreateNewLambdaRole
     Type: AWS::IAM::Role
     Properties:
