@@ -116,8 +116,8 @@ build = "poetry build"
 [tool.poetry.dependencies]
 python = "^3.10.0"
 boto3 = "^1.35.0"
-pyyaml = "^6.0"
-cryptography = "^44.0.2"
+pyyaml = "^6.0.3"
+cryptography = "^46"
 pycares = "^4.9.0"
 requests = "^2.32.4"
 configargparse = "^1.7.1"
@@ -136,15 +136,15 @@ authlib = "^1.6.4"
 aiohttp = "^3.12"
 regex   = "^2025"
 urllib3 = "^2.5"
-xmltodict = "^0.15"
+xmltodict = "^1.0"
 
 [tool.poetry.group.security.dependencies]
 bandit = "^1.8.6"
 safety = "^3.6.2"
 
 [tool.poetry.group.types.dependencies]
-types-pyyaml = "^6.0.12.10"
-boto3-stubs = {extras = ["cloudformation", "config", "iam", "s3", "sts"], version = "^1.40.50"}
+types-pyyaml = "^6.0.12.20250915"
+boto3-stubs = {extras = ["cloudformation", "config", "iam", "s3", "sts"], version = "^1.40.55"}
 
 
 [tool.poetry.group.docs.dependencies]
