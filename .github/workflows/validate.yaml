@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   ## TODO: Enable this once the repo is totally formatted to standard.
   # lint-style:
