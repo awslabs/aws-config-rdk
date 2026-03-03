@@ -114,29 +114,30 @@ install = "poetry install"
 build = "poetry build"
 
 [tool.poetry.dependencies]
-boto3 = "^1.35.0"
+boto3          = "^1.40.0"
 configargparse = "^1.7.1"
-cryptography = "^46.0"
-pycares = "^4.9.0"
-python = "^3.10.0"
-pyyaml = "^6.0.3"
-requests = "^2.32.4"
+cryptography   = "^46.0.5"
+nltk           = "^3.9.3"
+pycares        = "^4.9.0"
+python         = "^3.10.0"
+pyyaml         = "^6.0.3"
+requests       = "^2.32.4"
 
 [tool.poetry.group.dev.dependencies]
-rdklib = "^0.3"
-black = "^25.1.0"
-pydocstyle = "^6.3.0"
-isort = {extras = ["toml"], version = ">=5.11.4,<7.0.0"}
-mypy = "^1.18.2"
-debugpy = "^1.6.7"
-ruff = ">=0.14.0,<0.15.0"
 # checkov = "^3.2.447" # not essential for build
-asteval = "^1.0.6"
-authlib = "^1.6.4"
-aiohttp = "^3.12"
-regex   = "^2025"
-urllib3 = "^2.5"
-xmltodict = "^1.0"
+aiohttp    = "^3.13.3"
+asteval    = "^1.0.6"
+authlib    = "^1.6.6"
+black      = "^25.1.0"
+debugpy    = "^1.8.17"
+isort      = {extras = ["toml"], version = ">=5.11.4,<7.0.0"}
+mypy       = "^1.18.2"
+pydocstyle = "^6.3.0"
+rdklib     = "^0.3.8"
+regex      = "^2025"
+ruff       = ">=0.14.0,<0.15.0"
+urllib3    = "^2.6.3"
+xmltodict  = "^1.0"
 
 [tool.poetry.group.security.dependencies]
 bandit = "^1.8.6"
@@ -149,7 +150,7 @@ boto3-stubs = {extras = ["cloudformation", "config", "iam", "s3", "sts"], versio
 
 [tool.poetry.group.docs.dependencies]
 mkdocs = "^1.6.1"
-mkdocs-material = "^9.6.15"
+mkdocs-material = "^9.6.22"
 mkdocstrings-python = "^1.18.2"
 markdown-include = "^0.8.1"
 
