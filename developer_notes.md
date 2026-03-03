@@ -37,6 +37,7 @@ These instructions document the parts of the repository that need to be updated 
 
 To release a new version of RDK...
 
+0. Consider running `poetry lock` if updating the `pyproject.toml` file.
 1. Update `pyproject.toml` with the new version number
 2. Update `rdk/__init__.py` with the new version number
 3. Locally `git pull origin master` to ensure you have the latest code
