@@ -1,4 +1,4 @@
-#    Copyright 2024 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#    Copyright 2026 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
 #
@@ -8,6 +8,7 @@
 [tool.poetry]
 name = "rdk"
 version = "0.17.23"
+requires-python = ">=3.10"
 description = "Rule Development Kit CLI for AWS Config"
 authors = [
     "AWS RDK Maintainers <rdk-maintainers@amazon.com>",
@@ -22,13 +23,11 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 include = [
     "README.md",
@@ -114,14 +113,13 @@ install = "poetry install"
 build = "poetry build"
 
 [tool.poetry.dependencies]
-boto3          = "^1.40.0"
-configargparse = "^1.7.1"
-cryptography   = "^46.0.5"
-filelock       = "^3.25.0"
-pycares        = "^4.9.0"
-python         = "^3.10.0"
-pyyaml         = "^6.0.3"
-requests       = "^2.32.4"
+boto3          = "^1.42.0"
+# configargparse = "^1.7.1"
+# cryptography   = "^46.0.5"
+# filelock       = "^3.25.0"
+# pycares        = "^4.9.0"
+pyyaml         = "^6"
+# requests       = "^2.32.4"
 
 [tool.poetry.group.dev.dependencies]
 # checkov = "^3.2.447" # not essential for build
@@ -133,7 +131,7 @@ debugpy    = "^1.8.17"
 isort      = {extras = ["toml"], version = ">=5.11.4,<7.0.0"}
 mypy       = "^1.18.2"
 pydocstyle = "^6.3.0"
-rdklib     = "^0.3.8"
+rdklib     = "^0.3.10"
 regex      = "^2025"
 ruff       = ">=0.14.0,<0.15.0"
 urllib3    = "^2.6.3"
