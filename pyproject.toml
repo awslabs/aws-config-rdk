@@ -5,10 +5,14 @@
 #        http://aws.amazon.com/apache2.0/
 #
 #    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+[project]
+name = "rdk"
+version = "0.17.24"
+requires-python = ">=3.10,<4.0.0"
+
 [tool.poetry]
 name = "rdk"
-version = "0.17.23"
-requires-python = ">=3.10"
+version = "0.17.24"
 description = "Rule Development Kit CLI for AWS Config"
 authors = [
     "AWS RDK Maintainers <rdk-maintainers@amazon.com>",
@@ -27,7 +31,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
 ]
 include = [
     "README.md",
@@ -118,7 +121,7 @@ boto3          = "^1.42.0"
 # cryptography   = "^46.0.5"
 # filelock       = "^3.25.0"
 # pycares        = "^4.9.0"
-pyyaml         = "^6"
+pyyaml         = "^6.0"
 # requests       = "^2.32.4"
 
 [tool.poetry.group.dev.dependencies]
