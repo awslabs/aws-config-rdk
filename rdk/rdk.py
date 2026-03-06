@@ -45,7 +45,7 @@ except ImportError:
 rdk_dir = ".rdk"
 rules_dir = ""
 tests_dir = ""
-util_filename = "rule_util"
+# util_filename = "rule_util"
 rule_handler = "rule_code"
 rule_template = "rdk-rule.template"
 config_bucket_prefix = "config-bucket"
@@ -65,6 +65,28 @@ RDKLIB_LAYER_SAR_ID = "arn:aws:serverlessrepo:ap-southeast-1:711761543063:applic
 
 RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{version}"
 PARALLEL_COMMAND_THROTTLE_PERIOD = 2  # 2 seconds, used in running commands in parallel over multiple regions
+
+PYTHON_NONLIB_RUNTIMES = [
+    "python3.7",
+    "python3.8",
+    "python3.9",
+    "python3.10",
+    "python3.11",
+    "python3.12",
+    "python3.13",
+    "python3.14",
+]
+PYTHON_LIB_RUNTIMES = [
+    "python3.7-lib",
+    "python3.8-lib",
+    "python3.9-lib",
+    "python3.10-lib",
+    "python3.11-lib",
+    "python3.12-lib",
+    "python3.13-lib",
+    "python3.14-lib",
+]
+PYTHON_RUNTIMES = PYTHON_NONLIB_RUNTIMES + PYTHON_LIB_RUNTIMES
 
 # This need to be update whenever config service supports more resource types
 # See: https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
@@ -261,23 +283,7 @@ def get_rule_parser(is_required, command):
         "--runtime",
         required=False,
         help="Runtime for lambda function",
-        choices=[
-            "java8",
-            "python3.7",
-            "python3.7-lib",
-            "python3.8",
-            "python3.8-lib",
-            "python3.9",
-            "python3.9-lib",
-            "python3.10",
-            "python3.10-lib",
-            "python3.11",
-            "python3.11-lib",
-            "python3.12",
-            "python3.12-lib",
-            "python3.13",
-            "python3.13-lib",
-        ],
+        choices=["java8"] + PYTHON_RUNTIMES,
         metavar="",
     )
     runtime_group.add_argument(
@@ -291,7 +297,7 @@ def get_rule_parser(is_required, command):
         required=False,
         help="[optional] Provide custom lambda name",
     )
-    parser.set_defaults(runtime="python3.13-lib")
+    parser.set_defaults(runtime="python3.14-lib")
     parser.add_argument(
         "-r",
         "--resource-types",
@@ -1155,26 +1161,6 @@ class rdk:
                 print("Runtime is required for 'create' command (unless deploying a managed rule).")
                 return 1
 
-            extension_mapping = {
-                "java8": ".java",
-                "python3.7": ".py",
-                "python3.7-lib": ".py",
-                "python3.8": ".py",
-                "python3.8-lib": ".py",
-                "python3.9": ".py",
-                "python3.9-lib": ".py",
-                "python3.10": ".py",
-                "python3.10-lib": ".py",
-                "python3.11": ".py",
-                "python3.11-lib": ".py",
-                "python3.12": ".py",
-                "python3.12-lib": ".py",
-                "python3.13": ".py",
-                "python3.13-lib": ".py",
-            }
-            if self.args.runtime not in extension_mapping:
-                print("rdk does not support that runtime yet.")
-
         # if not self.args.maximum_frequency:
         #    self.args.maximum_frequency = "TwentyFour_Hours"
         #    print("Defaulting to TwentyFour_Hours Maximum Frequency.")
@@ -1193,31 +1179,30 @@ class rdk:
                 if self.args.runtime == "java8":
                     self.__create_java_rule()
                 else:
+                    # guaranteed to be a python runtime here, but double check
+                    if self.args.runtime not in PYTHON_RUNTIMES:
+                        raise (ValueError(f"Unsupported Runtime {self.args.runtime}"))
+                    if re.search(r"-lib", self.args.runtime):
+                        runtime_folder = "python-lib"
+                    else:
+                        runtime_folder = "python"
                     src = os.path.join(
                         path.dirname(__file__),
                         "template",
                         "runtime",
-                        self.args.runtime,
-                        rule_handler + extension_mapping[self.args.runtime],
+                        runtime_folder,
+                        "rule_code.py",
                     )
                     dst = os.path.join(
                         os.getcwd(),
                         rules_dir,
                         self.args.rulename,
-                        self.args.rulename + extension_mapping[self.args.runtime],
+                        self.args.rulename + ".py",
                     )
                     shutil.copyfile(src, dst)
                     f = fileinput.input(files=dst, inplace=True)
                     for line in f:
-                        if self.args.runtime in [
-                            "python3.7-lib",
-                            "python3.8-lib",
-                            "python3.9-lib",
-                            "python3.10-lib",
-                            "python3.11-lib",
-                            "python3.12-lib",
-                            "python3.13-lib",
-                        ]:
+                        if self.args.runtime in PYTHON_LIB_RUNTIMES:
                             if self.args.resource_types:
                                 applicable_resource_list = ""
                                 for resource_type in self.args.resource_types.split(","):
@@ -1249,37 +1234,21 @@ class rdk:
                         path.dirname(__file__),
                         "template",
                         "runtime",
-                        self.args.runtime,
-                        "rule_test" + extension_mapping[self.args.runtime],
+                        runtime_folder,
+                        "rule_test.py",
                     )
                     if os.path.exists(src):
                         dst = os.path.join(
                             os.getcwd(),
                             rules_dir,
                             self.args.rulename,
-                            self.args.rulename + "_test" + extension_mapping[self.args.runtime],
+                            self.args.rulename + "_test.py",
                         )
                         shutil.copyfile(src, dst)
                         f = fileinput.input(files=dst, inplace=True)
                         for line in f:
                             print(line.replace("<%RuleName%>", self.args.rulename), end="")
                         f.close()
-
-                    src = os.path.join(
-                        path.dirname(__file__),
-                        "template",
-                        "runtime",
-                        self.args.runtime,
-                        util_filename + extension_mapping[self.args.runtime],
-                    )
-                    if os.path.exists(src):
-                        dst = os.path.join(
-                            os.getcwd(),
-                            rules_dir,
-                            self.args.rulename,
-                            util_filename + extension_mapping[self.args.runtime],
-                        )
-                        shutil.copyfile(src, dst)
 
             # Write the parameters to a file in the rule directory.
             self.__populate_params()
@@ -2475,22 +2444,7 @@ class rdk:
 
         for rule_name in rule_names:
             rule_params, rule_tags = self.__get_rule_parameters(rule_name)
-            if rule_params["SourceRuntime"] not in (
-                "python3.7",
-                "python3.7-lib",
-                "python3.8",
-                "python3.8-lib",
-                "python3.9",
-                "python3.9-lib",
-                "python3.10",
-                "python3.10-lib",
-                "python3.11",
-                "python3.11-lib",
-                "python3.12",
-                "python3.12-lib",
-                "python3.13",
-                "python3.13-lib",
-            ):
+            if rule_params["SourceRuntime"] not in PYTHON_RUNTIMES:
                 print("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
 
@@ -3652,36 +3606,13 @@ class rdk:
     def __get_handler(self, rule_name, params):
         if "SourceHandler" in params:
             return params["SourceHandler"]
-        if params["SourceRuntime"] in [
-            "python3.7",
-            "python3.7-lib",
-            "python3.8",
-            "python3.8-lib",
-            "python3.9",
-            "python3.9-lib",
-            "python3.10",
-            "python3.10-lib",
-            "python3.11",
-            "python3.11-lib",
-            "python3.12",
-            "python3.12-lib",
-            "python3.13",
-            "python3.13-lib",
-        ]:
+        if params["SourceRuntime"] in PYTHON_RUNTIMES:
             return rule_name + ".lambda_handler"
         elif params["SourceRuntime"] in ["java8"]:
             return "com.rdk.RuleUtil::handler"
 
     def __get_runtime_string(self, params):
-        if params["SourceRuntime"] in [
-            "python3.7-lib",
-            "python3.8-lib",
-            "python3.9-lib",
-            "python3.10-lib",
-            "python3.11-lib",
-            "python3.12-lib",
-            "python3.13-lib",
-        ]:
+        if params["SourceRuntime"] in PYTHON_LIB_RUNTIMES:
             runtime = params["SourceRuntime"].split("-")
             return runtime[0]
 
@@ -4068,15 +3999,7 @@ class rdk:
     def __get_lambda_layers(self, my_session, args, params):
         layers = []
         if "SourceRuntime" in params:
-            if params["SourceRuntime"] in [
-                "python3.7-lib",
-                "python3.8-lib",
-                "python3.9-lib",
-                "python3.10-lib",
-                "python3.11-lib",
-                "python3.12-lib",
-                "python3.13-lib",
-            ]:
+            if params["SourceRuntime"] in PYTHON_LIB_RUNTIMES:
                 if hasattr(args, "generated_lambda_layer") and args.generated_lambda_layer:
                     lambda_layer_version = self.__get_existing_lambda_layer(
                         my_session, layer_name=args.custom_layer_name
@@ -4202,15 +4125,7 @@ class rdk:
         lambda_client.publish_layer_version(
             LayerName=layer_name,
             Content={"S3Bucket": bucket_name, "S3Key": layer_name},
-            CompatibleRuntimes=[
-                "python3.7",
-                "python3.8",
-                "python3.9",
-                "python3.10",
-                "python3.11",
-                "python3.12",
-                "python3.13",
-            ],
+            CompatibleRuntimes=PYTHON_NONLIB_RUNTIMES,
         )
 
         print(f"[{region}]: Deleting temporary S3 Bucket")
