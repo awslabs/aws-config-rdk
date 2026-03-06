@@ -7,12 +7,12 @@
 #    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 [project]
 name = "rdk"
-version = "0.17.24"
+version = "1.0.0"
 requires-python = ">=3.10,<4.0.0"
 
 [tool.poetry]
 name = "rdk"
-version = "0.17.24"
+version = "1.0.0"
 description = "Rule Development Kit CLI for AWS Config"
 authors = [
     "AWS RDK Maintainers <rdk-maintainers@amazon.com>",
@@ -31,6 +31,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 include = [
     "README.md",
@@ -45,33 +46,8 @@ include = [
     "rdk/template/runtime/java8/*",
     "rdk/template/runtime/java8/jars/*",
     "rdk/template/runtime/java8/src/main/java/com/rdk/*",
-    "rdk/template/runtime/nodejs4.3/*",
-    "rdk/template/runtime/python3.7/*",
-    "rdk/template/runtime/python3.7-lib/*",
-    "rdk/template/runtime/python3.8/*",
-    "rdk/template/runtime/python3.8-lib/*",
-    "rdk/template/runtime/python3.9/*",
-    "rdk/template/runtime/python3.9-lib/*",
-    "rdk/template/runtime/python3.10/*",
-    "rdk/template/runtime/python3.10-lib/*",
-    "rdk/template/runtime/python3.11/*",
-    "rdk/template/runtime/python3.11-lib/*",
-    "rdk/template/runtime/python3.12/*",
-    "rdk/template/runtime/python3.12-lib/*",
-    "rdk/template/runtime/python3.13/*",
-    "rdk/template/runtime/python3.13-lib/*",
-    "rdk/template/runtime/dotnetcore1.0/*",
-    "rdk/template/runtime/dotnetcore1.0/bin/*",
-    "rdk/template/runtime/dotnetcore1.0/obj/*",
-    "rdk/template/runtime/dotnetcore1.0/obj/Debug/*",
-    "rdk/template/runtime/dotnetcore1.0/obj/Release/netcoreapp1.0/*",
-    "rdk/template/runtime/dotnetcore1.0/obj/Release/netcoreapp2.0/*",
-    "rdk/template/runtime/dotnetcore2.0/*",
-    "rdk/template/runtime/dotnetcore2.0/bin/*",
-    "rdk/template/runtime/dotnetcore2.0/obj/*",
-    "rdk/template/runtime/dotnetcore2.0/obj/Debug/*",
-    "rdk/template/runtime/dotnetcore2.0/obj/Release/netcoreapp1.0/*",
-    "rdk/template/runtime/dotnetcore2.0/obj/Release/netcoreapp2.0/*",
+    "rdk/template/runtime/python/*",
+    "rdk/template/runtime/python-lib/*",
 ]
 license = "Apache-2.0"
 
@@ -123,6 +99,7 @@ boto3          = "^1.42.0"
 # pycares        = "^4.9.0"
 pyyaml         = "^6.0"
 # requests       = "^2.32.4"
+
 
 [tool.poetry.group.dev.dependencies]
 # checkov = "^3.2.447" # not essential for build

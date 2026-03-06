@@ -27,7 +27,7 @@ These instructions document the parts of the repository that need to be updated 
 
 ### Update rdk.py
 
-- Update references to include new version
+- Update global RUNTIME variables to include new version(s)
 
 ### Update Linux and Windows Buildspec files (`testing` folder)
 
@@ -37,7 +37,7 @@ These instructions document the parts of the repository that need to be updated 
 
 To release a new version of RDK...
 
-0. Consider running `poetry lock` if updating the `pyproject.toml` file.
+0. Consider running `poetry lock --regenerate` if updating the `pyproject.toml` file.
 1. Update `pyproject.toml` with the new version number
 2. Update `rdk/__init__.py` with the new version number
 3. Locally `git pull origin master` to ensure you have the latest code
@@ -59,7 +59,7 @@ These are not a replacement for unit tests, but because RDK inherently relies on
 1. Basic periodic custom rule creation and deployment
 ```powershell
 $rule="myAutomationTest" # This is gitignored
-$runtime="python3.12"
+$runtime="python3.14"
 $frequency="TwentyFour_Hours"
 rdk create $rule --runtime $runtime --maximum-frequency $frequency
 rdk deploy $rule
@@ -70,7 +70,7 @@ Remove-Item $rule -recurse
 2. Basic configuration-change custom rule creation and deployment
 ```powershell
 $rule="myAutomationTest" # This is gitignored
-$runtime="python3.12"
+$runtime="python3.14"
 $test_event_type = "AWS::EC2::Instance"
 rdk create $rule --runtime $runtime --resource-types $test_event_type
 rdk deploy $rule
@@ -93,7 +93,7 @@ Remove-Item $rule -recurse
 4. Deploy a proactive rule
 ```powershell
 $rule="myAutomationTest" # This is gitignored
-$runtime="python3.12"
+$runtime="python3.14"
 $test_event_type = "AWS::S3::Bucket"
 $evaluation_mode="PROACTIVE"
 rdk create $rule --runtime $runtime --evaluation-mode $evaluation_mode --resource-types $test_event_type
@@ -106,7 +106,7 @@ Remove-Item $rule -recurse # clean up the directory for future testing
 5. Deploy a proactive rule as a periodic rule (should fail)
 ```powershell
 $rule="myAutomationTest" # This is gitignored
-$runtime="python3.12"
+$runtime="python3.14"
 $evaluation_mode="BOTH"
 $frequency="TwentyFour_Hours"
 rdk create $rule --runtime $runtime --evaluation-mode $evaluation_mode --maximum-frequency $frequency

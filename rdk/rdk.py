@@ -45,7 +45,7 @@ except ImportError:
 rdk_dir = ".rdk"
 rules_dir = ""
 tests_dir = ""
-util_filename = "rule_util"
+# util_filename = "rule_util"
 rule_handler = "rule_code"
 rule_template = "rdk-rule.template"
 config_bucket_prefix = "config-bucket"
@@ -65,6 +65,28 @@ RDKLIB_LAYER_SAR_ID = "arn:aws:serverlessrepo:ap-southeast-1:711761543063:applic
 
 RDKLIB_ARN_STRING = "arn:aws:lambda:{region}:711761543063:layer:rdklib-layer:{version}"
 PARALLEL_COMMAND_THROTTLE_PERIOD = 2  # 2 seconds, used in running commands in parallel over multiple regions
+
+PYTHON_NONLIB_RUNTIMES = [
+    "python3.7",
+    "python3.8",
+    "python3.9",
+    "python3.10",
+    "python3.11",
+    "python3.12",
+    "python3.13",
+    "python3.14",
+]
+PYTHON_LIB_RUNTIMES = [
+    "python3.7-lib",
+    "python3.8-lib",
+    "python3.9-lib",
+    "python3.10-lib",
+    "python3.11-lib",
+    "python3.12-lib",
+    "python3.13-lib",
+    "python3.14-lib",
+]
+PYTHON_RUNTIMES = PYTHON_NONLIB_RUNTIMES + PYTHON_LIB_RUNTIMES
 
 # This need to be update whenever config service supports more resource types
 # See: https://docs.aws.amazon.com/config/latest/developerguide/resource-config-reference.html
@@ -261,23 +283,7 @@ def get_rule_parser(is_required, command):
         "--runtime",
         required=False,
         help="Runtime for lambda function",
-        choices=[
-            "java8",
-            "python3.7",
-            "python3.7-lib",
-            "python3.8",
-            "python3.8-lib",
-            "python3.9",
-            "python3.9-lib",
-            "python3.10",
-            "python3.10-lib",
-            "python3.11",
-            "python3.11-lib",
-            "python3.12",
-            "python3.12-lib",
-            "python3.13",
-            "python3.13-lib",
-        ],
+        choices=["java8"] + PYTHON_RUNTIMES,
         metavar="",
     )
     runtime_group.add_argument(
@@ -291,12 +297,12 @@ def get_rule_parser(is_required, command):
         required=False,
         help="[optional] Provide custom lambda name",
     )
-    parser.set_defaults(runtime="python3.13-lib")
+    parser.set_defaults(runtime="python3.14-lib")
     parser.add_argument(
         "-r",
         "--resource-types",
         required=False,
-        help="[optional] Resource types that will trigger event-based Rule evaluation. You can also specify 'ALL' to scope to all resources.",
+        help="[optional] Comma-delimited string of resource types that will trigger event-based Rule evaluation. You can also specify 'ALL' to scope to all resources.",
     )
     parser.add_argument(
         "-m",
@@ -319,7 +325,7 @@ def get_rule_parser(is_required, command):
     parser.add_argument("--optional-parameters", help="[optional] JSON for optional Config parameters.")
     parser.add_argument(
         "--tags",
-        help="[optional] JSON for tags to be applied to all CFN created resources.",
+        help='[optional] JSON for tags to be applied to all CFN created resources. Format is stringify-ed JSON, like \'[{\\"narwhal\\":\\"bacon\\"},{\\"kevin\\":\\"bacon\\"}]\'',
     )
     parser.add_argument(
         "-s",
@@ -621,85 +627,6 @@ def get_deployment_organization_parser(ForceArgument=False, Command="deploy-orga
     return parser
 
 
-def get_export_parser(ForceArgument=False, Command="export"):
-    parser = argparse.ArgumentParser(
-        prog="rdk " + Command,
-        description="Used to " + Command + " the Config Rule to terraform file.",
-    )
-    parser.add_argument(
-        "rulename",
-        metavar="<rulename>",
-        nargs="*",
-        help="Rule name(s) to export to a file.",
-    )
-    parser.add_argument("-s", "--rulesets", required=False, help="comma-delimited list of RuleSet names")
-    parser.add_argument(
-        "--all",
-        "-a",
-        action="store_true",
-        help="All rules in the working directory will be deployed.",
-    )
-    parser.add_argument(
-        "--lambda-layers",
-        required=False,
-        help="[optional] Comma-separated list of Lambda Layer ARNs to deploy with your Lambda function(s).",
-    )
-    parser.add_argument(
-        "--lambda-subnets",
-        required=False,
-        help="[optional] Comma-separated list of Subnets to deploy your Lambda function(s). If specified, you must also specify --lambda-security-groups.",
-    )
-    parser.add_argument(
-        "--lambda-security-groups",
-        required=False,
-        help="[optional] Comma-separated list of Security Groups to deploy with your Lambda function(s). If specified, you must also specify --lambda-subnets.",
-    )
-    parser.add_argument(
-        "--lambda-timeout",
-        required=False,
-        default=60,
-        help="[optional] Timeout (in seconds) for the lambda function",
-        type=str,
-    )
-    parser.add_argument(
-        "--lambda-role-arn",
-        required=False,
-        help="[optional] Assign existing iam role to lambda functions. If omitted, new lambda role will be created.",
-    )
-    parser.add_argument(
-        "--lambda-role-name",
-        required=False,
-        help="[optional] Assign existing iam role to lambda functions. If added, will look for a lambda role in the current account with the given name",
-    )
-    parser.add_argument(
-        "--rdklib-layer-arn",
-        required=False,
-        help="[optional] Lambda Layer ARN that contains the desired rdklib.  Note that Lambda Layers are region-specific.",
-    )
-    parser.add_argument(
-        "-v",
-        "--version",
-        required=True,
-        help="Terraform version",
-        choices=["0.11", "0.12"],
-    )
-    parser.add_argument("-f", "--format", required=True, help="Export Format", choices=["terraform"])
-    parser.add_argument(
-        "-g",
-        "--generated-lambda-layer",
-        required=False,
-        action="store_true",
-        help="[optional] Forces rdk deploy to use the Python lambda layer generated by rdk init --generate-lambda-layer",
-    )
-    parser.add_argument(
-        "--custom-layer-name",
-        required=False,
-        help='[optional] To use with --generated-lambda-layer, forces the flag to look for a specific lambda-layer name. If omitted, "rdklib-layer" will be used',
-    )
-
-    return parser
-
-
 def get_test_parser(command):
     parser = argparse.ArgumentParser(prog="rdk " + command, description="Used to run tests on your Config Rule code.")
     parser.add_argument(
@@ -862,6 +789,13 @@ def run_multi_region(args):
 class rdk:
     def __init__(self, args):
         self.args = args
+        self.my_session = self.__get_boto_session()
+        identity_details = self.__get_caller_identity_details(self.my_session)
+        self.account_id = identity_details.get("account_id")  # Useful for passing to externalized functions
+        self.region_name = self.my_session.region_name
+
+    # Import external methods
+    from ._export import export, parse_export_args, package_function_code  # Importing export feels natural!
 
     @staticmethod
     def get_command_parser(self):
@@ -875,13 +809,14 @@ class rdk:
 
     def init(self):
         """
-        This is a test.
+        This is the method containing the rdk init logic.
+
+        This is NOT the class initializer!!!
         """
         self.args = get_init_parser().parse_args(self.args.command_args, self.args)
 
         # create custom session based on whatever credentials are available to us
-        my_session = self.__get_boto_session()
-
+        my_session = self.my_session
         print(f"[{my_session.region_name}]: Running init!")
 
         # Create our ConfigService client
@@ -889,7 +824,7 @@ class rdk:
 
         # get accountID, AWS partition (e.g. aws or aws-us-gov), region (us-east-1, us-gov-west-1)
         identity_details = self.__get_caller_identity_details(my_session)
-        account_id = identity_details["account_id"]
+        account_id = self.account_id
         partition = identity_details["partition"]
 
         config_recorder_exists = False
@@ -1226,26 +1161,6 @@ class rdk:
                 print("Runtime is required for 'create' command (unless deploying a managed rule).")
                 return 1
 
-            extension_mapping = {
-                "java8": ".java",
-                "python3.7": ".py",
-                "python3.7-lib": ".py",
-                "python3.8": ".py",
-                "python3.8-lib": ".py",
-                "python3.9": ".py",
-                "python3.9-lib": ".py",
-                "python3.10": ".py",
-                "python3.10-lib": ".py",
-                "python3.11": ".py",
-                "python3.11-lib": ".py",
-                "python3.12": ".py",
-                "python3.12-lib": ".py",
-                "python3.13": ".py",
-                "python3.13-lib": ".py",
-            }
-            if self.args.runtime not in extension_mapping:
-                print("rdk does not support that runtime yet.")
-
         # if not self.args.maximum_frequency:
         #    self.args.maximum_frequency = "TwentyFour_Hours"
         #    print("Defaulting to TwentyFour_Hours Maximum Frequency.")
@@ -1264,31 +1179,30 @@ class rdk:
                 if self.args.runtime == "java8":
                     self.__create_java_rule()
                 else:
+                    # guaranteed to be a python runtime here, but double check
+                    if self.args.runtime not in PYTHON_RUNTIMES:
+                        raise (ValueError(f"Unsupported Runtime {self.args.runtime}"))
+                    if re.search(r"-lib", self.args.runtime):
+                        runtime_folder = "python-lib"
+                    else:
+                        runtime_folder = "python"
                     src = os.path.join(
                         path.dirname(__file__),
                         "template",
                         "runtime",
-                        self.args.runtime,
-                        rule_handler + extension_mapping[self.args.runtime],
+                        runtime_folder,
+                        "rule_code.py",
                     )
                     dst = os.path.join(
                         os.getcwd(),
                         rules_dir,
                         self.args.rulename,
-                        self.args.rulename + extension_mapping[self.args.runtime],
+                        self.args.rulename + ".py",
                     )
                     shutil.copyfile(src, dst)
                     f = fileinput.input(files=dst, inplace=True)
                     for line in f:
-                        if self.args.runtime in [
-                            "python3.7-lib",
-                            "python3.8-lib",
-                            "python3.9-lib",
-                            "python3.10-lib",
-                            "python3.11-lib",
-                            "python3.12-lib",
-                            "python3.13-lib",
-                        ]:
+                        if self.args.runtime in PYTHON_LIB_RUNTIMES:
                             if self.args.resource_types:
                                 applicable_resource_list = ""
                                 for resource_type in self.args.resource_types.split(","):
@@ -1320,37 +1234,21 @@ class rdk:
                         path.dirname(__file__),
                         "template",
                         "runtime",
-                        self.args.runtime,
-                        "rule_test" + extension_mapping[self.args.runtime],
+                        runtime_folder,
+                        "rule_test.py",
                     )
                     if os.path.exists(src):
                         dst = os.path.join(
                             os.getcwd(),
                             rules_dir,
                             self.args.rulename,
-                            self.args.rulename + "_test" + extension_mapping[self.args.runtime],
+                            self.args.rulename + "_test.py",
                         )
                         shutil.copyfile(src, dst)
                         f = fileinput.input(files=dst, inplace=True)
                         for line in f:
                             print(line.replace("<%RuleName%>", self.args.rulename), end="")
                         f.close()
-
-                    src = os.path.join(
-                        path.dirname(__file__),
-                        "template",
-                        "runtime",
-                        self.args.runtime,
-                        util_filename + extension_mapping[self.args.runtime],
-                    )
-                    if os.path.exists(src):
-                        dst = os.path.join(
-                            os.getcwd(),
-                            rules_dir,
-                            self.args.rulename,
-                            util_filename + extension_mapping[self.args.runtime],
-                        )
-                        shutil.copyfile(src, dst)
 
             # Write the parameters to a file in the rule directory.
             self.__populate_params()
@@ -1397,7 +1295,6 @@ class rdk:
         if not self.args.source_identifier and "SourceIdentifier" in old_params:
             self.args.source_identifier = old_params["SourceIdentifier"]
 
-        # TODO - is this appropriate?
         if not self.args.evaluation_mode and "EvaluationMode" in old_params:
             self.args.evaluation_mode = old_params["EvaluationMode"]
 
@@ -1713,13 +1610,8 @@ class rdk:
             rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
 
             # create CFN Parameters common for Managed and Custom
-            source_events = "NONE"
-            if "SourceEvents" in rule_params:
-                source_events = rule_params["SourceEvents"]
-
-            source_periodic = "NONE"
-            if "SourcePeriodic" in rule_params:
-                source_periodic = rule_params["SourcePeriodic"]
+            source_events = rule_params.get("SourceEvents", "NONE")
+            source_periodic = rule_params.get("SourcePeriodic", "NONE")
 
             combined_input_parameters = {}
             if "InputParameters" in rule_params:
@@ -1799,7 +1691,6 @@ class rdk:
                         ] = ssm_automation
                         if "IAM" in rule_params["SSMAutomation"]:
                             print(f"[{my_session.region_name}]: Lets Build IAM Role and Policy")
-                            # TODO Check For IAM Settings
                             yaml_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
                                 "StaticValue"
                             ]["Values"] = [
@@ -2090,7 +1981,6 @@ class rdk:
                 ] = ssm_automation
                 if "IAM" in rule_params["SSMAutomation"]:
                     print("Lets Build IAM Role and Policy")
-                    # TODO Check For IAM Settings
                     yaml_body["Resources"]["Remediation"]["Properties"]["Parameters"]["AutomationAssumeRole"][
                         "StaticValue"
                     ]["Values"] = [
@@ -2222,18 +2112,13 @@ class rdk:
                     sys.exit(1)
 
             # create CFN Parameters common for Managed and Custom
-            source_events = "NONE"
             if "Remediation" in rule_params:
                 print(
                     f"WARNING: Organization Rules with Remediation is not supported at the moment. {rule_name} will be deployed without auto-remediation."
                 )
 
-            if "SourceEvents" in rule_params:
-                source_events = rule_params["SourceEvents"]
-
-            source_periodic = "NONE"
-            if "SourcePeriodic" in rule_params:
-                source_periodic = rule_params["SourcePeriodic"]
+            source_events = rule_params.get("SourceEvents", "NONE")
+            source_periodic = rule_params.get("SourcePeriodic", "NONE")
 
             combined_input_parameters = {}
             if "InputParameters" in rule_params:
@@ -2548,114 +2433,6 @@ class rdk:
 
         return 0
 
-    def export(self):
-        self.__parse_export_args()
-
-        # get the rule names
-        rule_names = self.__get_rule_list_for_command("export")
-
-        # run the export code
-        print("Running export")
-
-        for rule_name in rule_names:
-            rule_params, cfn_tags = self.__get_rule_parameters(rule_name)
-
-            if "SourceIdentifier" in rule_params:
-                print("Found Managed Rule, Ignored.")
-                print("Export support only Custom Rules.")
-                continue
-
-            source_events = []
-            if "SourceEvents" in rule_params:
-                source_events = [rule_params["SourceEvents"]]
-
-            source_periodic = "NONE"
-            if "SourcePeriodic" in rule_params:
-                source_periodic = rule_params["SourcePeriodic"]
-
-            combined_input_parameters = {}
-            if "InputParameters" in rule_params:
-                combined_input_parameters.update(json.loads(rule_params["InputParameters"]))
-
-            if "OptionalParameters" in rule_params:
-                # Remove empty parameters
-                keys_to_delete = []
-                optional_parameters_json = json.loads(rule_params["OptionalParameters"])
-                for key, value in optional_parameters_json.items():
-                    if not value:
-                        keys_to_delete.append(key)
-                for key in keys_to_delete:
-                    del optional_parameters_json[key]
-                combined_input_parameters.update(optional_parameters_json)
-
-            print("Found Custom Rule.")
-            s3_src = ""
-            s3_dst = self.__package_function_code(rule_name, rule_params)
-
-            layers = []
-            rdk_lib_version = "0"
-            my_session = self.__get_boto_session()
-            layers = self.__get_lambda_layers(my_session, self.args, rule_params)
-
-            if self.args.lambda_layers:
-                additional_layers = self.args.lambda_layers.split(",")
-                layers.extend(additional_layers)
-
-            subnet_ids = []
-            security_group_ids = []
-            if self.args.lambda_security_groups:
-                security_group_ids = self.args.lambda_security_groups.split(",")
-
-            if self.args.lambda_subnets:
-                subnet_ids = self.args.lambda_subnets.split(",")
-
-            lambda_role_arn = "NONE"
-            if self.args.lambda_role_arn:
-                print("Existing IAM Role provided: " + self.args.lambda_role_arn)
-                lambda_role_arn = self.args.lambda_role_arn
-
-            my_params = {
-                "rule_name": rule_name,
-                "rule_lambda_name": self.__get_lambda_name(rule_name, rule_params),
-                "source_runtime": self.__get_runtime_string(rule_params),
-                "source_events": source_events,
-                "source_periodic": source_periodic,
-                "source_input_parameters": json.dumps(combined_input_parameters),
-                "source_handler": self.__get_handler(rule_name, rule_params),
-                "subnet_ids": subnet_ids,
-                "security_group_ids": security_group_ids,
-                "lambda_layers": layers,
-                "lambda_role_arn": lambda_role_arn,
-                "lambda_timeout": str(self.args.lambda_timeout),
-            }
-
-            params_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + ".tfvars.json")
-            parameters_file = open(params_file_path, "w")
-            json.dump(my_params, parameters_file, indent=4)
-            parameters_file.close()
-            # create json of CFN template
-            print(self.args.format + " version: " + self.args.version)
-            tf_file_body = os.path.join(
-                path.dirname(__file__),
-                "template",
-                self.args.format,
-                self.args.version,
-                "config_rule.tf",
-            )
-            tf_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + "_rule.tf")
-            shutil.copy(tf_file_body, tf_file_path)
-
-            variables_file_body = os.path.join(
-                path.dirname(__file__),
-                "template",
-                self.args.format,
-                self.args.version,
-                "variables.tf",
-            )
-            variables_file_path = os.path.join(os.getcwd(), rules_dir, rule_name, rule_name.lower() + "_variables.tf")
-            shutil.copy(variables_file_body, variables_file_path)
-            print("Export completed.This will generate three .tf files.")
-
     def test_local(self):
         print("Running local test!")
         tests_successful = True
@@ -2667,22 +2444,7 @@ class rdk:
 
         for rule_name in rule_names:
             rule_params, rule_tags = self.__get_rule_parameters(rule_name)
-            if rule_params["SourceRuntime"] not in (
-                "python3.7",
-                "python3.7-lib",
-                "python3.8",
-                "python3.8-lib",
-                "python3.9",
-                "python3.9-lib",
-                "python3.10",
-                "python3.10-lib",
-                "python3.11",
-                "python3.11-lib",
-                "python3.12",
-                "python3.12-lib",
-                "python3.13",
-                "python3.13-lib",
-            ):
+            if rule_params["SourceRuntime"] not in PYTHON_RUNTIMES:
                 print("Skipping " + rule_name + " - Runtime not supported for local testing.")
                 continue
 
@@ -3637,65 +3399,6 @@ class rdk:
                 sys.exit(1)
             self.args.excluded_accounts = self.args.excluded_accounts.split(",")
 
-    def __parse_export_args(self, ForceArgument=False):
-        self.args = get_export_parser(ForceArgument).parse_args(self.args.command_args, self.args)
-
-        if bool(self.args.lambda_security_groups) != bool(self.args.lambda_subnets):
-            print("You must specify both lambda-security-groups and lambda-subnets, or neither.")
-            sys.exit(1)
-
-        # Check rule names to make sure none are too long.  This is needed to catch Rules created before length constraint was added.
-        if self.args.rulename:
-            for name in self.args.rulename:
-                if len(name) > 128:
-                    print(
-                        f"Error: Found Rule with name over 128 characters: {name} \n Recreate the Rule with a shorter name."
-                    )
-                    sys.exit(1)
-
-    def __package_function_code(self, rule_name, params):
-        my_session = self.__get_boto_session()
-        if params["SourceRuntime"] == "java8":
-            # Do java build and package.
-            print("Running Gradle Build for " + rule_name)
-            working_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
-            command = ["gradle", "build"]
-            subprocess.call(command, cwd=working_dir)
-
-            # set source as distribution zip
-            s3_src = os.path.join(
-                os.getcwd(),
-                rules_dir,
-                rule_name,
-                "build",
-                "distributions",
-                rule_name + ".zip",
-            )
-
-        else:
-            print("Zipping " + rule_name)
-            # Remove old zip file if it already exists
-            package_file_dst = os.path.join(rule_name, rule_name + ".zip")
-            self.__delete_package_file(package_file_dst)
-
-            # zip rule code files and upload to s3 bucket
-            s3_src_dir = os.path.join(os.getcwd(), rules_dir, rule_name)
-            tmp_src = shutil.make_archive(
-                os.path.join(tempfile.gettempdir(), rule_name + my_session.region_name),
-                "zip",
-                s3_src_dir,
-            )
-            if not (os.path.exists(package_file_dst)):
-                shutil.copy(tmp_src, package_file_dst)
-            s3_src = os.path.abspath(package_file_dst)
-            self.__delete_package_file(tmp_src)
-
-        s3_dst = "/".join((rule_name, rule_name + ".zip"))
-
-        print("Zipping complete.")
-
-        return s3_dst
-
     def __populate_params(self):
         # create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
@@ -3903,36 +3606,13 @@ class rdk:
     def __get_handler(self, rule_name, params):
         if "SourceHandler" in params:
             return params["SourceHandler"]
-        if params["SourceRuntime"] in [
-            "python3.7",
-            "python3.7-lib",
-            "python3.8",
-            "python3.8-lib",
-            "python3.9",
-            "python3.9-lib",
-            "python3.10",
-            "python3.10-lib",
-            "python3.11",
-            "python3.11-lib",
-            "python3.12",
-            "python3.12-lib",
-            "python3.13",
-            "python3.13-lib",
-        ]:
+        if params["SourceRuntime"] in PYTHON_RUNTIMES:
             return rule_name + ".lambda_handler"
         elif params["SourceRuntime"] in ["java8"]:
             return "com.rdk.RuleUtil::handler"
 
     def __get_runtime_string(self, params):
-        if params["SourceRuntime"] in [
-            "python3.7-lib",
-            "python3.8-lib",
-            "python3.9-lib",
-            "python3.10-lib",
-            "python3.11-lib",
-            "python3.12-lib",
-            "python3.13-lib",
-        ]:
+        if params["SourceRuntime"] in PYTHON_LIB_RUNTIMES:
             runtime = params["SourceRuntime"].split("-")
             return runtime[0]
 
@@ -3950,8 +3630,8 @@ class rdk:
             # Check to see if there is a test_ci.json file in the Rule directory
             tests_path = os.path.join(os.getcwd(), rules_dir, rulename, test_ci_filename)
             if os.path.exists(tests_path):
-                print("\tTesting with CI's provided in test_ci.json file. NOT YET IMPLEMENTED")  # TODO
-            #    test_ci_list self._load_cis_from_file(tests_path)
+                print("\tTesting with CI's provided in test_ci.json file. NOT YET IMPLEMENTED")
+            #   test_ci_list self._load_cis_from_file(tests_path)
             else:
                 print("\tTesting with generic CI for configured Resource Type(s)")
                 my_rule_params, my_rule_tags = self.__get_rule_parameters(rulename)
@@ -4319,15 +3999,7 @@ class rdk:
     def __get_lambda_layers(self, my_session, args, params):
         layers = []
         if "SourceRuntime" in params:
-            if params["SourceRuntime"] in [
-                "python3.7-lib",
-                "python3.8-lib",
-                "python3.9-lib",
-                "python3.10-lib",
-                "python3.11-lib",
-                "python3.12-lib",
-                "python3.13-lib",
-            ]:
+            if params["SourceRuntime"] in PYTHON_LIB_RUNTIMES:
                 if hasattr(args, "generated_lambda_layer") and args.generated_lambda_layer:
                     lambda_layer_version = self.__get_existing_lambda_layer(
                         my_session, layer_name=args.custom_layer_name
@@ -4453,15 +4125,7 @@ class rdk:
         lambda_client.publish_layer_version(
             LayerName=layer_name,
             Content={"S3Bucket": bucket_name, "S3Key": layer_name},
-            CompatibleRuntimes=[
-                "python3.7",
-                "python3.8",
-                "python3.9",
-                "python3.10",
-                "python3.11",
-                "python3.12",
-                "python3.13",
-            ],
+            CompatibleRuntimes=PYTHON_NONLIB_RUNTIMES,
         )
 
         print(f"[{region}]: Deleting temporary S3 Bucket")
