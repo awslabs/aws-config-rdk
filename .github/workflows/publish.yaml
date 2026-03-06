@@ -5,6 +5,10 @@ on:
     tags:
       - '*'
 
+permissions:
+  contents: write
+  discussions: write
+
 jobs:
   publish:
     name: Publish Release

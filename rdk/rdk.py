@@ -11,6 +11,11 @@
 #    This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #
 #    See the License for the specific language governing permissions and limitations under the License.
+from boto3 import Session
+from botocore.exceptions import ClientError, EndpointConnectionError
+from builtins import input
+from datetime import datetime
+from os import path
 import argparse
 import base64
 import boto3
@@ -29,12 +34,6 @@ import time
 import unittest
 import uuid
 import yaml
-
-from boto3 import Session
-from botocore.exceptions import ClientError, EndpointConnectionError
-from builtins import input
-from datetime import datetime
-from os import path
 
 # sphinx-argparse is a delight.
 try:
