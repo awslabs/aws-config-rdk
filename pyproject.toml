@@ -153,7 +153,7 @@ boto3-stubs = {extras = ["cloudformation", "config", "iam", "s3", "sts"], versio
 markdown-include    = "^0.8.1"
 mkdocs              = "^1.6.1"
 mkdocs-material     = "^9.7.3"
-mkdocstrings-python = "^1.18.2"
+mkdocstrings-python = ">=1.18.2,<3.0.0"
 pymdown-extensions  = "^10.21.0"
 
 [build-system]
