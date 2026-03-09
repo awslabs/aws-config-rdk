@@ -131,7 +131,7 @@ asteval    = "^1.0.6"
 authlib    = "^1.6.6"
 black      = "^25.1.0"
 debugpy    = "^1.8.17"
-isort      = {extras = ["toml"], version = ">=5.11.4,<7.0.0"}
+isort      = {extras = ["toml"], version = ">=5.11.4,<9.0.0"}
 mypy       = "^1.18.2"
 pydocstyle = "^6.3.0"
 rdklib     = "^0.3.10"
