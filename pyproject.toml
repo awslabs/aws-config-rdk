@@ -129,7 +129,7 @@ pyyaml         = "^6.0"
 aiohttp    = "^3.13.3"
 asteval    = "^1.0.6"
 authlib    = "^1.6.6"
-black      = "^25.1.0"
+black      = ">=25.1,<27.0"
 debugpy    = "^1.8.17"
 isort      = {extras = ["toml"], version = ">=5.11.4,<7.0.0"}
 mypy       = "^1.18.2"
