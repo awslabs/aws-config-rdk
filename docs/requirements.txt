@@ -72,7 +72,7 @@ cffi==1.17.1 ; python_full_version >= "3.10.0" and python_full_version < "4.0.0"
     --hash=sha256:f79fc4fc25f1c8698ff97788206bb3c2598949bfe0fef03d299eb1b5356ada99 \
     --hash=sha256:f7f5baafcc48261359e14bcd6d9bff6d4b28d9103847c9e136694cb0501aef87 \
     --hash=sha256:fc48c783f9c87e60831201f2cce7f3b2e4846bf4d8728eabe54d60700b318a0b
-cryptography==46.0.5 ; python_full_version >= "3.10.0" and python_full_version < "4.0.0"
+cryptography==46.0.7; python_full_version >= "3.10.0" and python_full_version < "4.0.0"
 jmespath==1.0.1 ; python_full_version >= "3.10.0" and python_full_version < "4.0.0" \
     --hash=sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980 \
     --hash=sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe
