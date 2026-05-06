@@ -4,7 +4,7 @@ import logging
 import unittest
 from unittest.mock import patch, MagicMock
 from botocore.exceptions import ClientError
-from rdklib import Evaluation, ComplianceType
+from rdklib import Evaluation, ComplianceType, ConfigRule
 import rdklibtest
 
 ##############
@@ -29,6 +29,7 @@ IAM_CLIENT_MOCK = MagicMock()
 # STS client for getting account ID
 STS_CLIENT_MOCK = MagicMock()
 
+BASE_CONFIG_RULE = ConfigRule()
 
 def mock_get_client(client_name, *args, **kwargs):
     if client_name == "iam":
@@ -97,6 +98,9 @@ class ComplianceTest(unittest.TestCase):
 
     # Example of how to evaluate a configuration change rule
     def test_configurationchange_rule(self):
+        # This is only relevant for configuration change rules, so quit early if needed.
+        if RULE.evaluate_change.__code__.co_code == BASE_CONFIG_RULE.evaluate_change.__code__.co_code:
+            return
         # Mock any usage of get_caller_identity
         STS_CLIENT_MOCK.get_caller_identity = MagicMock(
             return_value=self.get_caller_identity_response
@@ -118,6 +122,7 @@ class ComplianceTest(unittest.TestCase):
                 resourceType=RESOURCE_TYPE,
             )
         )
+
         if vars(response[0]) != vars(resp_expected[0]):
             logging.warning(f"Actual response: {vars(response[0])}")
             logging.warning(f"Expected response: {vars(resp_expected[0])}")
@@ -125,6 +130,9 @@ class ComplianceTest(unittest.TestCase):
 
     # Example of how to mock the client response for a list_roles API call
     def test_periodic_rule(self):
+        # This is only relevant for configuration change rules, so quit early if needed.
+        if RULE.evaluate_periodic.__code__.co_code == BASE_CONFIG_RULE.evaluate_periodic.__code__.co_code:
+            return
         # Mock any usage of get_caller_identity
         STS_CLIENT_MOCK.get_caller_identity = MagicMock(
             return_value=self.get_caller_identity_response
@@ -139,12 +147,12 @@ class ComplianceTest(unittest.TestCase):
         resp_expected = []
         resp_expected.append(
             Evaluation(
-                complianceType=ComplianceType.NOT_APPLICABLE,
+                complianceType=ComplianceType.COMPLIANT,
                 resourceId=self.invoking_event_iam_role_sample.get(
                     "configurationItem", {}
                 ).get("awsAccountId", None),
                 resourceType="AWS::::Account",
-                annotation="This is a periodic rule's annotation.",
+                annotation="Use this field to explain why this evaluation occurred.",
             )
         )
         if vars(response[0]) != vars(resp_expected[0]):

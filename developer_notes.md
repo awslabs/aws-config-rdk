@@ -55,6 +55,8 @@ To release a new version of RDK...
 Note: before running these, make sure to set your AWS credentials and region appropriately.
 
 These are not a replacement for unit tests, but because RDK inherently relies on CloudFormation, some level of end-to-end testing is necessary.
+0. Run `rdk init`
+rdk init
 
 1. Basic periodic custom rule creation and deployment
 ```powershell

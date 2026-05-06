@@ -764,7 +764,7 @@ def get_create_region_set_parser():
         "--output-file",
         required=False,
         default="regions",
-        help="Filename of the generated region set file",
+        help="Filename of the generated region set file. Filename be automatically post-fixed with the extension .yaml",
     )
     return parser
 
@@ -789,10 +789,18 @@ def run_multi_region(args):
 class rdk:
     def __init__(self, args):
         self.args = args
-        self.my_session = self.__get_boto_session()
-        identity_details = self.__get_caller_identity_details(self.my_session)
-        self.account_id = identity_details.get("account_id")  # Useful for passing to externalized functions
-        self.region_name = self.my_session.region_name
+        # These details are only relevant if we're running a command that requires AWS credentials
+        if args.command in ["export", "init", "deploy", "undeploy", "deploy-organization", "undeploy-organization"]:
+            try:
+                self.my_session = self.__get_boto_session()
+                self.region_name = self.my_session.region_name
+                identity_details = self.__get_caller_identity_details(self.my_session)
+                self.account_id = identity_details.get("account_id")  # Useful for passing to externalized functions
+            except botocore.exceptions.NoCredentialsError as e:
+                if args.command in ["export"]:
+                    logging.warning("No credentials were found when attempting to run rdk export. This may cause some issues depending on how you are using the export command.")
+                else:
+                    raise Exception("Credentials Error - Please configure AWS CLI credentials before running an operation that requires AWS access.")
 
     # Import external methods
     from ._export import export, parse_export_args, package_function_code  # Importing export feels natural!
@@ -3208,7 +3216,7 @@ class rdk:
             sys.exit(1)
         except Exception as e:
             print(f"Error loading parameters file for Rule {rule_name}")
-            print(e.message)
+            print(repr(e))
             parameters_file.close()
             sys.exit(1)
 
@@ -3223,7 +3231,10 @@ class rdk:
 
         # as my_tags was returned as a string in earlier versions, convert it back to a list
         if isinstance(my_tags, str):
-            my_tags = json.loads(my_tags)
+            try:
+                my_tags = json.loads(my_tags)
+            except json.JSONDecodeError:
+                raise Exception("Failed to parse Tags in parameters file. Check that they are configured in proper JSON format.")
 
         return my_json["Parameters"], my_tags
 
@@ -3402,6 +3413,9 @@ class rdk:
     def __populate_params(self):
         # create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
+        if not my_session.region_name:
+            raise Exception("No region found. Please specify a region by configuring your AWS profile or by passing the --region argument.")
+
 
         # get accountID
         # my_sts = my_session.client('sts')
@@ -3418,18 +3432,22 @@ class rdk:
                 print(
                     "Error parsing input parameter JSON.  Make sure your JSON keys and values are enclosed in properly-escaped double quotes and your input-parameters string is enclosed in single quotes."
                 )
-                raise e
+                print(repr(e))
+                exit(-1)
 
         my_optional_params = {}
 
         if self.args.optional_parameters:
             # As above, but with the optional input parameters.
             try:
+                logging.debug(f"THESE ARE THE PARAMS: {self.args.optional_parameters}")
                 my_optional_params = json.loads(self.args.optional_parameters, strict=False)
             except Exception as e:
                 print(
                     "Error parsing optional input parameter JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and your optional-parameters string is enclosed in single quotes."
                 )
+                print(repr(e))
+                exit(-1)
 
         my_tags = []
 
@@ -3437,10 +3455,12 @@ class rdk:
             # As above, but with the optional tag key value pairs.
             try:
                 my_tags = json.loads(self.args.tags, strict=False)
-            except Exception:
+            except Exception as e:
                 print(
                     "Error parsing optional tags JSON.  Make sure your JSON keys and values are enclosed in properly escaped double quotes and tags string is enclosed in single quotes."
                 )
+                print(repr(e))
+                exit(-1)
 
         my_remediation = {}
         if (

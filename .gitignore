@@ -138,3 +138,6 @@ terraform.tfvars
 myguardrule/
 
 .threatmodel
+
+# Don't upload the auto-generated TF exports
+terraform_rdk_rules

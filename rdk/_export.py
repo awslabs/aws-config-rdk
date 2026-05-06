@@ -1,6 +1,9 @@
+from boto3 import Session
 import argparse
 import json
+import logging
 import os
+import pathlib
 import shutil
 import subprocess
 import sys
@@ -16,7 +19,7 @@ rules_dir = "terraform_rdk_rules"  # All manifests are outputted to this directo
 def get_export_parser():
     parser = argparse.ArgumentParser(
         prog="rdk export",
-        description="Used to export the Config Rule to terraform file.",
+        description="Used to export the Config Rule to a Terraform file. Requires region and account to be defined in aws cli configuration.",
     )
     parser.add_argument(
         "rulename",
@@ -39,7 +42,7 @@ def get_export_parser():
     parser.add_argument(
         "--custom-code-bucket",
         required=False,
-        help="[optional] The code bucket to which you want to upload a copy of your RDK rule. If not specified, will use the default code bucket for the current region",
+        help="[optional] The code bucket to which you want to upload a copy of your RDK rule. If not specified, will construct the ARN for the default code bucket for the current region and account (if present in the aws cli configuration).",
     )
     parser.add_argument(
         "--lambda-layers",
@@ -173,7 +176,7 @@ def package_function_code(rdk_instance, rule_name, params):
     return s3_dst
 
 
-def parse_export_args(rdk_instance):
+def parse_export_args(rdk_instance, my_session: Session):
     rdk_instance.args = get_export_parser().parse_args(rdk_instance.args.command_args, rdk_instance.args)
 
     if bool(rdk_instance.args.lambda_security_groups) != bool(rdk_instance.args.lambda_subnets):
@@ -189,6 +192,11 @@ def parse_export_args(rdk_instance):
                 )
                 sys.exit(1)
 
+    # Check for environment configuration to ensure we have sufficient context to create the TF outputs
+    if not my_session.region_name:
+        logging.warning("No region specified for rdk export. This may cause downstream issues if you are auto-generating backends or providers, or if you are not specifying a code bucket name explicitly using --custom-code-bucket.")
+    if not hasattr(rdk_instance, "account_id"):
+        logging.warning("No account specified for rdk export. This may cause downstream issues if you are not specifying a code bucket name explicitly using --custom-code-bucket.")
 
 def generate_backend_and_provider_manifests(
     rdk_instance,
@@ -247,7 +255,8 @@ def export(rdk_instance):
     class_name = rdk_instance.__class__.__name__
 
     # Gather CLI args
-    rdk_instance.parse_export_args()
+    my_session = getattr(rdk_instance, f"_{rdk_instance.__class__.__name__}__get_boto_session")()
+    rdk_instance.parse_export_args(my_session)
 
     if rdk_instance.args.output_version == "1.x":
         module_name = "rdk_module"
@@ -287,7 +296,6 @@ def export(rdk_instance):
         print(f"Found Custom Rule {rule_name}.")
 
         layers = []
-        my_session = getattr(rdk_instance, f"_{class_name}__get_boto_session")()
         layers = getattr(rdk_instance, f"_{class_name}__get_lambda_layers")(my_session, rdk_instance.args, rule_params)
 
         if rdk_instance.args.lambda_layers:
@@ -310,9 +318,15 @@ def export(rdk_instance):
         if rdk_instance.args.custom_code_bucket:
             code_bucket = rdk_instance.args.custom_code_bucket
         else:
-            code_bucket = (
-                "config-rule-code-bucket-" + rdk_instance.account_id + "-" + rdk_instance.my_session.region_name
-            )
+            try:
+                code_bucket = (
+                    "config-rule-code-bucket-" + rdk_instance.account_id + "-" + rdk_instance.my_session.region_name
+                )
+            except AttributeError:
+                print(
+                    "RDK was unable to determine the default code bucket because it is missing the aws cli account context. Please either configure your aws cli credentials or provide an explicit bucket name using --custom-code-bucket."
+                )
+                sys.exit(1)
 
         my_params = {
             "rule_name": rule_name,
@@ -338,6 +352,9 @@ def export(rdk_instance):
             rules_dir,
             f"{rule_name}.tf",
         )
+        # Create the directory if it doesn't exist
+        pathlib.Path(params_file_path).parent.mkdir(parents=True, exist_ok=True)
+        
         if rdk_instance.args.backend_bucket_name or rdk_instance.args.add_provider_manifest:
             generate_backend_and_provider_manifests(
                 rdk_instance=rdk_instance,
