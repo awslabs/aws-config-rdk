@@ -69,6 +69,19 @@ rdk deploy $rule
 rdk undeploy $rule --force
 Remove-Item $rule -recurse
 ```
+
+1. Basic periodic custom rule creation and deployment using rdklib
+```powershell
+$rule="myAutomationTest" # This is gitignored
+$runtime="python3.14-lib"
+$frequency="TwentyFour_Hours"
+rdk create $rule --runtime $runtime --maximum-frequency $frequency
+rdk deploy $rule
+# It should deploy a CloudFormation stack successfully.
+rdk undeploy $rule --force
+Remove-Item $rule -recurse
+```
+
 2. Basic configuration-change custom rule creation and deployment
 ```powershell
 $rule="myAutomationTest" # This is gitignored
