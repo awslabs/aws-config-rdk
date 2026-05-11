@@ -142,4 +142,4 @@ s3transfer==0.10.4 ; python_full_version >= "3.10.0" and python_full_version < "
 six==1.17.0 ; python_full_version >= "3.10.0" and python_full_version < "4.0.0" \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
-urllib3==2.6.3 ; python_version >= "3.10" and python_full_version < "4.0.0"
+urllib3==2.7.0 ; python_version >= "3.10" and python_full_version < "4.0.0"
