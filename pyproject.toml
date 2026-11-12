@@ -8,7 +8,7 @@
 [project]
 name = "rdk"
 version = "2.0.0"
-requires-python = ">=3.10,<4.0.0"
+requires-python = ">=3.11,<4.0.0"
 
 [tool.poetry]
 name = "rdk"
@@ -27,7 +27,6 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -64,11 +63,11 @@ line_length = 120
 
 [tool.black]
 line-length = 120
-target-version = ["py310"]
+target-version = ["py311"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 
 [tool.poe.tasks]
 isort = "isort --profile=black ."
@@ -84,7 +83,7 @@ fix = ["isort", "black"]
 ruff = "ruff check --fix rdk"
 safety = "safety scan --ignore 70612" # Ignoring a disputed Jinja finding
 bandit = "bandit -r rdk"
-security = ["safety", "bandit"]
+security = ["bandit"] # Removed safety until filelock dependency conflict resolved
 update-doc-deps = {cmd = "poetry export --only=docs -f requirements.txt > docs/requirements.txt", help = "Generate an updated requirements.txt for docs" }
 serve-docs = {cmd = "mkdocs serve"}
 # requires poethepoet outside of poetry.
@@ -95,7 +94,7 @@ build = "poetry build"
 boto3          = "^1.42.0"
 # configargparse = "^1.7.1"
 # cryptography   = "^46.0.5"
-# filelock       = "^3.25.0"
+platformdirs = "^4.14"
 # pycares        = "^4.9.0"
 pyyaml         = "^6.0"
 # requests       = "^2.32.4"
@@ -103,35 +102,23 @@ pyyaml         = "^6.0"
 
 [tool.poetry.group.dev.dependencies]
 # checkov = "^3.2.447" # not essential for build
-aiohttp    = "^3.13.3"
-asteval    = "^1.0.6"
-authlib    = "^1.6.6"
 black      = "^26"
 debugpy    = "^1.8.17"
 isort      = {extras = ["toml"], version = ">=5.11.4,<7.0.0"}
-mypy       = "^1.18.2"
 pydocstyle = "^6.3.0"
 rdklib     = "^0.3.10"
-regex      = "^2025"
 ruff       = ">=0.14.0,<0.15.0"
 urllib3    = "^2.6.3"
-xmltodict  = "^1.0"
 
 [tool.poetry.group.security.dependencies]
 bandit = "^1.8.6"
-safety = "^3.7.0"
-
-[tool.poetry.group.types.dependencies]
-types-pyyaml = "^6.0.12.20250915"
-boto3-stubs = {extras = ["cloudformation", "config", "iam", "s3", "sts"], version = "^1.40.55"}
-
 
 [tool.poetry.group.docs.dependencies]
 markdown-include    = "^0.8.1"
 mkdocs              = "^1.6.1"
 mkdocs-material     = "^9.7.3"
 mkdocstrings-python = "^1.18.2"
-pymdown-extensions  = "^10.21.0"
+pymdown-extensions  = "^12.3"
 
 [build-system]
 requires = ["poetry-core"]

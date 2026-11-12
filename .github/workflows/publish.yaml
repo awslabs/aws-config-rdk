@@ -22,7 +22,7 @@ jobs:
       - name: Setup Dependencies
         uses: './.github/actions/dep-setup'
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Run Safety CLI to check for vulnerabilities
         uses: pyupio/safety-action@v1
