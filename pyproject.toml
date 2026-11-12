@@ -7,12 +7,12 @@
 #    or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 [project]
 name = "rdk"
-version = "1.0.0"
+version = "2.0.0"
 requires-python = ">=3.10,<4.0.0"
 
 [tool.poetry]
 name = "rdk"
-version = "1.0.0"
+version = "2.0.0"
 description = "Rule Development Kit CLI for AWS Config"
 authors = [
     "AWS RDK Maintainers <rdk-maintainers@amazon.com>",

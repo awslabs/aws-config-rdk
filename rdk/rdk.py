@@ -12,8 +12,10 @@
 #
 #    See the License for the specific language governing permissions and limitations under the License.
 from boto3 import Session
+from boto3.exceptions import S3UploadFailedError
 from botocore.exceptions import ClientError, EndpointConnectionError
 from builtins import input
+import contextlib
 from datetime import datetime
 from os import path
 import argparse
@@ -126,6 +128,53 @@ CONFIG_ROLE_POLICY_DOCUMENT = {
         },
     ],
 }
+
+
+class BucketOwnershipError(Exception):
+    pass
+
+
+def _is_access_denied(error):
+    if isinstance(error, ClientError):
+        return error.response.get("Error", {}).get("Code") in ("AccessDenied", "403")
+    # S3UploadFailedError (from upload_file) only carries the underlying error as text.
+    return "AccessDenied" in str(error) or "(403)" in str(error)
+
+
+@contextlib.contextmanager
+def bucket_ownership_errors(bucket_name, expected_bucket_owner):
+    """
+    Translate AccessDenied on an S3 write into an actionable message when ExpectedBucketOwner was sent.
+    S3 returns the same AccessDenied for an owner mismatch as for a missing IAM permission, so the message
+    calls ownership the likely cause rather than the certain one.
+    """
+    try:
+        yield
+    except (ClientError, S3UploadFailedError) as e:
+        if not expected_bucket_owner or not _is_access_denied(e):
+            raise
+        raise BucketOwnershipError(
+            f"Access denied writing to S3 bucket '{bucket_name}'.\n"
+            f"RDK requires the code bucket to be owned by the account you are deploying from ({expected_bucket_owner}). "
+            "The most likely cause is that this bucket is owned by a different AWS account.\n"
+            "To resolve this, either:\n"
+            "  - use a bucket that your account owns: --custom-code-bucket <bucket-name>, or\n"
+            "  - if the bucket is intentionally owned by another account that you trust, rerun with "
+            f"--custom-code-bucket {bucket_name} --skip-bucket-ownership-check\n"
+            "If you do own this bucket, check that your credentials have s3:PutObject permission on it.\n"
+            f"Original error: {e}"
+        ) from e
+
+
+def add_skip_bucket_ownership_check_argument(parser):
+    parser.add_argument(
+        "--skip-bucket-ownership-check",
+        required=False,
+        action="store_true",
+        help="[optional] Only valid with --custom-code-bucket. Disables the ExpectedBucketOwner check that RDK applies to all S3 "
+        "writes, allowing the custom code bucket to be owned by a different AWS account (e.g. a central artifact bucket). "
+        "Only use this for buckets you know and trust; the default RDK code bucket is always ownership-checked.",
+    )
 
 
 def get_command_parser():
@@ -451,6 +500,7 @@ def get_deployment_parser(ForceArgument=False, Command="deploy"):
         required=False,
         help="[optional] Provide the custom code S3 bucket name, which is not created with rdk init, for generated cloudformation template storage.",
     )
+    add_skip_bucket_ownership_check_argument(parser)
     parser.add_argument(
         "--rdklib-layer-arn",
         required=False,
@@ -556,6 +606,7 @@ def get_deployment_organization_parser(ForceArgument=False, Command="deploy-orga
         required=False,
         help="[optional] Provide the custom code S3 bucket name, which is not created with rdk init, for generated cloudformation template storage.",
     )
+    add_skip_bucket_ownership_check_argument(parser)
     parser.add_argument(
         "--rdklib-layer-arn",
         required=False,
@@ -798,9 +849,13 @@ class rdk:
                 self.account_id = identity_details.get("account_id")  # Useful for passing to externalized functions
             except botocore.exceptions.NoCredentialsError as e:
                 if args.command in ["export"]:
-                    logging.warning("No credentials were found when attempting to run rdk export. This may cause some issues depending on how you are using the export command.")
+                    logging.warning(
+                        "No credentials were found when attempting to run rdk export. This may cause some issues depending on how you are using the export command."
+                    )
                 else:
-                    raise Exception("Credentials Error - Please configure AWS CLI credentials before running an operation that requires AWS access.")
+                    raise Exception(
+                        "Credentials Error - Please configure AWS CLI credentials before running an operation that requires AWS access."
+                    )
 
     # Import external methods
     from ._export import export, parse_export_args, package_function_code  # Importing export feels natural!
@@ -1147,11 +1202,11 @@ class rdk:
         code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
         try:
             code_bucket = my_session.resource("s3").Bucket(code_bucket_name)
-            code_bucket.objects.all().delete()
-            code_bucket.delete()
+            code_bucket.objects.all().delete(ExpectedBucketOwner=account_id)
+            code_bucket.delete(ExpectedBucketOwner=account_id)
         except ClientError as ce:
             if ce.response["Error"]["Code"] == "NoSuchBucket":
-                print("No code bucket found.")
+                print(f"No code bucket {code_bucket_name} found in your account.")
         except Exception as e:
             print("Error encountered trying to delete code bucket: " + str(e))
 
@@ -1480,10 +1535,7 @@ class rdk:
         account_id = identity_details["account_id"]
         partition = identity_details["partition"]
 
-        if self.args.custom_code_bucket:
-            code_bucket_name = self.args.custom_code_bucket
-        else:
-            code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
+        code_bucket_name, expected_bucket_owner = self.__get_code_bucket_and_expected_owner(account_id, my_session)
 
         # If we're only deploying the Lambda functions (and role + permissions), branch here.  Someday the "main" execution path should use the same generated CFN templates for single-account deployment.
         if self.args.functions_only:
@@ -1500,11 +1552,13 @@ class rdk:
 
             # Write template to S3
             my_s3_client = my_session.client("s3")
-            my_s3_client.put_object(
-                Body=bytes(function_template.encode("utf-8")),
-                Bucket=code_bucket_name,
-                Key=self.args.stack_name + ".json",
-            )
+            with bucket_ownership_errors(code_bucket_name, expected_bucket_owner):
+                my_s3_client.put_object(
+                    Body=bytes(function_template.encode("utf-8")),
+                    Bucket=code_bucket_name,
+                    Key=self.args.stack_name + ".json",
+                    **self.__bucket_owner_kwargs(expected_bucket_owner),
+                )
 
             # Package code and push to S3
             s3_code_objects = {}
@@ -1514,7 +1568,7 @@ class rdk:
                     print(f"[{my_session.region_name}]: Skipping code packaging for Managed Rule.")
                 else:
                     s3_dst = self.__upload_function_code(
-                        rule_name, rule_params, account_id, my_session, code_bucket_name
+                        rule_name, rule_params, expected_bucket_owner, my_session, code_bucket_name
                     )
                     s3_code_objects[rule_name] = s3_dst
 
@@ -1854,7 +1908,9 @@ class rdk:
             print(f"[{my_session.region_name}]: Found Custom Rule.")
 
             s3_src = ""
-            s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
+            s3_dst = self.__upload_function_code(
+                rule_name, rule_params, expected_bucket_owner, my_session, code_bucket_name
+            )
 
             # create CFN Parameters for Custom Rules
             lambdaRoleArn = ""
@@ -2098,10 +2154,7 @@ class rdk:
         account_id = identity_details["account_id"]
         partition = identity_details["partition"]
 
-        if self.args.custom_code_bucket:
-            code_bucket_name = self.args.custom_code_bucket
-        else:
-            code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
+        code_bucket_name, expected_bucket_owner = self.__get_code_bucket_and_expected_owner(account_id, my_session)
 
         # If we're only deploying the Lambda functions (and role + permissions), branch here.  Someday the "main" execution path should use the same generated CFN templates for single-account deployment.
         if self.args.functions_only:
@@ -2256,7 +2309,9 @@ class rdk:
             print("Found Custom Rule.")
 
             s3_src = ""
-            s3_dst = self.__upload_function_code(rule_name, rule_params, account_id, my_session, code_bucket_name)
+            s3_dst = self.__upload_function_code(
+                rule_name, rule_params, expected_bucket_owner, my_session, code_bucket_name
+            )
 
             # create CFN Parameters for Custom Rules
             lambdaRoleArn = ""
@@ -3234,7 +3289,9 @@ class rdk:
             try:
                 my_tags = json.loads(my_tags)
             except json.JSONDecodeError:
-                raise Exception("Failed to parse Tags in parameters file. Check that they are configured in proper JSON format.")
+                raise Exception(
+                    "Failed to parse Tags in parameters file. Check that they are configured in proper JSON format."
+                )
 
         return my_json["Parameters"], my_tags
 
@@ -3414,8 +3471,9 @@ class rdk:
         # create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
         if not my_session.region_name:
-            raise Exception("No region found. Please specify a region by configuring your AWS profile or by passing the --region argument.")
-
+            raise Exception(
+                "No region found. Please specify a region by configuring your AWS profile or by passing the --region argument."
+            )
 
         # get accountID
         # my_sts = my_session.client('sts')
@@ -3717,7 +3775,40 @@ class rdk:
         except OSError:
             pass
 
-    def __upload_function_code(self, rule_name, params, account_id, my_session, code_bucket_name):
+    def __get_code_bucket_and_expected_owner(self, account_id, my_session):
+        """
+        Resolve the code bucket name and the account ID that must own it.
+
+        Returns (bucket_name, expected_owner). expected_owner is None only when the user
+        explicitly opts out via --skip-bucket-ownership-check with a --custom-code-bucket.
+        The default bucket name is derived from public inputs (account ID + region), so it
+        is always ownership-checked to prevent bucket squatting.
+        """
+        skip_check = getattr(self.args, "skip_bucket_ownership_check", False)
+
+        if not self.args.custom_code_bucket:
+            if skip_check:
+                raise Exception(
+                    "--skip-bucket-ownership-check can only be used together with --custom-code-bucket. "
+                    "The default RDK code bucket is always required to be owned by the calling account."
+                )
+            return code_bucket_prefix + account_id + "-" + my_session.region_name, account_id
+
+        if skip_check:
+            logging.warning(
+                f"Bucket ownership check is disabled for custom code bucket '{self.args.custom_code_bucket}'. "
+                "RDK will not verify which AWS account owns this bucket before uploading code and templates to it."
+            )
+            return self.args.custom_code_bucket, None
+
+        return self.args.custom_code_bucket, account_id
+
+    @staticmethod
+    def __bucket_owner_kwargs(expected_bucket_owner):
+        # Empty dict when the ownership check has been explicitly skipped.
+        return {"ExpectedBucketOwner": expected_bucket_owner} if expected_bucket_owner else {}
+
+    def __upload_function_code(self, rule_name, params, expected_bucket_owner, my_session, code_bucket_name):
         if params["SourceRuntime"] == "java8":
             # Do java build and package.
             print(f"[{my_session.region_name}]: Running Gradle Build for " + rule_name)
@@ -3739,7 +3830,10 @@ class rdk:
             my_s3 = my_session.resource("s3")
 
             print(f"[{my_session.region_name}]: Uploading " + rule_name)
-            my_s3.meta.client.upload_file(s3_src, code_bucket_name, s3_dst)
+            with bucket_ownership_errors(code_bucket_name, expected_bucket_owner):
+                my_s3.meta.client.upload_file(
+                    s3_src, code_bucket_name, s3_dst, ExtraArgs=self.__bucket_owner_kwargs(expected_bucket_owner)
+                )
             print(f"[{my_session.region_name}]: Upload complete.")
 
         else:
@@ -3762,7 +3856,10 @@ class rdk:
             my_s3 = my_session.resource("s3")
 
             print(f"[{my_session.region_name}]: Uploading " + rule_name)
-            my_s3.meta.client.upload_file(tmp_src, code_bucket_name, s3_dst)
+            with bucket_ownership_errors(code_bucket_name, expected_bucket_owner):
+                my_s3.meta.client.upload_file(
+                    tmp_src, code_bucket_name, s3_dst, ExtraArgs=self.__bucket_owner_kwargs(expected_bucket_owner)
+                )
             print(f"[{my_session.region_name}]: Upload complete.")
             if not (os.path.exists(package_file_dst)):
                 shutil.copy(tmp_src, package_file_dst)

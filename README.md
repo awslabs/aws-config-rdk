@@ -247,6 +247,12 @@ In practice, this is not a large security risk:
 
 In any case, avoid publicizing your Lambda ARNs and don't include sensitive information in your Evaluation responses. You may also choose to use the `aws:sourceAccount` or `aws:SourceOrgID` condition keys to restrict the Config rules that are allowed to invoke the Lambda function.
 
+#### Code bucket ownership (breaking change in v2.0.0)
+
+As of v2.0.0, RDK sends `ExpectedBucketOwner` (the calling account's ID) on every S3 write to the code bucket and on code bucket cleanup in `rdk clean`. This prevents bucket squatting, where a third party pre-creates the predictable default bucket name (`config-rule-code-bucket-<account-id>-<region>`) to intercept or tamper with your rule code. If the bucket is owned by another account, the upload fails with `403 Access Denied`.
+
+If you intentionally use `--custom-code-bucket` with a bucket owned by a different account (e.g. a central artifact bucket), add `--skip-bucket-ownership-check` to `rdk deploy` / `rdk deploy-organization`. This flag is only accepted together with `--custom-code-bucket`; the default code bucket is always ownership-checked. See the [deploy](https://aws-config-rdk.readthedocs.io/en/master/commands/deploy/) documentation for details.
+
 ### Cross-Account Deployments
 
 Features have been added to the RDK to facilitate the cross-account deployment pattern that enterprise customers have standardized for custom Config Rules. A cross-account architecture is one in which the Lambda functions are deployed to a single central "Compliance" account (which may be the same as a central "Security" account), and the Config Rules are deployed to any number of "Satellite" accounts that are used by other teams or departments. This gives the compliance team confidence that their rule logic cannot be tampered with and makes it much easier for them to modify rule logic without having to go through a complex deployment process to potentially hundreds of AWS accounts. The cross-account pattern uses two advanced RDK features:

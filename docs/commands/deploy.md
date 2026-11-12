@@ -35,6 +35,47 @@ flag can be used for attaching boundary Policy ARN that will be added to
 rdkLambdaRole. The `--lambda-timeout` flag can be used for specifying
 the timeout associated to the lambda function
 
+## Code bucket ownership check
+
+As of version `2.0.0`, every S3 write RDK performs against the code
+bucket (Lambda code zips and the `--functions-only` CloudFormation
+template) includes the `ExpectedBucketOwner` parameter set to the
+account ID of the credentials running `rdk`. If the bucket is owned by
+any other account, S3 rejects the request with `403 Access Denied` and
+nothing is uploaded.
+
+This protects against *bucket squatting*: the default code bucket name
+(`config-rule-code-bucket-<account-id>-<region>`) is predictable, so a
+third party could pre-create it in their own account and receive your
+rule code, or serve modified code to your Lambda functions.
+
+The `--skip-bucket-ownership-check` flag disables this check. It is
+intended **only** for the case where `--custom-code-bucket` points at a
+bucket that is deliberately owned by a different account, for example a
+central artifact bucket in a shared-services account whose bucket policy
+grants your deployment role `s3:PutObject` (and grants Lambda/CloudFormation
+read access). Note that Lambda requires the bucket to be in the same
+Region as the function.
+
+```bash
+rdk deploy MyRule --custom-code-bucket my-central-artifacts-us-east-1 --skip-bucket-ownership-check
+```
+
+- The flag is rejected if `--custom-code-bucket` is not also supplied;
+  the default code bucket is always ownership-checked.
+- RDK logs a warning whenever the check is skipped.
+- Only use the flag with a bucket name you control or trust. With the
+  check disabled, RDK cannot detect a bucket that has been created by an
+  unexpected account.
+
+**Upgrading from 1.x:** if you deploy with a `--custom-code-bucket` owned
+by another account, add `--skip-bucket-ownership-check` to your `rdk
+deploy` / `rdk deploy-organization` commands. No change is needed if your
+code bucket is owned by the deploying account (including the default
+bucket created by `rdk init`).
+
+The same flag is available on `rdk deploy-organization`.
+
 Note: Behind the scenes the `--functions-only` flag generates a
 CloudFormation template and runs a \"create\" or \"update\" on the
 targeted AWS Account and Region. If subsequent calls to `deploy` with
