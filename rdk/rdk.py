@@ -798,9 +798,13 @@ class rdk:
                 self.account_id = identity_details.get("account_id")  # Useful for passing to externalized functions
             except botocore.exceptions.NoCredentialsError as e:
                 if args.command in ["export"]:
-                    logging.warning("No credentials were found when attempting to run rdk export. This may cause some issues depending on how you are using the export command.")
+                    logging.warning(
+                        "No credentials were found when attempting to run rdk export. This may cause some issues depending on how you are using the export command."
+                    )
                 else:
-                    raise Exception("Credentials Error - Please configure AWS CLI credentials before running an operation that requires AWS access.")
+                    raise Exception(
+                        "Credentials Error - Please configure AWS CLI credentials before running an operation that requires AWS access."
+                    )
 
     # Import external methods
     from ._export import export, parse_export_args, package_function_code  # Importing export feels natural!
@@ -1147,11 +1151,11 @@ class rdk:
         code_bucket_name = code_bucket_prefix + account_id + "-" + my_session.region_name
         try:
             code_bucket = my_session.resource("s3").Bucket(code_bucket_name)
-            code_bucket.objects.all().delete()
-            code_bucket.delete()
+            code_bucket.objects.all().delete(ExpectedBucketOwner=account_id)
+            code_bucket.delete(ExpectedBucketOwner=account_id)
         except ClientError as ce:
             if ce.response["Error"]["Code"] == "NoSuchBucket":
-                print("No code bucket found.")
+                print(f"No code bucket {code_bucket_name} found in your account.")
         except Exception as e:
             print("Error encountered trying to delete code bucket: " + str(e))
 
@@ -1504,6 +1508,7 @@ class rdk:
                 Body=bytes(function_template.encode("utf-8")),
                 Bucket=code_bucket_name,
                 Key=self.args.stack_name + ".json",
+                ExpectedBucketOwner=account_id,
             )
 
             # Package code and push to S3
@@ -3234,7 +3239,9 @@ class rdk:
             try:
                 my_tags = json.loads(my_tags)
             except json.JSONDecodeError:
-                raise Exception("Failed to parse Tags in parameters file. Check that they are configured in proper JSON format.")
+                raise Exception(
+                    "Failed to parse Tags in parameters file. Check that they are configured in proper JSON format."
+                )
 
         return my_json["Parameters"], my_tags
 
@@ -3414,8 +3421,9 @@ class rdk:
         # create custom session based on whatever credentials are available to us
         my_session = self.__get_boto_session()
         if not my_session.region_name:
-            raise Exception("No region found. Please specify a region by configuring your AWS profile or by passing the --region argument.")
-
+            raise Exception(
+                "No region found. Please specify a region by configuring your AWS profile or by passing the --region argument."
+            )
 
         # get accountID
         # my_sts = my_session.client('sts')
@@ -3739,7 +3747,9 @@ class rdk:
             my_s3 = my_session.resource("s3")
 
             print(f"[{my_session.region_name}]: Uploading " + rule_name)
-            my_s3.meta.client.upload_file(s3_src, code_bucket_name, s3_dst)
+            my_s3.meta.client.upload_file(
+                s3_src, code_bucket_name, s3_dst, ExtraArgs={"ExpectedBucketOwner": account_id}
+            )
             print(f"[{my_session.region_name}]: Upload complete.")
 
         else:
@@ -3762,7 +3772,9 @@ class rdk:
             my_s3 = my_session.resource("s3")
 
             print(f"[{my_session.region_name}]: Uploading " + rule_name)
-            my_s3.meta.client.upload_file(tmp_src, code_bucket_name, s3_dst)
+            my_s3.meta.client.upload_file(
+                tmp_src, code_bucket_name, s3_dst, ExtraArgs={"ExpectedBucketOwner": account_id}
+            )
             print(f"[{my_session.region_name}]: Upload complete.")
             if not (os.path.exists(package_file_dst)):
                 shutil.copy(tmp_src, package_file_dst)
