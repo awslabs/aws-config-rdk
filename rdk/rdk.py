@@ -12,8 +12,10 @@
 #
 #    See the License for the specific language governing permissions and limitations under the License.
 from boto3 import Session
+from boto3.exceptions import S3UploadFailedError
 from botocore.exceptions import ClientError, EndpointConnectionError
 from builtins import input
+import contextlib
 from datetime import datetime
 from os import path
 import argparse
@@ -126,6 +128,42 @@ CONFIG_ROLE_POLICY_DOCUMENT = {
         },
     ],
 }
+
+
+class BucketOwnershipError(Exception):
+    pass
+
+
+def _is_access_denied(error):
+    if isinstance(error, ClientError):
+        return error.response.get("Error", {}).get("Code") in ("AccessDenied", "403")
+    # S3UploadFailedError (from upload_file) only carries the underlying error as text.
+    return "AccessDenied" in str(error) or "(403)" in str(error)
+
+
+@contextlib.contextmanager
+def bucket_ownership_errors(bucket_name, expected_bucket_owner):
+    """
+    Translate AccessDenied on an S3 write into an actionable message when ExpectedBucketOwner was sent.
+    S3 returns the same AccessDenied for an owner mismatch as for a missing IAM permission, so the message
+    calls ownership the likely cause rather than the certain one.
+    """
+    try:
+        yield
+    except (ClientError, S3UploadFailedError) as e:
+        if not expected_bucket_owner or not _is_access_denied(e):
+            raise
+        raise BucketOwnershipError(
+            f"Access denied writing to S3 bucket '{bucket_name}'.\n"
+            f"RDK requires the code bucket to be owned by the account you are deploying from ({expected_bucket_owner}). "
+            "The most likely cause is that this bucket is owned by a different AWS account.\n"
+            "To resolve this, either:\n"
+            "  - use a bucket that your account owns: --custom-code-bucket <bucket-name>, or\n"
+            "  - if the bucket is intentionally owned by another account that you trust, rerun with "
+            f"--custom-code-bucket {bucket_name} --skip-bucket-ownership-check\n"
+            "If you do own this bucket, check that your credentials have s3:PutObject permission on it.\n"
+            f"Original error: {e}"
+        ) from e
 
 
 def add_skip_bucket_ownership_check_argument(parser):
@@ -1514,12 +1552,13 @@ class rdk:
 
             # Write template to S3
             my_s3_client = my_session.client("s3")
-            my_s3_client.put_object(
-                Body=bytes(function_template.encode("utf-8")),
-                Bucket=code_bucket_name,
-                Key=self.args.stack_name + ".json",
-                **self.__bucket_owner_kwargs(expected_bucket_owner),
-            )
+            with bucket_ownership_errors(code_bucket_name, expected_bucket_owner):
+                my_s3_client.put_object(
+                    Body=bytes(function_template.encode("utf-8")),
+                    Bucket=code_bucket_name,
+                    Key=self.args.stack_name + ".json",
+                    **self.__bucket_owner_kwargs(expected_bucket_owner),
+                )
 
             # Package code and push to S3
             s3_code_objects = {}
@@ -3791,9 +3830,10 @@ class rdk:
             my_s3 = my_session.resource("s3")
 
             print(f"[{my_session.region_name}]: Uploading " + rule_name)
-            my_s3.meta.client.upload_file(
-                s3_src, code_bucket_name, s3_dst, ExtraArgs=self.__bucket_owner_kwargs(expected_bucket_owner)
-            )
+            with bucket_ownership_errors(code_bucket_name, expected_bucket_owner):
+                my_s3.meta.client.upload_file(
+                    s3_src, code_bucket_name, s3_dst, ExtraArgs=self.__bucket_owner_kwargs(expected_bucket_owner)
+                )
             print(f"[{my_session.region_name}]: Upload complete.")
 
         else:
@@ -3816,9 +3856,10 @@ class rdk:
             my_s3 = my_session.resource("s3")
 
             print(f"[{my_session.region_name}]: Uploading " + rule_name)
-            my_s3.meta.client.upload_file(
-                tmp_src, code_bucket_name, s3_dst, ExtraArgs=self.__bucket_owner_kwargs(expected_bucket_owner)
-            )
+            with bucket_ownership_errors(code_bucket_name, expected_bucket_owner):
+                my_s3.meta.client.upload_file(
+                    tmp_src, code_bucket_name, s3_dst, ExtraArgs=self.__bucket_owner_kwargs(expected_bucket_owner)
+                )
             print(f"[{my_session.region_name}]: Upload complete.")
             if not (os.path.exists(package_file_dst)):
                 shutil.copy(tmp_src, package_file_dst)
